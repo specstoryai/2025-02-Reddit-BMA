@@ -42,20 +42,32 @@ const tooltips: Record<string, TooltipContent> = {
     description: "When we see a token we've processed before, we can reuse its cached K,V pairs instead of recomputing them. This saves computation and is a key optimization in LLM inference."
   },
   generation: {
-    title: "Generation Process",
-    description: "During generation, the model uses all cached K,V pairs as context to predict the next token. Each new token's K,V pairs are also cached for future predictions."
+    title: "Generation Process (Traditional Cache)",
+    description: "During generation, the model uses all cached K,V pairs as context to predict the next token. Each new token's K,V pairs are also cached for future predictions. In traditional caching, all past tokens remain available in GPU memory."
+  },
+  pagedGeneration: {
+    title: "Generation Process (Paged Cache)",
+    description: "During generation with paged attention, the model primarily uses K,V pairs from active (GPU-resident) pages to predict the next token. While older pages can be accessed, they may require swapping from CPU memory, so the model prioritizes recent context for efficiency."
   },
   pagedCache: {
     title: "Paged KV Cache",
-    description: "Paged attention organizes the KV cache into fixed-size pages. Each page contains a block of tokens, making memory management more efficient and reducing fragmentation."
+    description: "Paged attention organizes the KV cache into fixed-size pages. Each page contains a block of tokens. During generation, only the most recent pages are kept in fast GPU memory, while older pages may be swapped to CPU memory."
   },
   pages: {
     title: "Pages",
-    description: "Fixed-size memory blocks that store KV pairs for multiple tokens. Pages can be efficiently swapped between GPU and CPU memory."
+    description: "Fixed-size memory blocks that store KV pairs for multiple tokens. Pages can be efficiently swapped between GPU and CPU memory. During generation, typically only the most recent pages remain in GPU memory."
   },
-  blocks: {
-    title: "Blocks",
-    description: "Each page is divided into blocks, where each block can store KV pairs for one token. This fixed-size structure enables better memory management."
+  swappedPage: {
+    title: "Swapped Page",
+    description: "This page has been swapped out to CPU memory. While its tokens can still be referenced, accessing them would require a memory swap operation. Paged attention typically keeps only the most recent context in GPU memory for efficient generation."
+  },
+  activePage: {
+    title: "Active Page",
+    description: "This page is currently in GPU memory, allowing fast access to its tokens' KV pairs. During generation, we prioritize keeping the most recent context pages active."
+  },
+  generationContext: {
+    title: "Generation Context",
+    description: "When generating new tokens, paged attention primarily uses the KV pairs from active (GPU-resident) pages. While older pages can be accessed, it's more efficient to work with the most recent context."
   }
 };
 
@@ -74,7 +86,7 @@ const PAGE_SIZE = 4; // Number of blocks per page
 
 const KVCacheDemo = () => {
   const [step, setStep] = useState(0);
-  const tokens = ['The', 'cat', 'sat', 'on', 'the', 'mat'];
+  const tokens = ['The', 'black', 'cat', 'sat', 'on', 'the', 'mat'];
   const [cache, setCache] = useState<Cache>({});
   const [generating, setGenerating] = useState(false);
   const [cacheHit, setCacheHit] = useState(false);
@@ -83,41 +95,43 @@ const KVCacheDemo = () => {
   const [highlightedCacheItems, setHighlightedCacheItems] = useState<string[]>([]);
   const [pages, setPages] = useState<Page[]>([]);
 
+  // Calculate key phases of the demo
+  const processingPhaseEndStep = tokens.length;  // Step after processing all input tokens
+  const generationStartStep = processingPhaseEndStep;  // Step when we start generation
+  const firstGenerationStep = generationStartStep + 1;  // First step of actual generation
+  const secondGenerationStep = firstGenerationStep + 1;  // Second step of generation
+  const totalSteps = secondGenerationStep + 1;  // Total number of steps in the demo
+
+  // Helper function to get ordinal numbers (1st, 2nd, 3rd, etc.)
+  const getOrdinal = (n: number) => {
+    const s = ["th", "st", "nd", "rd"];
+    const v = n % 100;
+    return n + (s[(v - 20) % 10] || s[v] || s[0]);
+  };
+
   const steps = [
     {
       title: "Initial State",
-      description: "We start with an input sequence: 'The cat sat on the mat'",
+      description: "We start with an input sequence: 'The black cat sat on the mat'",
       action: "Next: Process first token"
     },
+    ...Array(processingPhaseEndStep - 1).fill(null).map((_, idx) => {
+      const token = tokens[idx + 1];
+      const isThe = token.toLowerCase() === 'the' && idx + 1 > 0;
+      return {
+        title: `Process ${getOrdinal(idx + 2)} Token${isThe ? " - Cache Hit!" : ""}`,
+        description: isThe 
+          ? "We've seen 'the' before! We can reuse its existing K,V pair instead of recomputing"
+          : `Generate K,V pair for '${token}' and store in cache`,
+        action: idx + 2 < processingPhaseEndStep 
+          ? `Next: Process ${getOrdinal(idx + 3)} token`
+          : "Next: Begin generation"
+      };
+    }),
     {
-      title: "Process First Token",
-      description: "Generate K,V pair for 'The' and store in cache",
-      action: "Next: Process second token"
-    },
-    {
-      title: "Process Second Token", 
-      description: "Generate K,V pair for 'cat' and store in cache",
-      action: "Next: Process third token"
-    },
-    {
-      title: "Process Third Token",
-      description: "Generate K,V pair for 'sat' and store in cache",
-      action: "Next: Process fourth token"
-    },
-    {
-      title: "Process Fourth Token",
-      description: "Generate K,V pair for 'on' and store in cache",
-      action: "Next: Process fifth token"
-    },
-    {
-      title: "Process Fifth Token - Cache Hit!",
-      description: "We've seen 'the' before! We can reuse its existing K,V pair instead of recomputing",
-      action: "Next: Process sixth token"
-    },
-    {
-      title: "Process Sixth Token",
-      description: "Generate K,V pair for 'mat' and store in cache",
-      action: "Next: Begin generation"
+      title: "Begin Generation Phase",
+      description: "Using all cached K,V pairs as context to start generating new tokens",
+      action: "Next: Generate first token"
     },
     {
       title: "Generate First New Token",
@@ -132,7 +146,7 @@ const KVCacheDemo = () => {
   ];
 
   const handleNext = () => {
-    if (step === steps.length - 1) {
+    if (step === totalSteps - 1) {
       // Reset everything
       setStep(0);
       setCache({});
@@ -144,7 +158,7 @@ const KVCacheDemo = () => {
       setHighlightedCacheItems([]);
     } else {
       // Processing input tokens
-      if (step < 6) {
+      if (step < processingPhaseEndStep) {
         const token = tokens[step];
         const lowerToken = token.toLowerCase();
         
@@ -175,22 +189,26 @@ const KVCacheDemo = () => {
 
         setPages(prev => {
           const newPages = [...prev];
+          
+          // Ensure all pages are initially inactive
+          newPages.forEach(page => page.isActive = false);
+          
           if (!newPages[pageIndex]) {
             newPages[pageIndex] = {
               blocks: Array(PAGE_SIZE).fill(null),
               isActive: true
             };
+          } else {
+            newPages[pageIndex].isActive = true;
           }
 
           if (lowerToken === 'the' && cache['the']) {
-            // Cache hit - but in paged attention, we still store it in the current page
             newPages[pageIndex].blocks[blockIndex] = {
               token: lowerToken,
-              key: `k0`,  // Still use k0/v0 to show it's the same token
+              key: `k0`,
               value: `v0`
             };
           } else {
-            // New token - add to page with same index as traditional cache
             newPages[pageIndex].blocks[blockIndex] = {
               token: lowerToken,
               key: `k${kvIndex}`,
@@ -202,11 +220,10 @@ const KVCacheDemo = () => {
         });
       }
       // Entering generation phase
-      else if (step === 6) {
+      else if (step === generationStartStep) {
         setGenerating(true);
         setActiveTokens(tokens);
         setHighlightedCacheItems(Object.keys(cache));
-        // Pre-add 'and' to the cache for the next step
         const nextIndex = Object.keys(cache).length;
         setCache(prev => ({
           ...prev,
@@ -217,17 +234,21 @@ const KVCacheDemo = () => {
         }));
 
         // Add 'and' to the paged cache
-        const tokenIndex = tokens.length; // First generated token goes after input tokens
+        const tokenIndex = tokens.length;
         const pageIndex = Math.floor(tokenIndex / PAGE_SIZE);
         const blockIndex = tokenIndex % PAGE_SIZE;
 
         setPages(prev => {
           const newPages = [...prev];
+          newPages.forEach(page => page.isActive = false);
+          
           if (!newPages[pageIndex]) {
             newPages[pageIndex] = {
               blocks: Array(PAGE_SIZE).fill(null),
               isActive: true
             };
+          } else {
+            newPages[pageIndex].isActive = true;
           }
           
           newPages[pageIndex].blocks[blockIndex] = {
@@ -240,36 +261,38 @@ const KVCacheDemo = () => {
         });
       }
       // Generating 'and' - computing new K,V pairs
-      else if (step === 7) {
+      else if (step === firstGenerationStep) {
         setCacheHit(false);
         setComputingNew(true);
         setHighlightedCacheItems(['and', ...Object.keys(cache).filter(t => t !== 'and')]);
       }
       // Generating 'the' - cache hit
-      else if (step === 8) {
+      else if (step === secondGenerationStep) {
         setCacheHit(true);
         setComputingNew(false);
         setHighlightedCacheItems(['the', 'and']);
 
-        // Add second 'the' to paged cache in its current position
-        const tokenIndex = tokens.length + 1; // Second generated token
-        const pageIndex = Math.floor(tokenIndex / PAGE_SIZE);
-        const blockIndex = tokenIndex % PAGE_SIZE;
-
         setPages(prev => {
           const newPages = [...prev];
+          newPages.forEach(page => page.isActive = false);
+          
+          const tokenIndex = tokens.length + 1;
+          const pageIndex = Math.floor(tokenIndex / PAGE_SIZE);
+          const blockIndex = tokenIndex % PAGE_SIZE;
+
           if (!newPages[pageIndex]) {
             newPages[pageIndex] = {
               blocks: Array(PAGE_SIZE).fill(null),
               isActive: true
             };
+          } else {
+            newPages[pageIndex].isActive = true;
           }
           
-          // In paged attention, store the token in its current page
           newPages[pageIndex].blocks[blockIndex] = {
             token: 'the',
-            key: 'k0',  // Use k0/v0 to show it's the same token
-            value: 'v0'
+            key: 'k5',
+            value: 'v5'
           };
           
           return newPages;
@@ -281,8 +304,8 @@ const KVCacheDemo = () => {
   };
 
   const getCurrentGeneratedTokens = () => {
-    if (step === 7) return ['and'];
-    if (step === 8) return ['and', 'the'];
+    if (step === firstGenerationStep) return ['and'];
+    if (step === secondGenerationStep) return ['and', 'the'];
     return [];
   };
 
@@ -304,19 +327,41 @@ const KVCacheDemo = () => {
   const renderPagedCache = () => (
     <div className="flex-1 border rounded-lg p-4 bg-gray-50">
       {pages.map((page, pageIndex) => (
-        <div key={pageIndex} className={`mb-4 border rounded p-2 ${page.isActive ? 'bg-blue-50' : 'bg-gray-100'}`}>
-          {renderTooltip(tooltips.pages,
-            <div className="text-sm font-mono mb-2 text-gray-600">Page {pageIndex}</div>
+        <div key={pageIndex} 
+          className={`mb-4 border rounded p-2 ${
+            page.isActive 
+              ? 'bg-blue-50 border-blue-200' 
+              : 'bg-gray-100 opacity-75 border-gray-200'
+          }`}
+        >
+          {renderTooltip(
+            page.isActive ? tooltips.activePage : tooltips.swappedPage,
+            <div className="text-sm font-mono mb-2 text-gray-600 flex items-center gap-2">
+              Page {pageIndex}
+              {page.isActive ? (
+                <span className="text-xs text-blue-600 font-semibold">(Active in GPU)</span>
+              ) : (
+                <span className="text-xs text-gray-500">(Swapped to CPU)</span>
+              )}
+            </div>
           )}
           <div className="grid grid-cols-2 gap-2">
             {page.blocks.map((block, blockIndex) => (
-              <div key={blockIndex} className="border rounded p-2 bg-white">
+              <div key={blockIndex} 
+                className={`border rounded p-2 ${
+                  page.isActive ? 'bg-white border-blue-100' : 'bg-gray-50 border-gray-200'
+                }`}
+              >
                 {block ? (
                   <>
                     <div className="font-mono text-sm mb-1">{block.token}</div>
                     <div className="flex gap-1 text-xs">
-                      <span className="bg-blue-100 px-1 rounded">{block.key}</span>
-                      <span className="bg-purple-100 px-1 rounded">{block.value}</span>
+                      <span className={`px-1 rounded ${
+                        page.isActive ? 'bg-blue-100' : 'bg-gray-200'
+                      }`}>{block.key}</span>
+                      <span className={`px-1 rounded ${
+                        page.isActive ? 'bg-purple-100' : 'bg-gray-200'
+                      }`}>{block.value}</span>
                     </div>
                   </>
                 ) : (
@@ -375,7 +420,7 @@ const KVCacheDemo = () => {
             {/* Generation tokens */}
             {generating && (
               <div className="flex gap-4 items-center">
-                {renderTooltip(tooltips.generation, 
+                {renderTooltip(tooltips.pagedGeneration, 
                   <span className="font-mono">Generated:</span>
                 )}
                 <div className="flex gap-2">
@@ -456,12 +501,12 @@ const KVCacheDemo = () => {
             {/* Process visualization */}
             {generating && (
               <div className="flex gap-4 items-center">
-                {renderTooltip(tooltips.generation,
+                {renderTooltip(tooltips.pagedGeneration,
                   <span className="font-mono">Process:</span>
                 )}
                 <div className="flex items-center gap-2">
                   <div className="flex gap-2 items-center bg-gray-100 p-2 rounded">
-                    {step === 7 ? (
+                    {step === generationStartStep ? (
                       <>
                         <div className="flex items-center gap-4">
                           <div className="flex items-center gap-2">
@@ -475,7 +520,21 @@ const KVCacheDemo = () => {
                           </div>
                         </div>
                       </>
-                    ) : step === 8 ? (
+                    ) : step === firstGenerationStep ? (
+                      <>
+                        <div className="flex items-center gap-4">
+                          <div className="flex items-center gap-2">
+                            <Brain size={16} />
+                            <span>Using cached context to predict next token</span>
+                          </div>
+                          <ArrowRight size={16} />
+                          <div className="flex items-center gap-2">
+                            <Plus size={16} />
+                            <span>Computing new K,V pair for &quot;and&quot;</span>
+                          </div>
+                        </div>
+                      </>
+                    ) : step === secondGenerationStep ? (
                       <>
                         <div className="flex items-center gap-4">
                           <div className="flex items-center gap-2">
@@ -504,10 +563,10 @@ const KVCacheDemo = () => {
           {/* Controls */}
           <div className="flex justify-between items-center">
             <div className="text-sm text-gray-500">
-              Step {step + 1} of {steps.length}
+              Step {step + 1} of {totalSteps}
             </div>
             <Button onClick={handleNext} className="flex items-center gap-2">
-              {step === steps.length - 1 && <RotateCcw size={16} />}
+              {step === totalSteps - 1 && <RotateCcw size={16} />}
               {steps[step].action}
             </Button>
           </div>
