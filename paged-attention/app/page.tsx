@@ -8,7 +8,7 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card"
-import { ArrowRight, Key, Database, Brain, CheckCircle2, RotateCcw, Search, Plus, Info } from 'lucide-react';
+import { ArrowRight, Key, Database, Brain, CheckCircle2, RotateCcw, Plus, Info } from 'lucide-react';
 
 interface CacheEntry {
   key: string;
@@ -245,13 +245,13 @@ const KVCacheDemo = () => {
                       ${step < idx + 7 ? 'bg-gray-50' : 'bg-blue-100'}`}
                     >
                       {token}
-                      {step === idx + 7 && computingNew && (
+                      {step === idx + 7 && computingNew && token === 'and' && (
                         <div className="flex items-center gap-1 text-yellow-600 text-sm mt-1">
                           <Plus size={14} />
                           <span>Computing new K,V</span>
                         </div>
                       )}
-                      {step === idx + 7 && cacheHit && (
+                      {step === idx + 7 && cacheHit && token === 'the' && (
                         <div className="flex items-center gap-1 text-green-600 text-sm mt-1">
                           <CheckCircle2 size={14} />
                           <span>Cache hit!</span>
@@ -312,12 +312,12 @@ const KVCacheDemo = () => {
                         <div className="flex items-center gap-4">
                           <div className="flex items-center gap-2">
                             <Brain size={16} />
-                            <span>Using cached context to predict "and"</span>
+                            <span>Using cached context to predict &quot;and&quot;</span>
                           </div>
                           <ArrowRight size={16} />
                           <div className="flex items-center gap-2">
                             <Plus size={16} />
-                            <span>Computing new K,V pair for "and"</span>
+                            <span>Computing new K,V pair for &quot;and&quot;</span>
                           </div>
                         </div>
                       </>
@@ -326,12 +326,12 @@ const KVCacheDemo = () => {
                         <div className="flex items-center gap-4">
                           <div className="flex items-center gap-2">
                             <Brain size={16} />
-                            <span>Using cached context to predict "the"</span>
+                            <span>Using cached context to predict &quot;the&quot;</span>
                           </div>
                           <ArrowRight size={16} />
                           <div className="flex items-center gap-2">
-                            <Search size={16} />
-                            <span>Reusing cached K,V pair for "the"</span>
+                            <CheckCircle2 size={16} className="text-green-600" />
+                            <span className="text-green-600">Reusing cached K,V pair for &quot;the&quot;</span>
                           </div>
                         </div>
                       </>
