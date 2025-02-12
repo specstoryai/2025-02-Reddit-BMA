@@ -3,7 +3,12 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Key, Database, Brain, CheckCircle2, RotateCcw, Search, Plus } from 'lucide-react';
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card"
+import { ArrowRight, Key, Database, Brain, CheckCircle2, RotateCcw, Search, Plus, Info } from 'lucide-react';
 
 interface CacheEntry {
   key: string;
@@ -13,6 +18,34 @@ interface CacheEntry {
 interface Cache {
   [key: string]: CacheEntry;
 }
+
+interface TooltipContent {
+  title: string;
+  description: string;
+}
+
+const tooltips: Record<string, TooltipContent> = {
+  cache: {
+    title: "KV Cache",
+    description: "The KV cache stores transformed representations of tokens that have been processed. This avoids recomputing these transformations when the same tokens appear again or when generating new tokens."
+  },
+  keys: {
+    title: "Keys (K)",
+    description: "Keys are high-dimensional vectors (not single values like shown here). Each token is transformed through the model's key projection matrices. Keys are used in attention calculations to determine relevance of past tokens."
+  },
+  values: {
+    title: "Values (V)",
+    description: "Values are also high-dimensional vectors containing transformed token information. When attention determines a past token is relevant, its value vector contributes to the next token prediction."
+  },
+  cacheHit: {
+    title: "Cache Hit",
+    description: "When we see a token we've processed before, we can reuse its cached K,V pairs instead of recomputing them. This saves computation and is a key optimization in LLM inference."
+  },
+  generation: {
+    title: "Generation Process",
+    description: "During generation, the model uses all cached K,V pairs as context to predict the next token. Each new token's K,V pairs are also cached for future predictions."
+  }
+};
 
 const KVCacheDemo = () => {
   const [step, setStep] = useState(0);
@@ -142,6 +175,21 @@ const KVCacheDemo = () => {
     return [];
   };
 
+  const renderTooltip = (content: TooltipContent, children: React.ReactNode) => (
+    <HoverCard>
+      <HoverCardTrigger asChild>
+        <div className="inline-flex items-center cursor-help">
+          {children}
+          <Info size={14} className="ml-1 text-gray-400" />
+        </div>
+      </HoverCardTrigger>
+      <HoverCardContent className="w-[450px]">
+        <h4 className="font-semibold mb-1">{content.title}</h4>
+        <p className="text-sm text-muted-foreground">{content.description}</p>
+      </HoverCardContent>
+    </HoverCard>
+  );
+
   return (
     <div className="w-full max-w-4xl mx-auto p-4">
       <Card>
@@ -184,7 +232,9 @@ const KVCacheDemo = () => {
             {/* Generation tokens */}
             {generating && (
               <div className="flex gap-4 items-center">
-                <span className="font-mono">Generated:</span>
+                {renderTooltip(tooltips.generation, 
+                  <span className="font-mono">Generated:</span>
+                )}
                 <div className="flex gap-2">
                   {getCurrentGeneratedTokens().map((token, idx) => (
                     <div 
@@ -215,7 +265,9 @@ const KVCacheDemo = () => {
 
             {/* Cache visualization */}
             <div className="flex gap-4 items-start">
-              <span className="font-mono mt-2">Cache:</span>
+              {renderTooltip(tooltips.cache,
+                <span className="font-mono mt-2">Cache:</span>
+              )}
               <div className="flex-1 border rounded-lg p-4 bg-gray-50">
                 {Object.entries(cache).map(([token, kv], idx) => (
                   <div 
@@ -226,14 +278,18 @@ const KVCacheDemo = () => {
                   >
                     <span className="font-mono w-16">{token}:</span>
                     <div className="flex gap-2">
-                      <div className="flex items-center gap-1 bg-blue-100 p-2 rounded">
-                        <Key size={16} />
-                        <span>{kv.key}</span>
-                      </div>
-                      <div className="flex items-center gap-1 bg-purple-100 p-2 rounded">
-                        <Database size={16} />
-                        <span>{kv.value}</span>
-                      </div>
+                      {renderTooltip(tooltips.keys,
+                        <div className="flex items-center gap-1 bg-blue-100 p-2 rounded">
+                          <Key size={16} />
+                          <span>{kv.key}</span>
+                        </div>
+                      )}
+                      {renderTooltip(tooltips.values,
+                        <div className="flex items-center gap-1 bg-purple-100 p-2 rounded">
+                          <Database size={16} />
+                          <span>{kv.value}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -246,7 +302,9 @@ const KVCacheDemo = () => {
             {/* Process visualization */}
             {generating && (
               <div className="flex gap-4 items-center">
-                <span className="font-mono">Process:</span>
+                {renderTooltip(tooltips.generation,
+                  <span className="font-mono">Process:</span>
+                )}
                 <div className="flex items-center gap-2">
                   <div className="flex gap-2 items-center bg-gray-100 p-2 rounded">
                     {step === 7 ? (
