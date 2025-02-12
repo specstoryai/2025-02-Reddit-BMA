@@ -1,5 +1,5 @@
 # 2025-02-Reddit-BMA
-Tomorrow team SpecsStory wants to have some fun and we're teaming up to build as many working prototypes as possible in 8 hrs for the first-ever "[Build Me Anything](https://www.reddit.com/r/cursor/comments/1io14r6/build_me_anything_challenge_3_devs_8_hours_your/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button)" challenge! 
+Team SpecsStory wants to have some fun and we're teaming up to build as many working prototypes as possible in 8 hrs for the first-ever "[Build Me Anything](https://www.reddit.com/r/cursor/comments/1io14r6/build_me_anything_challenge_3_devs_8_hours_your/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button)" challenge! 
 
 Think "Draw Me Anything" meets speed-composing ✨ meets chaos.
 
