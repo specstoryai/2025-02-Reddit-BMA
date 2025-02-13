@@ -9,6 +9,9 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [newMemes, setNewMemes] = useState('');
   const [addingMemes, setAddingMemes] = useState(false);
+  const [addingImageTo, setAddingImageTo] = useState<string | null>(null);
+  const [newImageUrl, setNewImageUrl] = useState('');
+  const [isAddingImage, setIsAddingImage] = useState(false);
 
   const fetchMemes = async () => {
     try {
@@ -112,6 +115,39 @@ export default function Home() {
     }
   };
 
+  const addImageToMeme = async (memeName: string) => {
+    if (!newImageUrl.trim()) return;
+    
+    setIsAddingImage(true);
+    try {
+      const response = await fetch('/api/add-image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          memeName,
+          imageUrl: newImageUrl,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to add image');
+      }
+
+      // Refresh the data
+      await fetchMemes();
+      setNewImageUrl('');
+      setAddingImageTo(null);
+    } catch (error) {
+      console.error('Error adding image:', error);
+      alert('Failed to add image. Please try again.');
+    } finally {
+      setIsAddingImage(false);
+    }
+  };
+
   if (loading) {
     return (
       <main className="container mx-auto px-4 py-8">
@@ -204,6 +240,43 @@ export default function Home() {
                 );
               })}
             </div>
+            <div className="mt-4">
+              <button
+                onClick={() => setAddingImageTo(addingImageTo === meme.name ? null : meme.name)}
+                className="text-blue-500 hover:text-blue-700"
+              >
+                Add Image
+              </button>
+            </div>
+            {addingImageTo === meme.name && (
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  value={newImageUrl}
+                  onChange={(e) => setNewImageUrl(e.target.value)}
+                  placeholder="Paste image URL here"
+                  className="w-full px-3 py-2 border rounded"
+                />
+                <div className="flex space-x-2">
+                  <button
+                    onClick={() => addImageToMeme(meme.name)}
+                    disabled={isAddingImage || !newImageUrl.trim()}
+                    className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
+                  >
+                    {isAddingImage ? 'Adding...' : 'Add'}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setAddingImageTo(null);
+                      setNewImageUrl('');
+                    }}
+                    className="border border-gray-300 px-4 py-2 rounded hover:bg-gray-100"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
           </section>
         ))}
       </div>

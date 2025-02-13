@@ -59,17 +59,19 @@
     },
     {
       "name": "Mocking SpongeBob",
-      "main_image_url": "mocking_spongebob.png",
+      "main_image_url": "mocking_spongebob_2.jpeg",
       "image_urls": [
-        "mocking_spongebob_1.png"
+        "mocking_spongebob_1.png",
+        "mocking_spongebob_2.jpeg"
       ]
     },
     {
       "name": "Is This a Pigeon?",
-      "main_image_url": "is_this_a_pigeon_2.jpg",
+      "main_image_url": "is_this_a_pigeon_3.jpg",
       "image_urls": [
         "is_this_a_pigeon_1.jpg",
-        "is_this_a_pigeon_2.jpg"
+        "is_this_a_pigeon_2.jpg",
+        "is_this_a_pigeon_3.jpg"
       ]
     },
     {
@@ -114,8 +116,10 @@
     },
     {
       "name": "Condescending Wonka",
-      "main_image_url": "placeholder/condescending_wonka.jpg",
-      "image_urls": []
+      "main_image_url": "condescending_wonka_1.jpg",
+      "image_urls": [
+        "condescending_wonka_1.jpg"
+      ]
     },
     {
       "name": "Futurama Fry (Not Sure If…)",
@@ -212,17 +216,28 @@
     {
       "name": "Doge",
       "main_image_url": "placeholder/default.jpg",
-      "image_urls": []
+      "image_urls": [
+        "doge_1.jpg",
+        "doge_2.jpg",
+        "doge_3.jpg"
+      ]
     },
     {
       "name": "Pepe the Frog",
       "main_image_url": "placeholder/default.jpg",
-      "image_urls": []
+      "image_urls": [
+        "pepe_the_frog_1.jpg",
+        "pepe_the_frog_2.jpg"
+      ]
     },
     {
       "name": "Hard to Swallow Pills",
       "main_image_url": "placeholder/default.jpg",
-      "image_urls": []
+      "image_urls": [
+        "hard_to_swallow_pills_1.jpg",
+        "hard_to_swallow_pills_2.jpg",
+        "hard_to_swallow_pills_3.jpg"
+      ]
     },
     {
       "name": "Chick-fil-A Girl",
@@ -232,32 +247,48 @@
     {
       "name": "Big Chungus",
       "main_image_url": "placeholder/default.jpg",
-      "image_urls": []
+      "image_urls": [
+        "big_chungus_2.jpg",
+        "big_chungus_3.jpg"
+      ]
     },
     {
       "name": "Bongo Cat",
       "main_image_url": "placeholder/default.jpg",
-      "image_urls": []
+      "image_urls": [
+        "bongo_cat_2.gif"
+      ]
     },
     {
       "name": "Steamed Hams",
       "main_image_url": "placeholder/default.jpg",
-      "image_urls": []
+      "image_urls": [
+        "steamed_hams_2.jpeg",
+        "steamed_hams_3.jpg"
+      ]
     },
     {
       "name": "This is Fine",
       "main_image_url": "placeholder/default.jpg",
-      "image_urls": []
+      "image_urls": [
+        "this_is_fine_1.png",
+        "this_is_fine_3.jpg"
+      ]
     },
     {
       "name": "Tuxedo Winnie the Pooh",
       "main_image_url": "placeholder/default.jpg",
-      "image_urls": []
+      "image_urls": [
+        "tuxedo_winnie_the_pooh_1.png"
+      ]
     },
     {
       "name": "Ultra Instinct Shaggy",
       "main_image_url": "placeholder/default.jpg",
-      "image_urls": []
+      "image_urls": [
+        "ultra_instinct_shaggy_1.jpg",
+        "ultra_instinct_shaggy_2.jpg"
+      ]
     },
     {
       "name": "Weebl and Bob",
@@ -277,7 +308,11 @@
     {
       "name": "Arthur",
       "main_image_url": "placeholder/default.jpg",
-      "image_urls": []
+      "image_urls": [
+        "arthur_1.jpg",
+        "arthur_2.jpeg",
+        "arthur_3.jpeg"
+      ]
     },
     {
       "name": "Ate my balls",
@@ -292,7 +327,9 @@
     {
       "name": "Badger Badger Badger",
       "main_image_url": "placeholder/default.jpg",
-      "image_urls": []
+      "image_urls": [
+        "badger_badger_badger_1.jpeg"
+      ]
     },
     {
       "name": "Loituma Girl (Leekspin)",
@@ -302,37 +339,55 @@
     {
       "name": "Loss",
       "main_image_url": "placeholder/default.jpg",
-      "image_urls": []
+      "image_urls": [
+        "loss_1.jpg",
+        "loss_2.jpg",
+        "loss_3.jpg"
+      ]
     },
     {
       "name": "Nyan Cat",
       "main_image_url": "placeholder/default.jpg",
-      "image_urls": []
+      "image_urls": [
+        "nyan_cat_1.jpg"
+      ]
     },
     {
       "name": "Polandball",
       "main_image_url": "placeholder/default.jpg",
-      "image_urls": []
+      "image_urls": [
+        "polandball_1.png"
+      ]
     },
     {
       "name": "Pusheen",
       "main_image_url": "placeholder/default.jpg",
-      "image_urls": []
+      "image_urls": [
+        "pusheen_1.jpg"
+      ]
     },
     {
       "name": "Rage Comics",
       "main_image_url": "placeholder/default.jpg",
-      "image_urls": []
+      "image_urls": [
+        "rage_comics_2.png",
+        "rage_comics_3.png"
+      ]
     },
     {
       "name": "Rickrolling",
       "main_image_url": "placeholder/default.jpg",
-      "image_urls": []
+      "image_urls": [
+        "rickrolling_1.jpg",
+        "rickrolling_3.jpg"
+      ]
     },
     {
       "name": "Savage Babies",
       "main_image_url": "placeholder/default.jpg",
-      "image_urls": []
+      "image_urls": [
+        "savage_babies_1.png"
+      ]
     },
     {
       "name": "Dean Scream",
@@ -342,7 +397,9 @@
     {
       "name": "Delete Your Account",
       "main_image_url": "placeholder/default.jpg",
-      "image_urls": []
+      "image_urls": [
+        "delete_your_account_1.png"
+      ]
     },
     {
       "name": "Don’t Tase Me, Bro!",
@@ -352,7 +409,9 @@
     {
       "name": "Eastwooding",
       "main_image_url": "placeholder/default.jpg",
-      "image_urls": []
+      "image_urls": [
+        "eastwooding_1.jpg"
+      ]
     },
     {
       "name": "Epstein Didn’t Kill Himself",
@@ -382,7 +441,10 @@
     {
       "name": "The Dress",
       "main_image_url": "placeholder/default.jpg",
-      "image_urls": []
+      "image_urls": [
+        "the_dress_2.jpg",
+        "the_dress_3.jpg"
+      ]
     },
     {
       "name": "Ecce Homo (Potato Jesus)",
@@ -397,7 +459,9 @@
     {
       "name": "Floppa",
       "main_image_url": "placeholder/default.jpg",
-      "image_urls": []
+      "image_urls": [
+        "floppa_1.jpg"
+      ]
     },
     {
       "name": "Goatse.cx",
@@ -407,7 +471,11 @@
     {
       "name": "Grogu (Baby Yoda)",
       "main_image_url": "placeholder/default.jpg",
-      "image_urls": []
+      "image_urls": [
+        "grogu_baby_yoda_1.jpg",
+        "grogu_baby_yoda_2.jpg",
+        "grogu_baby_yoda_3.jpg"
+      ]
     },
     {
       "name": "Homophobic Dog",
