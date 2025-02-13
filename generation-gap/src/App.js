@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import logo from './logo.svg';
 import './App.css';
 import character1 from './assets/character-1.png';
 import character2 from './assets/character-2.png';
@@ -7,23 +6,16 @@ import character3 from './assets/character-3.png';
 import character4 from './assets/character-4.png';
 import character5 from './assets/character-5.png';
 import character6 from './assets/character-6.png';
-import { generations, getRandomGenerations } from './utils/generations';
 import { translateText } from './utils/anthropicClient';
 import GenerationTimeline from './components/GenerationTimeline';
+import generationsData from './data/generations.json';
 
 function App() {
   const [text, setText] = useState('');
   const [submittedText, setSubmittedText] = useState('');
-  const [activeGenerations, setActiveGenerations] = useState([]);
   const [translations, setTranslations] = useState({});
   const [loading, setLoading] = useState({});
-  const maxLength = 140;
-  const numCharacters = 6;
-
-  useEffect(() => {
-    // Set random generations on mount
-    setActiveGenerations(getRandomGenerations(numCharacters));
-  }, []);
+  const { maxTranslationLength } = generationsData.timelineConfig;
 
   const handleSubmit = async () => {
     if (text.trim()) {
@@ -32,7 +24,7 @@ function App() {
       setTranslations({});
       
       // Translate for each generation
-      activeGenerations.forEach(async (generation) => {
+      generationsData.generations.forEach(async (generation) => {
         setLoading(prev => ({ ...prev, [generation.name]: true }));
         try {
           const translated = await translateText(text, generation);
@@ -62,10 +54,15 @@ function App() {
 
   const handleTextChange = (e) => {
     const input = e.target.value;
-    if (input.length <= maxLength) {
+    if (input.length <= maxTranslationLength) {
       setText(input);
     }
   };
+
+  // Set CSS variable for grid width
+  useEffect(() => {
+    document.documentElement.style.setProperty('--timeline-grid-width', generationsData.timelineConfig.gridWidth);
+  }, []);
 
   const CharacterWithSpeechBubble = ({ image, alt, text, generation, index }) => (
     <div className="character-wrapper">
@@ -106,13 +103,13 @@ function App() {
           value={text}
           onChange={handleTextChange}
           onKeyPress={handleKeyPress}
-          maxLength={maxLength}
+          maxLength={maxTranslationLength}
           placeholder="What do you want to hear?"
           className="text-input"
         />
         <div className="input-footer">
           <div className="character-count">
-            {text.length}/{maxLength} characters
+            {text.length}/{maxTranslationLength} characters
           </div>
           <button 
             onClick={handleSubmit}

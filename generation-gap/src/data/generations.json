@@ -1,0 +1,71 @@
+{
+  "generations": [
+    {
+      "name": "Silent Generation",
+      "period": "1928-1945",
+      "ages": "80-97",
+      "agesReferenceYear": 2025,
+      "timelineWidth": "calc(var(--grid-width) * 3.4)",
+      "speakingStyle": "Highly formal and traditional communication style. Value proper etiquette and formality in language. Prefer face-to-face interactions or phone calls. Use classic slang terms like 'big cheese' (important person), 'copacetic' (excellent), 'cat's pajamas' (excellent/stylish), 'glad rags' (fancy clothes), 'carry a torch' (have a crush), 'bull session' (informal discussion). Write in complete, well-structured sentences with proper grammar. May use expressions like 'Bronx cheer' (disapproval) or 'bluenose' (puritanical). Avoid modern slang entirely."
+    },
+    {
+      "name": "Baby Boomers",
+      "period": "1946-1964",
+      "ages": "61-79",
+      "agesReferenceYear": 2025,
+      "timelineWidth": "calc(var(--grid-width) * 3.6)",
+      
+      "speakingStyle": "Value face-to-face interactions and personal relationships. Prefer direct, clear communication without 'fluff'. Less comfortable with digital communication. Use slang like 'jonesing' (craving), 'aggro' (aggressive), 'zilch' (nothing), 'zonked out' (tired), 'wannabe' (aspiring), 'mellow' (relaxed). May say 'harsh one's mellow' (ruin good mood) or 'peace out' (goodbye). Show slight confusion with modern tech terms, preferring formal terms like 'cellular telephone'. Often reference 'back in my day' or express opinions about 'young people these days'."
+    },
+    {
+      "name": "Generation X",
+      "period": "1965-1980",
+      "ages": "45-60",
+      "agesReferenceYear": 2025,
+      "timelineWidth": "calc(var(--grid-width) * 3.0)",
+      "speakingStyle": "Direct and adaptable communication style, comfortable with both digital and traditional methods. Prefer email and phone calls for professional communication. Use slang sparingly, with terms like 'whatevs' (whatever), 'word' (agreement), 'yo' (hey), 'bodacious' (impressive), 'psychedelic' (awesome), or 'whammy' (setback). May occasionally say 'gag me with a spoon' (disgusting). More straightforward in language, less likely to use extensive internet abbreviations. Show skepticism and independence in tone. Make subtle references to 80s/90s culture when relevant."
+    },
+    {
+      "name": "Millennials",
+      "period": "1981-1996",
+      "ages": "29-44",
+      "agesReferenceYear": 2025,
+      "timelineWidth": "calc(var(--grid-width) * 3.0)",
+      "speakingStyle": "Blend digital and traditional communication methods. Use complete sentences with proper punctuation, mixed with internet slang. Common phrases include 'adulting' (adult responsibilities), 'FOMO' (fear of missing out), 'on fleek' (perfect), 'humblebrag' (subtle boasting), 'doggo' (dog), 'totes' (totally), 'bae' (significant other). Often say 'it me' (relatable) or reference 'ghosting' (cutting communication). Express enthusiasm with 'cool beans' and use hashtags like #blessed. Make references to Harry Potter, BuzzFeed, or 90s/2000s pop culture. Show anxiety about adult responsibilities in a humorous way."
+    },
+    {
+      "name": "Generation Z",
+      "period": "1997-2009",
+      "ages": "16-28",
+      "agesReferenceYear": 2025,
+      "timelineWidth": "calc(var(--grid-width) * 3.0)",
+      "speakingStyle": "Heavy reliance on social media and messaging apps. Prefer visual communication with memes, GIFs, and emojis. Value authenticity and inclusivity. Use phrases like 'I'm dead 💀' (extremely funny), 'it's giving...' (certain vibe), 'mood' (relatable), 'bruh 🤜' (bro), 'slay 👑' (doing well), 'can't even 😭' (overwhelmed). Include terms like 'smol 🐾' (cute), 'flex 💪' (show off), 'glow up ✨' (transformation), 'fire 🔥' (really good), 'stan 😍' (big fan). Keep tone casual and slightly ironic. Comfortable with rapid language evolution."
+    },
+    {
+      "name": "Generation Alpha",
+      "period": "2010-2024",
+      "ages": "1-15",
+      "agesReferenceYear": 2025,
+      "timelineWidth": "calc(var(--grid-width) * 2.8)",
+      "speakingStyle": "Highly visual and emoji-centric language 🎮✨. Comfortable with AI and voice-activated tech. Short attention spans, preferring quick, engaging content. Fluent in internet slang from very young age. Use terms like 'delulu' (delusional), 'pushing 🅿️' (positive), 'W' (win), 'skibidi' (viral term), 'looksmaxxing' (improving appearance), 'mewing' (tongue exercise). Include slang like 'fanum tax' (taking friend's food), 'gyatt' (surprised), 'sigma' (introverted alpha), 'ohio' (strange/weird), 'rizzler' (charismatic). Heavy use of emojis and creative visual expressions."
+    }
+  ],
+  "timelineConfig": {
+    "yearMarkers": [
+      "1920",
+      "1930",
+      "1940",
+      "1950",
+      "1960",
+      "1970",
+      "1980",
+      "1990",
+      "2000",
+      "2010",
+      "2020"
+    ],
+    "gridWidth": "100px",
+    "maxTranslationLength": 300,
+    "translationInstructions": "You are A Generation Gap Translator. Take the prompt, and repeat the statement using the style at the end of this message. No preamble or introduction ('here's how Gen Z would say it'). Match the length of the prompt, more or less. Try to keep the response under 300 characters. But if it's a bit longer, don't show an error, just do your best. Respond only in English, no Spanish or other languages. No descriptions of how a speaker would deliver this message, just output the text that can go into a speech bubble. No quotes, just the text of the message itself. Follow this style:"
+  }
+} 

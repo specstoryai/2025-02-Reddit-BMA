@@ -1,5 +1,5 @@
 :root {
-  --grid-width: 100px;
+  --grid-width: var(--timeline-grid-width, 100px);
 }
 
 .timeline-container {
@@ -188,14 +188,7 @@ h1 {
 }
 
 /* Timeline - Events - Grid */
-.timeline-event-years-1 { width: calc(var(--grid-width) * 2); }
-.timeline-event-years-2 { width: calc(var(--grid-width) * 2.4); }
-.timeline-event-years-3 { width: calc(var(--grid-width) * 3.4); }  /* Silent Generation */
-.timeline-event-years-4 { width: calc(var(--grid-width) * 3.6); }  /* Baby Boomers */
-.timeline-event-years-5 { width: calc(var(--grid-width) * 3.0); }  /* Generation X */
-.timeline-event-years-6 { width: calc(var(--grid-width) * 3.0); }  /* Millennials */
-.timeline-event-years-7 { width: calc(var(--grid-width) * 3.0); }  /* Generation Z */
-.timeline-event-years-8 { width: calc(var(--grid-width) * 2.8); }  /* Generation Alpha */
+/* Note: Individual generation widths are now controlled by inline styles */
 
 /* Timeline - Events - Colors */
 .timeline-events li:nth-child(1):before {
@@ -223,10 +216,10 @@ h1 {
 .timeline-events li:nth-child(4) .timeline-label h3 { color: var(--color-purple); }
 
 .timeline-events li:nth-child(5):before {
-  background: var(--color-pink);
+  background: var(--color-green);
   width: calc(100% - 20px);
 }
-.timeline-events li:nth-child(5) .timeline-label h3 { color: var(--color-pink); }
+.timeline-events li:nth-child(5) .timeline-label h3 { color: var(--color-green); }
 
 .timeline-events li:nth-child(6):before {
   background: var(--color-orange);
