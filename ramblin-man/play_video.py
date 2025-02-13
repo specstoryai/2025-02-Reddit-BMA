@@ -11,6 +11,9 @@ import threading
 import time
 import re
 from pathlib import Path
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
 
 def parse_timestamp(timestamp):
     """Convert WebVTT timestamp to seconds."""
@@ -104,6 +107,91 @@ def get_current_lines(transcript, current_time, window_size=5):
     
     return "\n".join(lines)
 
+def show_sentiment_window(root, video_path):
+    """Create a window showing the sentiment analysis graph."""
+    sentiment_window = tk.Toplevel(root)
+    sentiment_window.title("Sentiment Analysis")
+    
+    # Set window size and position (bottom right corner)
+    window_width = 500
+    window_height = 300
+    screen_width = root.winfo_screenwidth()
+    screen_height = root.winfo_screenheight()
+    x = screen_width - window_width - 20
+    y = screen_height - window_height - 40
+    
+    sentiment_window.geometry(f"{window_width}x{window_height}+{x}+{y}")
+    sentiment_window.configure(bg='black')
+    sentiment_window.attributes('-topmost', True)
+    
+    try:
+        # Load sentiment data from transcript_analysis.json
+        analysis_file = 'transcript_analysis.json'
+        
+        with open(analysis_file, 'r') as f:
+            analysis_data = json.load(f)
+            
+        # Extract times and sentiment scores
+        times = []
+        polarity = []
+        subjectivity = []
+        
+        for entry in analysis_data:
+            # Convert time string to minutes
+            time_str = entry['start_time']
+            h, m, s = map(float, time_str.replace('0 days ', '').split(':'))
+            minutes = h * 60 + m + s / 60
+            times.append(minutes)
+            
+            polarity.append(entry['sentiment']['polarity'])
+            subjectivity.append(entry['sentiment']['subjectivity'])
+        
+        # Create matplotlib figure
+        fig = Figure(figsize=(5, 3), dpi=100)
+        fig.patch.set_facecolor('black')
+        ax = fig.add_subplot(111)
+        ax.set_facecolor('black')
+        
+        # Plot sentiment data
+        ax.plot(times, polarity, label='Polarity', color='blue', marker='o')
+        ax.plot(times, subjectivity, label='Subjectivity', color='red', marker='s')
+        
+        # Customize the plot
+        ax.set_xlabel('Time (minutes)', color='white')
+        ax.set_ylabel('Score', color='white')
+        ax.set_title('Sentiment Analysis Over Time', color='white')
+        ax.grid(True, alpha=0.3)
+        ax.legend()
+        
+        # Set colors for the graph
+        ax.spines['bottom'].set_color('white')
+        ax.spines['top'].set_color('white')
+        ax.spines['left'].set_color('white')
+        ax.spines['right'].set_color('white')
+        ax.tick_params(colors='white')
+        ax.yaxis.label.set_color('white')
+        ax.xaxis.label.set_color('white')
+        
+        # Create canvas
+        canvas = FigureCanvasTkAgg(fig, master=sentiment_window)
+        canvas.draw()
+        canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+        
+    except Exception as e:
+        # If there's an error loading or plotting the data, show error message
+        error_label = tk.Label(
+            sentiment_window,
+            text=f"Error loading sentiment data:\n{str(e)}",
+            font=("Arial", 12),
+            fg='white',
+            bg='black',
+            padx=20,
+            pady=20
+        )
+        error_label.pack(expand=True)
+    
+    return sentiment_window
+
 def show_transcript_window(video_path, socket_path):
     """Display a window showing the synced transcript."""
     transcript = parse_transcript(video_path)
@@ -140,6 +228,9 @@ def show_transcript_window(video_path, socket_path):
         height=20
     )
     text_widget.pack(fill=tk.BOTH, expand=True)
+    
+    # Create the sentiment analysis window
+    sentiment_window = show_sentiment_window(root, video_path)
     
     # Function to update transcript based on playback position
     def update_transcript():
