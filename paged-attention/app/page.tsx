@@ -83,6 +83,9 @@ interface PageBlock {
   token: string;
   key: string;
   value: string;
+  isHighlighted: boolean;
+  isProcessed: boolean;
+  isCacheHit: boolean;
 }
 
 interface Page {
@@ -177,23 +180,38 @@ const KVCacheDemo = () => {
         const token = tokens[step];
         const lowerToken = token.text.toLowerCase();
         
+        // Check for cache hit in active pages only
+        let isPagedCacheHit = false;
+        let hitPageIndex = -1;
+        let hitBlockIndex = -1;
+
+        pages.forEach((page, pageIndex) => {
+          if (page.isActive) {
+            page.blocks.forEach((block, blockIndex) => {
+              if (block && block.token === lowerToken) {
+                isPagedCacheHit = true;
+                hitPageIndex = pageIndex;
+                hitBlockIndex = blockIndex;
+              }
+            });
+          }
+        });
+
         // Update tokens to show processing
         setTokens(prev => prev.map((t, idx) => ({
           ...t,
           isProcessed: idx <= step,
-          isCacheHit: idx === step && lowerToken === 'the' && Boolean(cache['the']),
+          isCacheHit: idx === step && isPagedCacheHit,
           isHighlighted: idx === step
         })));
 
-        // Update cache
+        // Update traditional cache
         if (lowerToken === 'the' && cache['the']) {
-          // Cache hit - highlight existing entry
           setCache(prev => ({
             ...prev,
             'the': { ...prev['the'], isHighlighted: true }
           }));
         } else {
-          // New token - add to cache
           const nextIndex = Object.keys(cache).length;
           setCache(prev => ({
             ...prev,
@@ -212,24 +230,45 @@ const KVCacheDemo = () => {
 
         setPages(prev => {
           const newPages = [...prev];
-          newPages.forEach(page => page.isActive = false);
+          // Clear all highlights and set active page
+          newPages.forEach((page, idx) => {
+            page.isActive = idx === pageIndex;
+            if (page.blocks) {
+              page.blocks.forEach(block => {
+                if (block) {
+                  block.isHighlighted = false;
+                  block.isCacheHit = false;
+                }
+              });
+            }
+          });
           
           if (!newPages[pageIndex]) {
             newPages[pageIndex] = {
               blocks: Array(PAGE_SIZE).fill(null),
               isActive: true
             };
-          } else {
-            newPages[pageIndex].isActive = true;
           }
-          
-          const nextIndex = Object.keys(cache).length;
-          newPages[pageIndex].blocks[blockIndex] = {
+
+          // Create the new block
+          const newBlock: PageBlock = {
             token: lowerToken,
-            key: lowerToken === 'the' && cache['the'] ? 'k0' : `k${nextIndex}`,
-            value: lowerToken === 'the' && cache['the'] ? 'v0' : `v${nextIndex}`
+            key: isPagedCacheHit ? 'k0' : `k${Object.keys(cache).length}`,
+            value: isPagedCacheHit ? 'v0' : `v${Object.keys(cache).length}`,
+            isHighlighted: true,
+            isProcessed: true,
+            isCacheHit: isPagedCacheHit
           };
-          
+
+          // If we found a hit in the active page, highlight it
+          if (isPagedCacheHit && hitPageIndex === pageIndex && hitBlockIndex !== -1) {
+            if (newPages[hitPageIndex].blocks[hitBlockIndex]) {
+              newPages[hitPageIndex].blocks[hitBlockIndex]!.isHighlighted = true;
+              newPages[hitPageIndex].blocks[hitBlockIndex]!.isCacheHit = true;
+            }
+          }
+
+          newPages[pageIndex].blocks[blockIndex] = newBlock;
           return newPages;
         });
       }
@@ -240,69 +279,111 @@ const KVCacheDemo = () => {
         const currentToken = genTokens[genStep];
         const lowerToken = currentToken.text.toLowerCase();
 
+        // Check for cache hit in active pages only
+        let isPagedCacheHit = false;
+        let hitPageIndex = -1;
+        let hitBlockIndex = -1;
+
+        // First check active pages for the token
+        pages.forEach((page, pageIndex) => {
+          if (page.isActive) {
+            page.blocks.forEach((block, blockIndex) => {
+              if (block && block.token === lowerToken) {
+                isPagedCacheHit = true;
+                hitPageIndex = pageIndex;
+                hitBlockIndex = blockIndex;
+              }
+            });
+          }
+        });
+
         // Update generated tokens
         setGenTokens(prev => prev.map((t, idx) => ({
           ...t,
           isProcessed: idx <= genStep,
-          isCacheHit: idx === genStep && lowerToken in cache,
+          isCacheHit: idx === genStep && isPagedCacheHit,
           isHighlighted: idx === genStep
         })));
 
-        // Update cache highlighting
+        // Update paged cache
+        setPages(prev => {
+          const newPages = [...prev];
+          // Clear all highlights first
+          newPages.forEach(page => {
+            if (page.blocks) {
+              page.blocks.forEach(block => {
+                if (block) {
+                  block.isHighlighted = false;
+                  block.isCacheHit = false;
+                }
+              });
+            }
+          });
+
+          // If we found a hit in the active page, highlight it
+          if (isPagedCacheHit && hitPageIndex !== -1 && hitBlockIndex !== -1) {
+            const hitBlock = newPages[hitPageIndex].blocks[hitBlockIndex];
+            if (hitBlock) {
+              hitBlock.isHighlighted = true;
+              hitBlock.isCacheHit = true;
+            }
+          }
+
+          // If we're adding a new token
+          if (step === generationStartStep || step === secondGenerationStep) {
+            const tokenIndex = tokens.length + genStep;
+            const pageIndex = Math.floor(tokenIndex / PAGE_SIZE);
+            const blockIndex = tokenIndex % PAGE_SIZE;
+
+            // Set active page
+            newPages.forEach((page, idx) => {
+              page.isActive = idx === pageIndex;
+            });
+
+            if (!newPages[pageIndex]) {
+              newPages[pageIndex] = {
+                blocks: Array(PAGE_SIZE).fill(null),
+                isActive: true
+              };
+            }
+
+            // Create the new block
+            const newBlock: PageBlock = {
+              token: lowerToken,
+              key: isPagedCacheHit ? `k${hitBlockIndex}` : `k${Object.keys(cache).length}`,
+              value: isPagedCacheHit ? `v${hitBlockIndex}` : `v${Object.keys(cache).length}`,
+              isHighlighted: true,
+              isProcessed: true,
+              isCacheHit: isPagedCacheHit
+            };
+
+            newPages[pageIndex].blocks[blockIndex] = newBlock;
+          }
+
+          return newPages;
+        });
+
+        // Update traditional cache highlighting and add new tokens
         setCache(prev => {
           const newCache = { ...prev };
           // Clear all highlights first
           Object.keys(newCache).forEach(key => {
             newCache[key].isHighlighted = false;
           });
-          // If token exists in cache, highlight it
-          if (lowerToken in newCache) {
+          // If it's a cache hit in the active page, highlight the matching token
+          if (isPagedCacheHit) {
             newCache[lowerToken].isHighlighted = true;
-          }
-          return newCache;
-        });
-
-        // Add new token to cache if not a hit
-        const nextIndex = Object.keys(cache).length;
-        if (!(lowerToken in cache)) {
-          setCache(prev => ({
-            ...prev,
-            [lowerToken]: {
+          } else {
+            // Add new token to cache if not a hit
+            const nextIndex = Object.keys(newCache).length;
+            newCache[lowerToken] = {
               key: `k${nextIndex}`,
               value: `v${nextIndex}`,
               isHighlighted: false
-            }
-          }));
-        }
-
-        // Update paged cache
-        if (step === generationStartStep || step === secondGenerationStep) {
-          const tokenIndex = tokens.length + genStep;
-          const pageIndex = Math.floor(tokenIndex / PAGE_SIZE);
-          const blockIndex = tokenIndex % PAGE_SIZE;
-
-          setPages(prev => {
-            const newPages = [...prev];
-            newPages.forEach(page => page.isActive = false);
-            
-            if (!newPages[pageIndex]) {
-              newPages[pageIndex] = {
-                blocks: Array(PAGE_SIZE).fill(null),
-                isActive: true
-              };
-            } else {
-              newPages[pageIndex].isActive = true;
-            }
-            
-            newPages[pageIndex].blocks[blockIndex] = {
-              token: currentToken.text,
-              key: lowerToken in cache ? 'k0' : `k${nextIndex}`,
-              value: lowerToken in cache ? 'v0' : `v${nextIndex}`
             };
-            
-            return newPages;
-          });
-        }
+          }
+          return newCache;
+        });
       }
       
       setStep(prev => prev + 1);
@@ -356,11 +437,16 @@ const KVCacheDemo = () => {
               <div key={blockIndex} 
                 className={`border rounded p-2 ${
                   page.isActive ? 'bg-white border-blue-100' : 'bg-gray-50 border-gray-200'
-                }`}
+                } ${page.isActive && block?.isCacheHit ? 'bg-green-50 border-green-200' : ''}`}
               >
                 {block ? (
                   <>
-                    <div className="font-mono text-sm mb-1">{block.token}</div>
+                    <div className="font-mono text-sm mb-1 flex items-center gap-1">
+                      {block.token}
+                      {page.isActive && block.isCacheHit && (
+                        <CheckCircle2 size={14} className="text-green-600" />
+                      )}
+                    </div>
                     <div className="flex gap-1 text-xs">
                       <span className={`px-1 rounded ${
                         page.isActive ? 'bg-blue-100' : 'bg-gray-200'
@@ -434,23 +520,10 @@ const KVCacheDemo = () => {
                     <div 
                       key={idx}
                       className={`p-2 border rounded ${
-                        step === idx + 7 && genTokens[idx + 7].isProcessed ? 'bg-yellow-100 border-yellow-500' : ''
-                      } ${step === idx + 7 && genTokens[idx + 7].isCacheHit ? 'bg-green-100 border-green-500' : ''} 
-                      ${step < idx + 7 ? 'bg-gray-50' : 'bg-blue-100'}`}
+                        step < idx + processingPhaseEndStep + 1 ? 'bg-gray-50' : 'bg-blue-100'
+                      }`}
                     >
                       {token}
-                      {step === idx + 7 && genTokens[idx + 7].isProcessed && genTokens[idx + 7].text === 'and' && (
-                        <div className="flex items-center gap-1 text-yellow-600 text-sm mt-1">
-                          <Plus size={14} />
-                          <span>Computing new K,V</span>
-                        </div>
-                      )}
-                      {step === idx + 7 && genTokens[idx + 7].isCacheHit && genTokens[idx + 7].text === 'the' && (
-                        <div className="flex items-center gap-1 text-green-600 text-sm mt-1">
-                          <CheckCircle2 size={14} />
-                          <span>Cache hit!</span>
-                        </div>
-                      )}
                     </div>
                   ))}
                 </div>
