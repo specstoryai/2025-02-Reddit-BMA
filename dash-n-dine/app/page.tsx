@@ -1,10 +1,11 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Map, { MapHandle } from './components/Map';
 import StravaSegments from './components/StravaSegments';
 import BlueskyFeed from './components/BlueskyFeed';
 import NearbyRestaurants from './components/NearbyRestaurants';
+import LocationSettings, { getDefaultLocation } from './components/LocationSettings';
 
 interface StravaSegment {
   name: string;
@@ -19,20 +20,29 @@ interface StravaSegment {
 
 export default function Home() {
   const [selectedSegment, setSelectedSegment] = useState<StravaSegment | null>(null);
+  const [defaultLocation, setDefaultLocation] = useState(getDefaultLocation());
   const mapRef = useRef<MapHandle>(null);
 
   return (
     <div className="min-h-screen p-8">
       <main className="max-w-6xl mx-auto space-y-8">
-        <h1 className="text-3xl font-bold">Welcome to Dash-N-Dine</h1>
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold">Welcome to Dash-N-Dine</h1>
+          <LocationSettings onLocationChange={setDefaultLocation} />
+        </div>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
-            <Map ref={mapRef} selectedSegment={selectedSegment} />
+            <Map 
+              ref={mapRef} 
+              selectedSegment={selectedSegment}
+              defaultLocation={defaultLocation}
+            />
             <div className="mt-8">
               <StravaSegments 
                 selectedSegment={selectedSegment}
                 onSegmentSelect={setSelectedSegment}
+                defaultLocation={defaultLocation}
               />
             </div>
           </div>

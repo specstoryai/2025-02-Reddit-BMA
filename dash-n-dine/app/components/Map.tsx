@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
 import mapboxgl from 'mapbox-gl';
+import { getDefaultLocation } from './LocationSettings';
 
 interface MapProps {
   selectedSegment?: {
@@ -10,6 +11,7 @@ interface MapProps {
     end_latlng: [number, number];
     path?: [number, number][];
   } | null;
+  defaultLocation?: { lat: number; lng: number };
 }
 
 export interface MapHandle {
@@ -17,7 +19,7 @@ export interface MapHandle {
   showConnectionLine: (from: [number, number], to: [number, number]) => void;
 }
 
-const Map = forwardRef<MapHandle, MapProps>(({ selectedSegment }, ref) => {
+const Map = forwardRef<MapHandle, MapProps>(({ selectedSegment, defaultLocation }, ref) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markerStart = useRef<mapboxgl.Marker | null>(null);
@@ -75,12 +77,14 @@ const Map = forwardRef<MapHandle, MapProps>(({ selectedSegment }, ref) => {
     if (map.current) return;
     if (!mapContainer.current) return;
 
+    const location = defaultLocation || getDefaultLocation();
+    
     mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_API_TOKEN as string;
     
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/streets-v12',
-      center: [-71.0589, 42.3601], // Boston coordinates
+      center: [location.lng, location.lat],
       zoom: 12
     });
 
@@ -144,7 +148,7 @@ const Map = forwardRef<MapHandle, MapProps>(({ selectedSegment }, ref) => {
       segmentLine.current = map.current?.getSource('segment') as mapboxgl.GeoJSONSource;
       connectionLine.current = map.current?.getSource('connection') as mapboxgl.GeoJSONSource;
     });
-  }, []);
+  }, [defaultLocation]);
 
   // Handle selected segment changes
   useEffect(() => {

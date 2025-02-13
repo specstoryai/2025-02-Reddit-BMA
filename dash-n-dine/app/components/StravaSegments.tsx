@@ -16,16 +16,27 @@ interface StravaSegment {
 interface StravaSegmentsProps {
   onSegmentSelect: (segment: StravaSegment | null) => void;
   selectedSegment: StravaSegment | null;
+  defaultLocation: { lat: number; lng: number };
 }
 
-export default function StravaSegments({ onSegmentSelect, selectedSegment }: StravaSegmentsProps) {
+export default function StravaSegments({ onSegmentSelect, selectedSegment, defaultLocation }: StravaSegmentsProps) {
   const [segments, setSegments] = useState<StravaSegment[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchSegments() {
       try {
-        const response = await fetch('/api/strava/segments');
+        // Use the default location for the bounding box
+        const bounds = {
+          min_lat: defaultLocation.lat - 0.1,
+          max_lat: defaultLocation.lat + 0.1,
+          min_lng: defaultLocation.lng - 0.1,
+          max_lng: defaultLocation.lng + 0.1
+        };
+
+        const response = await fetch(
+          `/api/strava/segments?bounds=${bounds.min_lat},${bounds.min_lng},${bounds.max_lat},${bounds.max_lng}`
+        );
         if (!response.ok) {
           throw new Error('Failed to fetch segments');
         }
@@ -37,7 +48,7 @@ export default function StravaSegments({ onSegmentSelect, selectedSegment }: Str
     }
 
     fetchSegments();
-  }, []);
+  }, [defaultLocation]);
 
   if (error) {
     return <div className="text-red-500">Error: {error}</div>;

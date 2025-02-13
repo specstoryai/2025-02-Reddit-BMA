@@ -5584,6 +5584,351 @@ I've updated both components to support drawing a connection line:
    - Added coordinate conversion to handle the lat/lng format differences
    - Added null checks for safety
 
+The result will be:
+1. When you click "Show on Map" for a restaurant:
+   - The map centers on the restaurant
+   - A marker appears at the restaurant location
+   - A dashed gray line appears connecting the segment start to the restaurant
+   - The map zooms to show both points
+
+Would you like me to:
+1. Adjust the line style (color, width, dash pattern)?
+2. Change the animation timing?
+3. Add any additional visual elements?
+
+---
+
+_**User**_
+
+For the Popular Routes Nearby and the Map, right now we're hard coded to Boston as the starting point. Instead, let's make Boston coordinates the default, but allow the user to enter new default coordinates for themselves. keep these in localstorage too so the user doesn't have to reenter them
+
+---
+
+_**Assistant**_
+
+I'll create a simple UI to let users set their default location coordinates, store them in localStorage, and use them across both components. First, let's create a new component for managing the location:
+
+---
+
+_**Assistant**_
+
+```
+'use client';
+
+import { useState, useEffect } from 'react';
+
+const LOCATION_STORAGE_KEY = 'default-location';
+const DEFAULT_BOSTON_COORDS = {
+  lat: 42.3601,
+  lng: -71.0589
+};
+
+interface LocationSettingsProps {
+  onLocationChange: (coords: { lat: number; lng: number }) => void;
+}
+
+export function getDefaultLocation(): { lat: number; lng: number } {
+  if (typeof window === 'undefined') return DEFAULT_BOSTON_COORDS;
+  
+  const stored = localStorage.getItem(LOCATION_STORAGE_KEY);
+  if (!stored) return DEFAULT_BOSTON_COORDS;
+  
+  try {
+    return JSON.parse(stored);
+  } catch (err) {
+    console.error('Error parsing stored location:', err);
+    return DEFAULT_BOSTON_COORDS;
+  }
+}
+
+export default function LocationSettings({ onLocationChange }: LocationSettingsProps) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [lat, setLat] = useState('');
+  const [lng, setLng] = useState('');
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const defaultLocation = getDefaultLocation();
+    setLat(defaultLocation.lat.toString());
+    setLng(defaultLocation.lng.toString());
+  }, []);
+
+  function handleSave() {
+    const newLat = parseFloat(lat);
+    const newLng = parseFloat(lng);
+
+    if (isNaN(newLat) || isNaN(newLng)) {
+      setError('Please enter valid numbers for latitude and longitude');
+      return;
+    }
+
+    if (newLat < -90 || newLat > 90) {
+      setError('Latitude must be between -90 and 90');
+      return;
+    }
+
+    if (newLng < -180 || newLng > 180) {
+      setError('Longitude must be between -180 and 180');
+      return;
+    }
+
+    const newLocation = { lat: newLat, lng: newLng };
+    localStorage.setItem(LOCATION_STORAGE_KEY, JSON.stringify(newLocation));
+    onLocationChange(newLocation);
+    setIsEditing(false);
+    setError(null);
+  }
+
+  if (!isEditing) {
+    return (
+      <div className="flex items-center gap-2 text-sm">
+        <span className="text-gray-500">
+          Default location: {lat}, {lng}
+        </span>
+        <button
+          onClick={() => setIsEditing(true)}
+          className="text-blue-500 hover:text-blue-600 transition-colors"
+        >
+          Change
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2">
+        <div>
+          <label htmlFor="lat" className="block text-xs text-gray-500">Latitude</label>
+          <input
+            id="lat"
+            type="text"
+            value={lat}
+            onChange={(e) => setLat(e.target.value)}
+            className="block w-32 px-2 py-1 text-sm border rounded"
+            placeholder="42.3601"
+          />
+        </div>
+        <div>
+          <label htmlFor="lng" className="block text-xs text-gray-500">Longitude</label>
+          <input
+            id="lng"
+            type="text"
+            value={lng}
+            onChange={(e) => setLng(e.target.value)}
+            className="block w-32 px-2 py-1 text-sm border rounded"
+            placeholder="-71.0589"
+          />
+        </div>
+        <div className="flex items-end gap-2">
+          <button
+            onClick={handleSave}
+            className="px-3 py-1 text-sm text-white bg-blue-500 rounded hover:bg-blue-600 transition-colors"
+          >
+            Save
+          </button>
+          <button
+            onClick={() => {
+              setIsEditing(false);
+              setError(null);
+              const defaultLocation = getDefaultLocation();
+              setLat(defaultLocation.lat.toString());
+              setLng(defaultLocation.lng.toString());
+            }}
+            className="px-3 py-1 text-sm text-gray-600 hover:text-gray-800 transition-colors"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+      {error && (
+        <p className="text-sm text-red-500">{error}</p>
+      )}
+    </div>
+  );
+}
+```
+
+---
+
+_**Assistant**_
+
+
+
+Now let's update the Map component to use the default location:
+
+---
+
+_**Assistant**_
+
+```
+import { useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
+import mapboxgl from 'mapbox-gl';
+import { getDefaultLocation } from './LocationSettings';
+
+interface MapProps {
+  selectedSegment?: {
+    name: string;
+    start_latlng: [number, number];
+    end_latlng: [number, number];
+    path?: [number, number][];
+  } | null;
+  defaultLocation?: { lat: number; lng: number };
+}
+
+// ... rest of the imports and interfaces ...
+
+const Map = forwardRef<MapHandle, MapProps>(({ selectedSegment, defaultLocation }, ref) => {
+  // ... existing refs ...
+
+  useEffect(() => {
+    if (map.current) return;
+    if (!mapContainer.current) return;
+
+    const location = defaultLocation || getDefaultLocation();
+    
+    mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_API_TOKEN as string;
+    
+    map.current = new mapboxgl.Map({
+      container: mapContainer.current,
+      style: 'mapbox://styles/mapbox/streets-v12',
+      center: [location.lng, location.lat],
+      zoom: 12
+    });
+
+    // ... rest of the map initialization code ...
+  }, [defaultLocation]);
+
+  // ... rest of the component code ...
+```
+
+---
+
+_**Assistant**_
+
+
+
+
+
+Now let's update the main page to include the location settings and pass the location to the components:
+
+---
+
+_**Assistant**_
+
+```
+import { useState, useRef, useEffect } from 'react';
+import Map, { MapHandle } from './components/Map';
+import StravaSegments from './components/StravaSegments';
+import BlueskyFeed from './components/BlueskyFeed';
+import NearbyRestaurants from './components/NearbyRestaurants';
+import LocationSettings, { getDefaultLocation } from './components/LocationSettings';
+
+// ... existing interfaces ...
+
+export default function Home() {
+  const [selectedSegment, setSelectedSegment] = useState<StravaSegment | null>(null);
+  const [defaultLocation, setDefaultLocation] = useState(getDefaultLocation());
+  const mapRef = useRef<MapHandle>(null);
+
+  return (
+    <div className="min-h-screen p-8">
+      <main className="max-w-6xl mx-auto space-y-8">
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold">Welcome to Dash-N-Dine</h1>
+          <LocationSettings onLocationChange={setDefaultLocation} />
+        </div>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2">
+            <Map 
+              ref={mapRef} 
+              selectedSegment={selectedSegment}
+              defaultLocation={defaultLocation}
+            />
+            <div className="mt-8">
+              <StravaSegments 
+                selectedSegment={selectedSegment}
+                onSegmentSelect={setSelectedSegment}
+                defaultLocation={defaultLocation}
+              />
+            </div>
+          </div>
+          <div className="space-y-8">
+            <NearbyRestaurants
+              selectedSegment={selectedSegment}
+              mapRef={mapRef}
+            />
+            <BlueskyFeed mapRef={mapRef} />
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
+```
+
+---
+
+_**Assistant**_
+
+
+
+
+
+Finally, let's update the StravaSegments component to use the default location:
+
+---
+
+_**Assistant**_
+
+```
+interface StravaSegmentsProps {
+  onSegmentSelect: (segment: StravaSegment | null) => void;
+  selectedSegment: StravaSegment | null;
+  defaultLocation: { lat: number; lng: number };
+}
+
+export default function StravaSegments({ onSegmentSelect, selectedSegment, defaultLocation }: StravaSegmentsProps) {
+  const [segments, setSegments] = useState<StravaSegment[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchSegments() {
+      try {
+        // Use the default location for the bounding box
+        const bounds = {
+          min_lat: defaultLocation.lat - 0.1,
+          max_lat: defaultLocation.lat + 0.1,
+          min_lng: defaultLocation.lng - 0.1,
+          max_lng: defaultLocation.lng + 0.1
+        };
+
+        const response = await fetch(
+          `/api/strava/segments?bounds=${bounds.min_lat},${bounds.min_lng},${bounds.max_lat},${bounds.max_lng}`
+        );
+        if (!response.ok) {
+          throw new Error('Failed to fetch segments');
+        }
+        const data = await response.json();
+        setSegments(data.segments || []);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load segments');
+      }
+    }
+
+    fetchSegments();
+  }, [defaultLocation]);
+
+  // ... rest of the component code ...
+```
+
+---
+
+_**Assistant**_
+
+
+
 ---
 
 
