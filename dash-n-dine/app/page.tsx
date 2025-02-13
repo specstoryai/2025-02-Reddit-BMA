@@ -4,6 +4,7 @@ import { useState, useRef } from 'react';
 import Map, { MapHandle } from './components/Map';
 import StravaSegments from './components/StravaSegments';
 import BlueskyFeed from './components/BlueskyFeed';
+import NearbyRestaurants from './components/NearbyRestaurants';
 
 interface StravaSegment {
   name: string;
@@ -32,6 +33,12 @@ export default function Home() {
               <StravaSegments 
                 selectedSegment={selectedSegment}
                 onSegmentSelect={setSelectedSegment}
+              />
+            </div>
+            <div className="mt-8">
+              <NearbyRestaurants
+                selectedSegment={selectedSegment}
+                mapRef={mapRef}
               />
             </div>
           </div>

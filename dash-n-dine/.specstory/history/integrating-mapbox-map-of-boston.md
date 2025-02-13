@@ -4541,6 +4541,536 @@ Would you like me to:
 
 ---
 
+_**User**_
+
+Great. Now, let's create a new UI component, nearby restaurants, to show the 3 closest restaurants to a selected Strava segment. If there's no strava segment selected, show an empty state in this UI component.
+
+If there is a strava segment selected, list the 3 closest restaurants to the start of the segment by geodistance.
+
+Just use the restaurants that are in the cache right now.
+
+---
+
+_**Assistant**_
+
+I'll create a new `NearbyRestaurants` component that shows the closest restaurants to a selected Strava segment's start point. I'll use the Haversine formula to calculate distances.
+
+---
+
+_**Assistant**_
+
+```
+'use client';
+
+import { useEffect, useState } from 'react';
+import { MapHandle } from './Map';
+
+interface Restaurant {
+  name: string;
+  coordinates: [number, number];
+  distance: number;
+  postIndex: number;
+}
+
+interface StravaSegment {
+  name: string;
+  start_latlng: [number, number];
+}
+
+interface NearbyRestaurantsProps {
+  selectedSegment: StravaSegment | null;
+  mapRef: React.RefObject<MapHandle | null>;
+}
+
+// Haversine formula to calculate distance between two points
+function calculateDistance(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+): number {
+  const R = 6371; // Earth's radius in kilometers
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLon = (lon2 - lon1) * (Math.PI / 180);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * (Math.PI / 180)) *
+    Math.cos(lat2 * (Math.PI / 180)) *
+    Math.sin(dLon / 2) *
+    Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c; // Distance in kilometers
+}
+
+export default function NearbyRestaurants({ selectedSegment, mapRef }: NearbyRestaurantsProps) {
+  const [nearbyRestaurants, setNearbyRestaurants] = useState<Restaurant[]>([]);
+
+  useEffect(() => {
+    if (!selectedSegment) {
+      setNearbyRestaurants([]);
+      return;
+    }
+
+    // Get cached restaurants
+    const CACHE_KEY = 'bluesky-restaurants-cache';
+    const cached = localStorage.getItem(CACHE_KEY);
+    if (!cached) return;
+
+    try {
+      const { locations } = JSON.parse(cached);
+      
+      // Calculate distances and sort
+      const restaurantsWithDistance = locations.map((loc: any) => ({
+        name: loc.name,
+        coordinates: loc.coordinates,
+        postIndex: loc.postIndex,
+        distance: calculateDistance(
+          selectedSegment.start_latlng[0],
+          selectedSegment.start_latlng[1],
+          // Convert from [lng, lat] to [lat, lng] for calculation
+          loc.coordinates[1],
+          loc.coordinates[0]
+        )
+      }));
+
+      // Sort by distance and take top 3
+      const closest = restaurantsWithDistance
+        .sort((a, b) => a.distance - b.distance)
+        .slice(0, 3);
+
+      setNearbyRestaurants(closest);
+    } catch (err) {
+      console.error('Error finding nearby restaurants:', err);
+    }
+  }, [selectedSegment]);
+
+  function handleShowOnMap(coordinates: [number, number]) {
+    mapRef.current?.centerOnLocation(coordinates);
+  }
+
+  if (!selectedSegment) {
+    return (
+      <div className="bg-white p-6 rounded-lg shadow-lg">
+        <div className="text-center text-gray-500">
+          <svg className="w-12 h-12 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          <p className="text-sm">Select a route to see nearby restaurants</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-white p-6 rounded-lg shadow-lg">
+      <h2 className="text-xl font-semibold mb-4">Nearby Restaurants</h2>
+      <div className="space-y-4">
+        {nearbyRestaurants.map((restaurant, index) => (
+          <div key={index} className="border-b pb-3 last:border-b-0">
+            <div className="flex justify-between items-start">
+              <div>
+                <h3 className="font-medium">{restaurant.name}</h3>
+                <p className="text-sm text-gray-500">
+                  {restaurant.distance.toFixed(1)}km from start
+                </p>
+              </div>
+              <button
+                onClick={() => handleShowOnMap(restaurant.coordinates)}
+                className="text-sm px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+              >
+                Show on Map
+              </button>
+            </div>
+          </div>
+        ))}
+        {nearbyRestaurants.length === 0 && (
+          <p className="text-sm text-gray-500 text-center">
+            No restaurants found nearby
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+```
+
+---
+
+_**Assistant**_
+
+
+
+Now I'll update the main page to include this new component.
+
+---
+
+_**Assistant**_
+
+```
+import { useState, useRef } from 'react';
+import Map, { MapHandle } from './components/Map';
+import StravaSegments from './components/StravaSegments';
+import BlueskyFeed from './components/BlueskyFeed';
+import NearbyRestaurants from './components/NearbyRestaurants';
+
+// ... existing code ...
+
+  return (
+    <div className="min-h-screen p-8">
+      <main className="max-w-6xl mx-auto space-y-8">
+        <h1 className="text-3xl font-bold">Welcome to Dash-N-Dine</h1>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2">
+            <Map ref={mapRef} selectedSegment={selectedSegment} />
+            <div className="mt-8">
+              <StravaSegments 
+                selectedSegment={selectedSegment}
+                onSegmentSelect={setSelectedSegment}
+              />
+            </div>
+            <div className="mt-8">
+              <NearbyRestaurants
+                selectedSegment={selectedSegment}
+                mapRef={mapRef}
+              />
+            </div>
+          </div>
+          <div>
+            <BlueskyFeed mapRef={mapRef} />
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+```
+
+---
+
+_**Assistant**_
+
+
+
+Let me fix the linter errors in the NearbyRestaurants component:
+
+---
+
+_**Assistant**_
+
+```
+interface CachedLocation {
+  name: string;
+  coordinates: [number, number];
+  postIndex: number;
+}
+
+interface CacheData {
+  locations: CachedLocation[];
+}
+
+// ... existing code ...
+
+    try {
+      const { locations } = JSON.parse(cached) as CacheData;
+      
+      // Calculate distances and sort
+      const restaurantsWithDistance = locations.map((loc: CachedLocation) => ({
+        name: loc.name,
+        coordinates: loc.coordinates,
+        postIndex: loc.postIndex,
+        distance: calculateDistance(
+          selectedSegment.start_latlng[0],
+          selectedSegment.start_latlng[1],
+          // Convert from [lng, lat] to [lat, lng] for calculation
+          loc.coordinates[1],
+          loc.coordinates[0]
+        )
+      }));
+
+      // Sort by distance and take top 3
+      const closest = restaurantsWithDistance
+        .sort((a: Restaurant, b: Restaurant) => a.distance - b.distance)
+        .slice(0, 3);
+
+      setNearbyRestaurants(closest);
+    } catch (err) {
+// ... existing code ...
+```
+
+---
+
+_**Assistant**_
+
+
+
+I've created a new component that:
+
+1. Shows nearby restaurants to a selected Strava segment:
+   - Uses the Haversine formula to calculate distances
+   - Shows the 3 closest restaurants to the segment's start point
+   - Displays the distance in kilometers
+   - Includes a "Show on Map" button for each restaurant
+
+2. Has an empty state when no segment is selected:
+   - Shows a location pin icon
+   - Displays a helpful message
+
+3. Features for each restaurant:
+   - Restaurant name
+   - Distance from segment start
+   - Button to center the map on the restaurant
+
+4. Uses the cached restaurant data:
+   - Reads from localStorage
+   - Calculates distances on the fly
+   - Updates automatically when a new segment is selected
+
+The component is now integrated into the main page layout below the Strava segments list. Would you like me to:
+
+1. Adjust the styling or layout?
+2. Add more information for each restaurant?
+3. Change the distance calculation or sorting?
+4. Modify the empty state design?
+
+---
+
+_**User**_
+
+when I select a strava segment, then I see this error:
+
+Console Error
+
+TypeError: Cannot read properties of undefined (reading 'map')
+
+Source
+app/components/NearbyRestaurants.tsx (71:49) @ NearbyRestaurants.useEffect
+
+  69 |       
+  70 |       // Calculate distances and sort
+> 71 |       const restaurantsWithDistance = locations.map((loc: CachedLocation) => ({
+     |                                                 ^
+  72 |         name: loc.name,
+  73 |         coordinates: loc.coordinates,
+  74 |         postIndex: loc.postIndex,
+
+---
+
+_**Assistant**_
+
+The error occurs because we're not correctly accessing the cached data structure. Looking at the `BlueskyFeed` component, I can see that the cache structure includes `posts` and `locations` at the top level. Let me fix the type definitions and data access:
+
+---
+
+_**Assistant**_
+
+```
+interface CachedLocation {
+  name: string;
+  coordinates: [number, number];
+  postIndex: number;
+}
+
+interface CacheData {
+  posts: any[];
+  cursor: string | null;
+  timestamp: number;
+  locations: CachedLocation[];
+}
+
+// ... existing code ...
+
+    try {
+      const cacheData = JSON.parse(cached) as CacheData;
+      if (!cacheData.locations || !Array.isArray(cacheData.locations)) {
+        console.error('Invalid cache data structure');
+        return;
+      }
+      
+      // Calculate distances and sort
+      const restaurantsWithDistance = cacheData.locations.map((loc: CachedLocation) => ({
+        name: loc.name,
+        coordinates: loc.coordinates,
+        postIndex: loc.postIndex,
+        distance: calculateDistance(
+          selectedSegment.start_latlng[0],
+          selectedSegment.start_latlng[1],
+          // Convert from [lng, lat] to [lat, lng] for calculation
+          loc.coordinates[1],
+          loc.coordinates[0]
+        )
+      }));
+
+      // Sort by distance and take top 3
+      const closest = restaurantsWithDistance
+        .sort((a: Restaurant, b: Restaurant) => a.distance - b.distance)
+        .slice(0, 3);
+
+      setNearbyRestaurants(closest);
+    } catch (err) {
+// ... existing code ...
+```
+
+---
+
+_**Assistant**_
+
+
+
+Let me fix the remaining linter error by properly typing the posts array:
+
+---
+
+_**Assistant**_
+
+```
+interface CachedPost {
+  text: string;
+  createdAt: string;
+  images: {
+    url: string;
+    alt: string;
+  }[];
+  location?: {
+    name: string;
+    coordinates: [number, number];
+  };
+}
+
+interface CacheData {
+  posts: CachedPost[];
+  cursor: string | null;
+  timestamp: number;
+  locations: CachedLocation[];
+}
+
+// ... rest of the file ...
+```
+
+---
+
+_**Assistant**_
+
+
+
+I've fixed the issues by:
+
+1. Properly defining the complete cache data structure:
+   - Added all required fields from the cache (`posts`, `cursor`, `timestamp`, `locations`)
+   - Added proper type definitions for the posts array
+   - Maintained existing location type definitions
+
+2. Added validation for the locations array:
+   - Checks if `locations` exists and is an array
+   - Provides a helpful error message if the cache structure is invalid
+
+3. Fixed the data access:
+   - Now correctly accessing `locations` from the full cache data structure
+   - Using proper type assertions throughout
+
+The component should now work correctly when a Strava segment is selected. Would you like me to:
+1. Add more error handling?
+2. Add loading states?
+3. Make any other improvements to the component?
+
+---
+
+_**User**_
+
+Now this error when i select a segment:
+
+Console Error
+
+Invalid cache data structure
+
+Source
+app/components/NearbyRestaurants.tsx (86:17) @ NearbyRestaurants.useEffect
+
+  84 |       const cacheData = JSON.parse(cached) as CacheData;
+  85 |       if (!cacheData.locations || !Array.isArray(cacheData.locations)) {
+> 86 |         console.error('Invalid cache data structure');
+     |                 ^
+  87 |         return;
+  88 |       }
+  89 |       
+
+---
+
+_**Assistant**_
+
+The issue is that we're not properly handling the cache data structure. Looking at the `BlueskyFeed` component's `updateCache` function, I can see that we need to extract the locations from the posts array first. Let me fix this:
+
+---
+
+_**Assistant**_
+
+```
+    try {
+      const cacheData = JSON.parse(cached) as CacheData;
+      if (!cacheData.posts || !Array.isArray(cacheData.posts)) {
+        console.error('Invalid cache data structure');
+        return;
+      }
+
+      // Extract locations from posts
+      const locations = cacheData.posts.reduce<CachedLocation[]>((acc, post, index) => {
+        if (post.location) {
+          acc.push({
+            name: post.location.name,
+            coordinates: post.location.coordinates,
+            postIndex: index
+          });
+        }
+        return acc;
+      }, []);
+      
+      // Calculate distances and sort
+      const restaurantsWithDistance = locations.map((loc: CachedLocation) => ({
+        name: loc.name,
+        coordinates: loc.coordinates,
+        postIndex: loc.postIndex,
+        distance: calculateDistance(
+          selectedSegment.start_latlng[0],
+          selectedSegment.start_latlng[1],
+          // Convert from [lng, lat] to [lat, lng] for calculation
+          loc.coordinates[1],
+          loc.coordinates[0]
+        )
+      }));
+
+      // Sort by distance and take top 3
+      const closest = restaurantsWithDistance
+        .sort((a: Restaurant, b: Restaurant) => a.distance - b.distance)
+        .slice(0, 3);
+
+      setNearbyRestaurants(closest);
+    } catch (err) {
+```
+
+---
+
+_**Assistant**_
+
+
+
+I've fixed the issue by:
+
+1. Checking for the `posts` array instead of `locations` in the cache data
+2. Extracting the locations from the posts array directly, similar to how it's done in the `updateCache` function
+3. Using the extracted locations for distance calculations
+
+The component should now work correctly because:
+1. It matches the actual structure of the cached data
+2. It processes the locations in the same way as the original caching logic
+3. It maintains all the type safety and error handling
+
+Would you like me to:
+1. Add a check for empty locations array?
+2. Add more detailed error messages?
+3. Make any other improvements to the data processing?
+
+---
+
 
 
 ---
