@@ -1,11 +1,5 @@
 import { useState, useEffect } from 'react';
 import './App.css';
-import character1 from './assets/character-1.png';
-import character2 from './assets/character-2.png';
-import character3 from './assets/character-3.png';
-import character4 from './assets/character-4.png';
-import character5 from './assets/character-5.png';
-import character6 from './assets/character-6.png';
 import { translateText } from './utils/anthropicClient';
 import GenerationTimeline from './components/GenerationTimeline';
 import generationsData from './data/generations.json';
@@ -63,38 +57,6 @@ function App() {
   useEffect(() => {
     document.documentElement.style.setProperty('--timeline-grid-width', generationsData.timelineConfig.gridWidth);
   }, []);
-
-  const CharacterWithSpeechBubble = ({ image, alt, text, generation, index }) => (
-    <div className="character-wrapper">
-      {text && (
-        <div className="speech-bubble">
-          <div className="translated-text">
-            {loading[generation.name] ? (
-              <div className="loading">Translating...</div>
-            ) : translations[generation.name] ? (
-              translations[generation.name]
-            ) : (
-              "Waiting for translation..."
-            )}
-          </div>
-        </div>
-      )}
-      <img src={image} alt={alt} className="character" />
-      <div className="generation-label">
-        <div className="generation-name">{generation.name}</div>
-        <div className="generation-period">{generation.period}</div>
-      </div>
-    </div>
-  );
-
-  const characterImages = [
-    character1, // Generation Alpha (leftmost)
-    character2, // Generation Z
-    character3, // Silent Generation
-    character4, // Baby Boomers
-    character5, // Generation X (rightmost)
-    character6  // Not shown in timeline
-  ];
 
   return (
     <div className="App">
