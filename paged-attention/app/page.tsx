@@ -13,10 +13,18 @@ import { ArrowRight, Key, Database, Brain, CheckCircle2, RotateCcw, Plus, Info }
 interface CacheEntry {
   key: string;
   value: string;
+  isHighlighted: boolean;
 }
 
-interface Cache {
-  [key: string]: CacheEntry;
+interface TraditionalCache {
+  [token: string]: CacheEntry;
+}
+
+interface Token {
+  text: string;
+  isHighlighted: boolean;
+  isCacheHit: boolean;
+  isProcessed: boolean;
 }
 
 interface TooltipContent {
@@ -86,13 +94,22 @@ const PAGE_SIZE = 4; // Number of blocks per page
 
 const KVCacheDemo = () => {
   const [step, setStep] = useState(0);
-  const tokens = ['The', 'black', 'cat', 'sat', 'on', 'the', 'mat'];
-  const [cache, setCache] = useState<Cache>({});
+  const inputTokens = ['The', 'black', 'cat', 'sat', 'on', 'the', 'mat'].map(text => ({
+    text,
+    isHighlighted: false,
+    isCacheHit: false,
+    isProcessed: false
+  }));
+  const generatedTokens = ['and', 'the'].map(text => ({
+    text,
+    isHighlighted: false,
+    isCacheHit: false,
+    isProcessed: false
+  }));
+  const [tokens, setTokens] = useState<Token[]>(inputTokens);
+  const [genTokens, setGenTokens] = useState<Token[]>(generatedTokens);
+  const [cache, setCache] = useState<TraditionalCache>({});
   const [generating, setGenerating] = useState(false);
-  const [cacheHit, setCacheHit] = useState(false);
-  const [computingNew, setComputingNew] = useState(false);
-  const [activeTokens, setActiveTokens] = useState<string[]>([]);
-  const [highlightedCacheItems, setHighlightedCacheItems] = useState<string[]>([]);
   const [pages, setPages] = useState<Page[]>([]);
 
   // Calculate key phases of the demo
@@ -117,12 +134,12 @@ const KVCacheDemo = () => {
     },
     ...Array(processingPhaseEndStep - 1).fill(null).map((_, idx) => {
       const token = tokens[idx + 1];
-      const isThe = token.toLowerCase() === 'the' && idx + 1 > 0;
+      const isThe = token.text.toLowerCase() === 'the' && idx + 1 > 0;
       return {
         title: `Process ${getOrdinal(idx + 2)} Token${isThe ? " - Cache Hit!" : ""}`,
         description: isThe 
           ? "We've seen 'the' before! We can reuse its existing K,V pair instead of recomputing"
-          : `Generate K,V pair for '${token}' and store in cache`,
+          : `Generate K,V pair for '${token.text}' and store in cache`,
         action: idx + 2 < processingPhaseEndStep 
           ? `Next: Process ${getOrdinal(idx + 3)} token`
           : "Next: Begin generation"
@@ -149,35 +166,41 @@ const KVCacheDemo = () => {
     if (step === totalSteps - 1) {
       // Reset everything
       setStep(0);
+      setTokens(inputTokens);
+      setGenTokens(generatedTokens);
       setCache({});
       setPages([]);
       setGenerating(false);
-      setCacheHit(false);
-      setComputingNew(false);
-      setActiveTokens([]);
-      setHighlightedCacheItems([]);
     } else {
       // Processing input tokens
       if (step < processingPhaseEndStep) {
         const token = tokens[step];
-        const lowerToken = token.toLowerCase();
+        const lowerToken = token.text.toLowerCase();
         
-        let kvIndex = 0;
-        // Update traditional cache
+        // Update tokens to show processing
+        setTokens(prev => prev.map((t, idx) => ({
+          ...t,
+          isProcessed: idx <= step,
+          isCacheHit: idx === step && lowerToken === 'the' && Boolean(cache['the']),
+          isHighlighted: idx === step
+        })));
+
+        // Update cache
         if (lowerToken === 'the' && cache['the']) {
-          setCacheHit(true);
-          setComputingNew(false);
-          setHighlightedCacheItems(['the']);
+          // Cache hit - highlight existing entry
+          setCache(prev => ({
+            ...prev,
+            'the': { ...prev['the'], isHighlighted: true }
+          }));
         } else {
-          setCacheHit(false);
-          setComputingNew(true);
-          setHighlightedCacheItems([]);
-          kvIndex = Object.keys(cache).length;
+          // New token - add to cache
+          const nextIndex = Object.keys(cache).length;
           setCache(prev => ({
             ...prev,
             [lowerToken]: {
-              key: `k${kvIndex}`,
-              value: `v${kvIndex}`
+              key: `k${nextIndex}`,
+              value: `v${nextIndex}`,
+              isHighlighted: false
             }
           }));
         }
@@ -189,57 +212,6 @@ const KVCacheDemo = () => {
 
         setPages(prev => {
           const newPages = [...prev];
-          
-          // Ensure all pages are initially inactive
-          newPages.forEach(page => page.isActive = false);
-          
-          if (!newPages[pageIndex]) {
-            newPages[pageIndex] = {
-              blocks: Array(PAGE_SIZE).fill(null),
-              isActive: true
-            };
-          } else {
-            newPages[pageIndex].isActive = true;
-          }
-
-          if (lowerToken === 'the' && cache['the']) {
-            newPages[pageIndex].blocks[blockIndex] = {
-              token: lowerToken,
-              key: `k0`,
-              value: `v0`
-            };
-          } else {
-            newPages[pageIndex].blocks[blockIndex] = {
-              token: lowerToken,
-              key: `k${kvIndex}`,
-              value: `v${kvIndex}`
-            };
-          }
-
-          return newPages;
-        });
-      }
-      // Entering generation phase
-      else if (step === generationStartStep) {
-        setGenerating(true);
-        setActiveTokens(tokens);
-        setHighlightedCacheItems(Object.keys(cache));
-        const nextIndex = Object.keys(cache).length;
-        setCache(prev => ({
-          ...prev,
-          'and': {
-            key: `k${nextIndex}`,
-            value: `v${nextIndex}`
-          }
-        }));
-
-        // Add 'and' to the paged cache
-        const tokenIndex = tokens.length;
-        const pageIndex = Math.floor(tokenIndex / PAGE_SIZE);
-        const blockIndex = tokenIndex % PAGE_SIZE;
-
-        setPages(prev => {
-          const newPages = [...prev];
           newPages.forEach(page => page.isActive = false);
           
           if (!newPages[pageIndex]) {
@@ -251,52 +223,86 @@ const KVCacheDemo = () => {
             newPages[pageIndex].isActive = true;
           }
           
+          const nextIndex = Object.keys(cache).length;
           newPages[pageIndex].blocks[blockIndex] = {
-            token: 'and',
-            key: `k${nextIndex}`,
-            value: `v${nextIndex}`
+            token: lowerToken,
+            key: lowerToken === 'the' && cache['the'] ? 'k0' : `k${nextIndex}`,
+            value: lowerToken === 'the' && cache['the'] ? 'v0' : `v${nextIndex}`
           };
           
           return newPages;
         });
       }
-      // Generating 'and' - computing new K,V pairs
-      else if (step === firstGenerationStep) {
-        setCacheHit(false);
-        setComputingNew(true);
-        setHighlightedCacheItems(['and', ...Object.keys(cache).filter(t => t !== 'and')]);
-      }
-      // Generating 'the' - cache hit
-      else if (step === secondGenerationStep) {
-        setCacheHit(true);
-        setComputingNew(false);
-        setHighlightedCacheItems(['the', 'and']);
+      // Generation phase
+      else {
+        setGenerating(true);
+        const genStep = step - processingPhaseEndStep;
+        const currentToken = genTokens[genStep];
+        const lowerToken = currentToken.text.toLowerCase();
 
-        setPages(prev => {
-          const newPages = [...prev];
-          newPages.forEach(page => page.isActive = false);
-          
-          const tokenIndex = tokens.length + 1;
+        // Update generated tokens
+        setGenTokens(prev => prev.map((t, idx) => ({
+          ...t,
+          isProcessed: idx <= genStep,
+          isCacheHit: idx === genStep && lowerToken in cache,
+          isHighlighted: idx === genStep
+        })));
+
+        // Update cache highlighting
+        setCache(prev => {
+          const newCache = { ...prev };
+          // Clear all highlights first
+          Object.keys(newCache).forEach(key => {
+            newCache[key].isHighlighted = false;
+          });
+          // If token exists in cache, highlight it
+          if (lowerToken in newCache) {
+            newCache[lowerToken].isHighlighted = true;
+          }
+          return newCache;
+        });
+
+        // Add new token to cache if not a hit
+        const nextIndex = Object.keys(cache).length;
+        if (!(lowerToken in cache)) {
+          setCache(prev => ({
+            ...prev,
+            [lowerToken]: {
+              key: `k${nextIndex}`,
+              value: `v${nextIndex}`,
+              isHighlighted: false
+            }
+          }));
+        }
+
+        // Update paged cache
+        if (step === generationStartStep || step === secondGenerationStep) {
+          const tokenIndex = tokens.length + genStep;
           const pageIndex = Math.floor(tokenIndex / PAGE_SIZE);
           const blockIndex = tokenIndex % PAGE_SIZE;
 
-          if (!newPages[pageIndex]) {
-            newPages[pageIndex] = {
-              blocks: Array(PAGE_SIZE).fill(null),
-              isActive: true
+          setPages(prev => {
+            const newPages = [...prev];
+            newPages.forEach(page => page.isActive = false);
+            
+            if (!newPages[pageIndex]) {
+              newPages[pageIndex] = {
+                blocks: Array(PAGE_SIZE).fill(null),
+                isActive: true
+              };
+            } else {
+              newPages[pageIndex].isActive = true;
+            }
+            
+            newPages[pageIndex].blocks[blockIndex] = {
+              token: currentToken.text,
+              key: lowerToken in cache ? 'k0' : `k${nextIndex}`,
+              value: lowerToken in cache ? 'v0' : `v${nextIndex}`
             };
-          } else {
-            newPages[pageIndex].isActive = true;
-          }
-          
-          newPages[pageIndex].blocks[blockIndex] = {
-            token: 'the',
-            key: 'k5',
-            value: 'v5'
-          };
-          
-          return newPages;
-        });
+            
+            return newPages;
+          });
+        }
       }
       
       setStep(prev => prev + 1);
@@ -304,8 +310,8 @@ const KVCacheDemo = () => {
   };
 
   const getCurrentGeneratedTokens = () => {
-    if (step === firstGenerationStep) return ['and'];
-    if (step === secondGenerationStep) return ['and', 'the'];
+    if (step === firstGenerationStep) return [genTokens[0].text];
+    if (step === secondGenerationStep) return [genTokens[0].text, genTokens[1].text];
     return [];
   };
 
@@ -401,12 +407,12 @@ const KVCacheDemo = () => {
                   <div 
                     key={idx}
                     className={`p-2 border rounded ${
-                      activeTokens.includes(token) ? 'bg-blue-50' : ''
-                    } ${token.toLowerCase() === 'the' && step === 4 && cacheHit ? 'bg-green-100 border-green-500' : ''} 
+                      token.isHighlighted ? 'bg-blue-50' : ''
+                    } ${token.text.toLowerCase() === 'the' && step === 4 && token.isCacheHit ? 'bg-green-100 border-green-500' : ''} 
                     ${(step > idx && !generating) || (step === 4 && idx < 4) ? 'bg-blue-100' : ''}`}
                   >
-                    {token}
-                    {token.toLowerCase() === 'the' && step === 4 && cacheHit && (
+                    {token.text}
+                    {token.text.toLowerCase() === 'the' && step === 4 && token.isCacheHit && (
                       <div className="flex items-center gap-1 text-green-600 text-sm mt-1">
                         <CheckCircle2 size={14} />
                         <span>Cache hit!</span>
@@ -428,18 +434,18 @@ const KVCacheDemo = () => {
                     <div 
                       key={idx}
                       className={`p-2 border rounded ${
-                        step === idx + 7 && computingNew ? 'bg-yellow-100 border-yellow-500' : ''
-                      } ${step === idx + 7 && cacheHit ? 'bg-green-100 border-green-500' : ''} 
+                        step === idx + 7 && genTokens[idx + 7].isProcessed ? 'bg-yellow-100 border-yellow-500' : ''
+                      } ${step === idx + 7 && genTokens[idx + 7].isCacheHit ? 'bg-green-100 border-green-500' : ''} 
                       ${step < idx + 7 ? 'bg-gray-50' : 'bg-blue-100'}`}
                     >
                       {token}
-                      {step === idx + 7 && computingNew && token === 'and' && (
+                      {step === idx + 7 && genTokens[idx + 7].isProcessed && genTokens[idx + 7].text === 'and' && (
                         <div className="flex items-center gap-1 text-yellow-600 text-sm mt-1">
                           <Plus size={14} />
                           <span>Computing new K,V</span>
                         </div>
                       )}
-                      {step === idx + 7 && cacheHit && token === 'the' && (
+                      {step === idx + 7 && genTokens[idx + 7].isCacheHit && genTokens[idx + 7].text === 'the' && (
                         <div className="flex items-center gap-1 text-green-600 text-sm mt-1">
                           <CheckCircle2 size={14} />
                           <span>Cache hit!</span>
@@ -463,7 +469,7 @@ const KVCacheDemo = () => {
                     <div 
                       key={idx} 
                       className={`flex gap-4 items-center mb-2 p-2 rounded ${
-                        highlightedCacheItems.includes(token) ? 'bg-blue-50' : ''
+                        kv.isHighlighted ? 'bg-blue-50' : ''
                       }`}
                     >
                       <span className="font-mono w-16">{token}:</span>
@@ -525,7 +531,7 @@ const KVCacheDemo = () => {
                         <div className="flex items-center gap-4">
                           <div className="flex items-center gap-2">
                             <Brain size={16} />
-                            <span>Using cached context to predict next token</span>
+                            <span>Using cached context to predict &quot;and&quot;</span>
                           </div>
                           <ArrowRight size={16} />
                           <div className="flex items-center gap-2">
