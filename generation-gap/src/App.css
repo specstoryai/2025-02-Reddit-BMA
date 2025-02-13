@@ -1,5 +1,9 @@
 .App {
   text-align: center;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
 }
 
 .App-logo {
@@ -67,4 +71,27 @@
   text-align: right;
   color: #666;
   font-size: 14px;
+}
+
+.characters-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: flex-end;
+  padding: 20px;
+  background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.9));
+}
+
+.character {
+  height: 120px;
+  width: auto;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+.character:hover {
+  transform: translateY(-10px);
 }

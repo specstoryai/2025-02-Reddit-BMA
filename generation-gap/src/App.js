@@ -1,6 +1,12 @@
 import { useState } from 'react';
 import logo from './logo.svg';
 import './App.css';
+import character1 from './assets/character-1.png';
+import character2 from './assets/character-2.png';
+import character3 from './assets/character-3.png';
+import character4 from './assets/character-4.png';
+import character5 from './assets/character-5.png';
+import character6 from './assets/character-6.png';
 
 function App() {
   const [text, setText] = useState('');
@@ -27,20 +33,14 @@ function App() {
           {text.length}/{maxLength} characters
         </div>
       </div>
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <div className="characters-container">
+        <img src={character1} alt="Character 1" className="character" />
+        <img src={character2} alt="Character 2" className="character" />
+        <img src={character3} alt="Character 3" className="character" />
+        <img src={character4} alt="Character 4" className="character" />
+        <img src={character5} alt="Character 5" className="character" />
+        <img src={character6} alt="Character 6" className="character" />
+      </div>
     </div>
   );
 }
