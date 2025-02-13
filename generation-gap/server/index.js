@@ -39,11 +39,8 @@ app.post('/api/translate', async (req, res) => {
     }
 
     const prompt = `${COMMON_INSTRUCTIONS}
-
 Please keep your response about the same length as the original text (${text.length} characters) and ideally under 300 characters.
-
 Style guide: ${style}
-
 Original text: "${text}"`;
 
     const message = await anthropic.messages.create({
