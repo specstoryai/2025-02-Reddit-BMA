@@ -1,0 +1,230 @@
+{
+  "memes": [
+    {
+      "name": "Distracted Boyfriend",
+      "main_image_url": "distracted_boyfriend_3.jpg",
+      "image_urls": [
+        "distracted_boyfriend_1.jpg",
+        "distracted_boyfriend_2.jpg",
+        "distracted_boyfriend_3.jpg"
+      ]
+    },
+    {
+      "name": "Expanding Brain",
+      "main_image_url": "expanding_brain_2.png",
+      "image_urls": [
+        "expanding_brain_2.png",
+        "expanding_brain_3.jpg"
+      ]
+    },
+    {
+      "name": "Young Thug at Computer",
+      "main_image_url": "placeholder/young_thug_at_computer.jpg",
+      "image_urls": []
+    },
+    {
+      "name": "First World Problems",
+      "main_image_url": "first_world_problems_1.jpg",
+      "image_urls": [
+        "first_world_problems_1.jpg",
+        "first_world_problems_3.gif"
+      ]
+    },
+    {
+      "name": "Change My Mind",
+      "main_image_url": "change_my_mind_1.jpg",
+      "image_urls": [
+        "change_my_mind_1.jpg",
+        "change_my_mind_2.jpg",
+        "change_my_mind_3.png"
+      ]
+    },
+    {
+      "name": "Drake Hotline Bling",
+      "main_image_url": "drake_hotline_bling.jpeg",
+      "image_urls": [
+        "drake_hotline_bling_1.jpeg",
+        "drake_hotline_bling_2.jpg",
+        "drake_hotline_bling_3.jpg"
+      ]
+    },
+    {
+      "name": "Woman Yelling at a Cat",
+      "main_image_url": "woman_yelling_at_a_cat.png",
+      "image_urls": [
+        "woman_yelling_at_a_cat_1.png",
+        "woman_yelling_at_a_cat_2.jpg",
+        "woman_yelling_at_a_cat_3.png"
+      ]
+    },
+    {
+      "name": "Mocking SpongeBob",
+      "main_image_url": "mocking_spongebob.png",
+      "image_urls": [
+        "mocking_spongebob_1.png"
+      ]
+    },
+    {
+      "name": "Is This a Pigeon?",
+      "main_image_url": "is_this_a_pigeon_2.jpg",
+      "image_urls": [
+        "is_this_a_pigeon_1.jpg",
+        "is_this_a_pigeon_2.jpg"
+      ]
+    },
+    {
+      "name": "Hide the Pain Harold",
+      "main_image_url": "hide_the_pain_harold.jpg",
+      "image_urls": [
+        "hide_the_pain_harold_1.jpg",
+        "hide_the_pain_harold_2.png"
+      ]
+    },
+    {
+      "name": "Success Kid",
+      "main_image_url": "success_kid_1.jpg",
+      "image_urls": [
+        "success_kid_1.jpg"
+      ]
+    },
+    {
+      "name": "Doge",
+      "main_image_url": "doge_2.jpg",
+      "image_urls": [
+        "doge_1.jpg",
+        "doge_2.jpg",
+        "doge_3.jpg"
+      ]
+    },
+    {
+      "name": "Pepe the Frog",
+      "main_image_url": "pepe_the_frog.jpg",
+      "image_urls": [
+        "pepe_the_frog_1.jpg",
+        "pepe_the_frog_2.jpg"
+      ]
+    },
+    {
+      "name": "Grumpy Cat",
+      "main_image_url": "grumpy_cat_3.jpg",
+      "image_urls": [
+        "grumpy_cat_1.png",
+        "grumpy_cat_2.jpeg",
+        "grumpy_cat_3.jpg"
+      ]
+    },
+    {
+      "name": "Bad Luck Brian",
+      "main_image_url": "bad_luck_brian_1.jpg",
+      "image_urls": [
+        "bad_luck_brian_1.jpg",
+        "bad_luck_brian_3.png"
+      ]
+    },
+    {
+      "name": "Overly Attached Girlfriend",
+      "main_image_url": "placeholder/overly_attached_girlfriend.jpg",
+      "image_urls": [
+        "overly_attached_girlfriend_2.png",
+        "overly_attached_girlfriend_3.jpg"
+      ]
+    },
+    {
+      "name": "Condescending Wonka",
+      "main_image_url": "placeholder/condescending_wonka.jpg",
+      "image_urls": []
+    },
+    {
+      "name": "Futurama Fry (Not Sure If…)",
+      "main_image_url": "placeholder/futurama_fry_(not_sure_if…).jpg",
+      "image_urls": []
+    },
+    {
+      "name": "One Does Not Simply",
+      "main_image_url": "one_does_not_simply_2.jpg",
+      "image_urls": [
+        "one_does_not_simply_1.jpg",
+        "one_does_not_simply_2.jpg"
+      ]
+    },
+    {
+      "name": "Arthur’s Fist",
+      "main_image_url": "placeholder/arthur’s_fist.jpg",
+      "image_urls": []
+    },
+    {
+      "name": "Left Exit 12 Off Ramp",
+      "main_image_url": "placeholder/left_exit_12_off_ramp.jpg",
+      "image_urls": [
+        "left_exit_12_off_ramp_2.jpg",
+        "left_exit_12_off_ramp_3.jpg"
+      ]
+    },
+    {
+      "name": "Roll Safe (Tapping Head)",
+      "main_image_url": "placeholder/roll_safe_(tapping_head).jpg",
+      "image_urls": []
+    },
+    {
+      "name": "Epic Handshake",
+      "main_image_url": "epic_handshake_2.jpg",
+      "image_urls": [
+        "epic_handshake_1.jpg",
+        "epic_handshake_2.jpg"
+      ]
+    },
+    {
+      "name": "Surprised Pikachu",
+      "main_image_url": "surprised_pikachu.png",
+      "image_urls": [
+        "surprised_pikachu_1.png",
+        "surprised_pikachu_2.jpg",
+        "surprised_pikachu_3.jpg"
+      ]
+    },
+    {
+      "name": "Galaxy Brain",
+      "main_image_url": "galaxy_brain_2.png",
+      "image_urls": [
+        "galaxy_brain_1.jpg",
+        "galaxy_brain_2.png",
+        "galaxy_brain_3.png"
+      ]
+    },
+    {
+      "name": "Bernie Sanders’ Mittens",
+      "main_image_url": "bernie_sanders_mittens.png",
+      "image_urls": [
+        "bernie_sanders_mittens_1.png",
+        "bernie_sanders_mittens_2.jpg",
+        "bernie_sanders_mittens_3.jpg"
+      ]
+    },
+    {
+      "name": "Two Buttons",
+      "main_image_url": "two_buttons_2.jpeg",
+      "image_urls": [
+        "two_buttons_1.jpg",
+        "two_buttons_2.jpeg",
+        "two_buttons_3.jpg"
+      ]
+    },
+    {
+      "name": "Running Away Balloon",
+      "main_image_url": "running_away_balloon_1.jpg",
+      "image_urls": [
+        "running_away_balloon_1.jpg",
+        "running_away_balloon_3.jpeg"
+      ]
+    },
+    {
+      "name": "UNO Draw 25 Cards",
+      "main_image_url": "uno_draw_25_cards.jpg",
+      "image_urls": [
+        "uno_draw_25_cards_1.jpg",
+        "uno_draw_25_cards_2.png",
+        "uno_draw_25_cards_3.jpg"
+      ]
+    }
+  ]
+}
