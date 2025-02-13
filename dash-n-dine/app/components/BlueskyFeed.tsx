@@ -81,6 +81,11 @@ function updateCache(posts: BlueskyPost[], cursor: string | null) {
   }
 }
 
+function extractGoogleMapsUrl(text: string): string | null {
+  const mapsUrlMatch = text.match(/https:\/\/www\.google\.com\/maps\/search\/\?[^\s]+/);
+  return mapsUrlMatch ? mapsUrlMatch[0] : null;
+}
+
 export default function BlueskyFeed({ mapRef }: BlueskyFeedProps) {
   const [posts, setPosts] = useState<BlueskyPost[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -236,14 +241,31 @@ export default function BlueskyFeed({ mapRef }: BlueskyFeedProps) {
               <div className="text-xs text-gray-500">
                 {formatDate(post.createdAt)}
               </div>
-              {post.location && (
-                <button
-                  onClick={() => handleShowOnMap(post.location!.coordinates)}
-                  className="text-sm px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-                >
-                  Show on Map
-                </button>
-              )}
+              <div className="flex items-center gap-2">
+                {post.location && (
+                  <>
+                    {extractGoogleMapsUrl(post.text) && (
+                      <a
+                        href={extractGoogleMapsUrl(post.text)!}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-gray-500 hover:text-gray-700 transition-colors"
+                        title="Open in Google Maps"
+                      >
+                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M12 2C7.589 2 4 5.589 4 10c0 5.618 7.105 11.671 7.404 11.934a.962.962 0 001.192 0C12.895 21.671 20 15.618 20 10c0-4.411-3.589-8-8-8zm0 11c-1.657 0-3-1.343-3-3s1.343-3 3-3 3 1.343 3 3-1.343 3-3 3z" />
+                        </svg>
+                      </a>
+                    )}
+                    <button
+                      onClick={() => handleShowOnMap(post.location!.coordinates)}
+                      className="text-sm px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+                    >
+                      Show on Map
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         ))}

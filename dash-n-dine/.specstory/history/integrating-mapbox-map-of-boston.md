@@ -4439,7 +4439,105 @@ I've updated the BlueskyFeed component to make it independently scrollable. Here
 2. Divided the component into three sections:
    - Header section with `flex-none` to prevent it from shrinking
    - Reviews section with `flex-1` and `overflow-y-auto` to make it scrollable
-   - "Load More" button section
+   - "Load More" button section with `flex-none` to keep it fixed at the bottom
+
+3. Added some additional styling improvements:
+   - Added `pr-2` to the scrollable area to prevent the scrollbar from touching the content
+   - Adjusted margins for better spacing
+   - Kept the existing shadow and rounded corners
+
+The reviews section will now scroll independently while keeping the header and "Load More" button fixed in place. The height calculation (`calc(100vh-4rem)`) ensures the component fits nicely in the layout while maintaining some spacing from the top and bottom of the viewport.
+
+Would you like me to make any adjustments to:
+1. The height calculation
+2. The spacing between sections
+3. The scrollbar styling
+4. Any other aspects of the layout?
+
+---
+
+_**User**_
+
+In the restaurant list ui, render the google maps urls as links. Just show a simple icon as the anchor and make the icon clear that it'll pop open the google maps link in a new tab
+
+---
+
+_**Assistant**_
+
+I'll add a Google Maps icon link that opens the original URL in a new tab. I'll place it next to the "Show on Map" button.
+
+---
+
+_**Assistant**_
+
+```
+function extractGoogleMapsUrl(text: string): string | null {
+  const mapsUrlMatch = text.match(/https:\/\/www\.google\.com\/maps\/search\/\?[^\s]+/);
+  return mapsUrlMatch ? mapsUrlMatch[0] : null;
+}
+
+// ... existing code ...
+
+            <div className="flex items-center justify-between mt-2">
+              <div className="text-xs text-gray-500">
+                {formatDate(post.createdAt)}
+              </div>
+              <div className="flex items-center gap-2">
+                {post.location && (
+                  <>
+                    {extractGoogleMapsUrl(post.text) && (
+                      <a
+                        href={extractGoogleMapsUrl(post.text)!}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-gray-500 hover:text-gray-700 transition-colors"
+                        title="Open in Google Maps"
+                      >
+                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M12 2C7.589 2 4 5.589 4 10c0 5.618 7.105 11.671 7.404 11.934a.962.962 0 001.192 0C12.895 21.671 20 15.618 20 10c0-4.411-3.589-8-8-8zm0 11c-1.657 0-3-1.343-3-3s1.343-3 3-3 3 1.343 3 3-1.343 3-3 3z" />
+                        </svg>
+                      </a>
+                    )}
+                    <button
+                      onClick={() => handleShowOnMap(post.location!.coordinates)}
+                      className="text-sm px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+                    >
+                      Show on Map
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+// ... existing code ...
+```
+
+---
+
+_**Assistant**_
+
+
+
+I've added a Google Maps icon link with the following features:
+
+1. Added a helper function `extractGoogleMapsUrl` to get the Google Maps URL from the post text
+2. Added a small Google Maps pin icon that:
+   - Opens the original Google Maps URL in a new tab
+   - Has a hover tooltip saying "Open in Google Maps"
+   - Uses a gray color that darkens on hover
+   - Is positioned next to the "Show on Map" button
+3. Added proper security attributes (`rel="noopener noreferrer"`) for the external link
+4. Wrapped both buttons in a flex container with proper spacing
+
+The UI now shows:
+- A gray Google Maps pin icon that opens Google Maps in a new tab
+- The existing blue "Show on Map" button that centers the Mapbox map
+- Both controls are properly aligned and spaced
+
+Would you like me to:
+1. Adjust the icon size or color?
+2. Change the icon design?
+3. Modify the spacing between the controls?
+4. Add any additional hover effects or animations?
 
 ---
 
