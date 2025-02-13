@@ -36,3 +36,35 @@
     transform: rotate(360deg);
   }
 }
+
+.input-container {
+  width: 100%;
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 0 20px;
+  box-sizing: border-box;
+}
+
+.text-input {
+  width: 100%;
+  height: 100px;
+  padding: 12px;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+  font-size: 16px;
+  resize: none;
+  margin-bottom: 8px;
+  box-sizing: border-box;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+.text-input:focus {
+  outline: none;
+  border-color: #646cff;
+}
+
+.character-count {
+  text-align: right;
+  color: #666;
+  font-size: 14px;
+}
