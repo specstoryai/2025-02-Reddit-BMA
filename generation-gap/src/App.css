@@ -80,67 +80,6 @@
   margin-bottom: 40px; /* Reduced space between character and timeline */
 }
 
-.speech-bubble {
-  position: relative;
-  background: white;
-  border: 2px solid var(--color-primary);
-  border-radius: 10px;
-  padding: 15px;
-  margin-bottom: 60px;
-  width: 180px;
-  min-height: 60px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  transform: translateX(-40px);
-}
-
-.speech-bubble:after {
-  content: '';
-  position: absolute;
-  bottom: -10px;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border: 10px solid transparent;
-  border-top-color: white;
-  border-bottom: 0;
-  margin-left: -10px;
-  z-index: 2;
-}
-
-.speech-bubble:before {
-  content: '';
-  position: absolute;
-  bottom: -12px;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border: 11px solid transparent;
-  border-top-color: var(--color-primary);
-  border-bottom: 0;
-  margin-left: -11px;
-  z-index: 1;
-}
-
-.generation-label {
-  position: absolute;
-  bottom: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  text-align: center;
-  width: 100%;
-}
-
-.generation-name {
-  font-weight: bold;
-  font-size: 0.75rem; /* 12px */
-  margin-bottom: 2px;
-  color: var(--color-accent);
-}
-
-.generation-period {
-  font-size: 0.625rem; /* 10px */
-  color: var(--color-text);
-}
 
 .translated-text {
   font-size: 0.875rem; /* 14px */
