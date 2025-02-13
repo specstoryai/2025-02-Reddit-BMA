@@ -1,36 +1,109 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Digital Time Machine
 
-## Getting Started
+Turn your Chrome browsing history into a curated feed of fascinating content. This application analyzes your browsing patterns and uses AI to discover similar high-quality content that matches your interests.
 
-First, run the development server:
+## Features
 
+- 📚 Browse and search your Chrome history
+- 🔍 Filter by date ranges and domains
+- 📊 View browsing statistics and patterns
+- 🤖 AI-powered content discovery using Exa
+- 🎯 Smart recommendations based on your selected pages
+- ♾️ Infinite scroll for browsing history
+- 📱 Responsive design
+
+## Prerequisites
+
+- Node.js 18+ and npm
+- Google Chrome browser
+- An Exa API key (get one at [dashboard.exa.ai](https://dashboard.exa.ai))
+- Access to your Chrome history file (typically located in `~/Library/Application Support/Google/Chrome/Default/History` on macOS)
+
+## Setup
+
+1. Clone the repository and install dependencies:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <repository-url>
+cd history-feed
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Create a `.env.local` file in the project root with the following configuration:
+```env
+# Required: Path to your Chrome history database
+CHROME_HISTORY_PATH="/Users/<username>/Library/Application Support/Google/Chrome/Default/History"
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+# Required: Your Exa API key
+EXA_API_KEY="your-api-key-here"
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+# Optional: Feed configuration
+FEED_REFRESH_INTERVAL=3600
+MAX_CACHED_ITEMS=1000
+```
 
-## Learn More
+3. Start the development server:
+```bash
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+4. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Important Notes
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- The application needs read access to your Chrome history file. 
+- Your Exa API key should be kept secret. Never commit it to version control.
+- The app uses local storage to persist your filter preferences and selected URLs.
 
-## Deploy on Vercel
+## Usage
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+1. **Browse History**: Your browsing history is displayed in the middle column. Scroll to load more entries.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+2. **Filter & Search**:
+   - Use the search bar to find specific pages
+   - Filter by time period (today, week, month, all time)
+   - Click on domains to filter by website
+   - Sort by date or visit count
+
+3. **Create Curations**:
+   - Select interesting pages from your history
+   - Click "Create Curation" to generate recommendations
+   - View similar content in the right sidebar
+
+## Development
+
+The project uses:
+- Next.js 14 with App Router
+- TypeScript
+- Tailwind CSS
+- Zustand for state management
+- SQLite for reading Chrome history
+- Exa API for content discovery
+
+### Project Structure
+```
+history-feed/
+├── app/              # Next.js app router pages
+├── components/       # React components
+├── lib/             # Utilities and store
+│   ├── db.ts        # Chrome history database interface
+│   ├── store.ts     # Global state management
+│   ├── types.ts     # TypeScript types
+│   └── utils.ts     # Helper functions
+└── public/          # Static assets
+```
+
+### Key Components
+- `HistoryFeed`: Main component displaying the three-column layout
+- `ExaFeed`: Displays AI-curated content recommendations
+- `SelectionControls`: Manages URL selection and curation creation
+- `FilterControls`: Handles history filtering and sorting
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Acknowledgments
+
+- Built with [Next.js](https://nextjs.org/)
+- Content discovery powered by [Exa](https://exa.ai)
+- Inspired by Reddit user request for a smarter browsing history tool
