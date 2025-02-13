@@ -38,19 +38,18 @@ app.post('/api/translate', async (req, res) => {
       return res.status(400).json({ error: 'Invalid generation specified' });
     }
 
-    // Add character limit context to the prompt
     const prompt = `${COMMON_INSTRUCTIONS}
 
-Try to keep your response under ${maxTranslationLength} characters. The original text is ${text.length} characters long - aim to match this length when possible.
+Please keep your response about the same length as the original text (${text.length} characters) and ideally under 300 characters.
 
 Style guide: ${style}
 
-"${text}"`;
+Original text: "${text}"`;
 
     const message = await anthropic.messages.create({
       model: 'claude-3-sonnet-20240229',
       max_tokens: 1024,
-      temperature: 0.7,
+      temperature: 0.5,
       messages: [{
         role: 'user',
         content: prompt
