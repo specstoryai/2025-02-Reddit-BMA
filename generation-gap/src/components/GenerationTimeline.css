@@ -74,9 +74,9 @@ h1 {
   padding: 30px;
   width: 280px;
   min-height: 60px;
-  box-shadow: none;
-  bottom: 240px; /* Position above the character */
+  bottom: 220px; /* Position above the character */
   left: 50%;
+  font-size: 2rem;
   transform: translateX(-50%);
   z-index: 2;
   box-sizing: border-box;
