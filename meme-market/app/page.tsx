@@ -7,6 +7,8 @@ import { useState, useEffect } from 'react';
 export default function Home() {
   const [memes, setMemes] = useState<Meme[]>([]);
   const [loading, setLoading] = useState(true);
+  const [newMemes, setNewMemes] = useState('');
+  const [addingMemes, setAddingMemes] = useState(false);
 
   const fetchMemes = async () => {
     try {
@@ -43,7 +45,6 @@ export default function Home() {
         throw new Error('Failed to update main image');
       }
 
-      // Fetch fresh data after update
       await fetchMemes();
     } catch (error) {
       console.error('Error updating main image:', error);
@@ -69,11 +70,45 @@ export default function Home() {
         throw new Error('Failed to delete meme');
       }
 
-      // Fetch fresh data after deletion
       await fetchMemes();
     } catch (error) {
       console.error('Error deleting meme:', error);
       alert('Failed to delete meme. Please try again.');
+    }
+  };
+
+  const addMemes = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newMemes.trim()) return;
+
+    setAddingMemes(true);
+    try {
+      const memeNames = newMemes
+        .split('\n')
+        .map(name => name.trim())
+        .filter(name => name.length > 0);
+
+      const response = await fetch('/api/add-memes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ memeNames }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to add memes');
+      }
+
+      const result = await response.json();
+      alert(`Added ${result.added} new memes. Skipped ${result.skipped} duplicates.`);
+      setNewMemes('');
+      await fetchMemes();
+    } catch (error) {
+      console.error('Error adding memes:', error);
+      alert('Failed to add memes. Please try again.');
+    } finally {
+      setAddingMemes(false);
     }
   };
 
@@ -88,6 +123,30 @@ export default function Home() {
   return (
     <main className="container mx-auto px-4 py-8">
       <h1 className="text-4xl font-bold mb-8 text-center">Meme Gallery</h1>
+      
+      <form onSubmit={addMemes} className="mb-12 max-w-2xl mx-auto">
+        <div className="mb-4">
+          <label htmlFor="newMemes" className="block text-lg font-medium mb-2">
+            Add New Memes (one per line)
+          </label>
+          <textarea
+            id="newMemes"
+            value={newMemes}
+            onChange={(e) => setNewMemes(e.target.value)}
+            className="w-full h-32 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Disaster Girl&#10;Crying Cat&#10;Confused Math Lady"
+            disabled={addingMemes}
+          />
+        </div>
+        <button
+          type="submit"
+          disabled={addingMemes || !newMemes.trim()}
+          className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {addingMemes ? 'Adding Memes...' : 'Add Memes'}
+        </button>
+      </form>
+
       <div className="space-y-12">
         {memes.map((meme) => (
           <section key={meme.name} className="border rounded-lg p-6 shadow-lg">

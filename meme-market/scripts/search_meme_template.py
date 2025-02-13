@@ -212,7 +212,7 @@ def process_memes_json(json_file_path):
             print(f"\nProcessing meme {i+1}/{len(data['memes'])}: {name}")
             
             # Check if we need to download this meme
-            if not current_urls or any('placeholder' in url for url in current_urls):
+            if not current_urls:
                 print(f"Need to download images for: {name}")
                 
                 # Search and download the images
@@ -233,7 +233,7 @@ def process_memes_json(json_file_path):
                     print("Waiting 1 second before next meme...")
                     time.sleep(1)
             else:
-                print(f"Skipping download - already has image_urls: {current_urls}")
+                print(f"Skipping meme - already has {len(current_urls)} image(s): {current_urls}")
         
         # Save the updated JSON
         output_path = json_file_path

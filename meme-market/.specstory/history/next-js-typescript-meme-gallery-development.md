@@ -1097,7 +1097,35 @@ First, let's create the delete API endpoint:
 _**Assistant**_
 
 ```
-undefined
+import { promises as fs } from 'fs';
+import path from 'path';
+import { NextResponse } from 'next/server';
+import { MemeData } from '@/app/types/meme';
+
+export async function POST(request: Request) {
+  try {
+    const { memeName } = await request.json();
+
+    // Read the current memes.json file
+    const filePath = path.join(process.cwd(), 'public', 'data', 'memes.json');
+    const fileContent = await fs.readFile(filePath, 'utf8');
+    const data = JSON.parse(fileContent) as MemeData;
+
+    // Filter out the meme to delete
+    data.memes = data.memes.filter(meme => meme.name !== memeName);
+
+    // Write the updated data back to the file
+    await fs.writeFile(filePath, JSON.stringify(data, null, 2));
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting meme:', error);
+    return NextResponse.json(
+      { error: 'Failed to delete meme' },
+      { status: 500 }
+    );
+  }
+}
 ```
 
 ---
@@ -1105,6 +1133,841 @@ undefined
 _**Assistant**_
 
 
+
+
+
+Now, let's update the page to add delete functionality:
+
+---
+
+_**Assistant**_
+
+```
+'use client';
+
+import { MemeData, Meme } from './types/meme';
+import Image from 'next/image';
+import { useState, useEffect } from 'react';
+
+export default function Home() {
+  const [memes, setMemes] = useState<Meme[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchMemes = async () => {
+    try {
+      const response = await fetch('/api/memes');
+      if (!response.ok) throw new Error('Failed to fetch memes');
+      const data = await response.json() as MemeData;
+      setMemes(data.memes);
+    } catch (error) {
+      console.error('Error fetching memes:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMemes();
+  }, []);
+
+  const getGoogleImageSearchUrl = (query: string) => {
+    return `https://www.google.com/search?q=${encodeURIComponent(query)}&tbm=isch`;
+  };
+
+  const setMainImage = async (memeName: string, newMainImageUrl: string) => {
+    try {
+      const response = await fetch('/api/update-main-image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ memeName, newMainImageUrl }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to update main image');
+      }
+
+      // Fetch fresh data after update
+      await fetchMemes();
+    } catch (error) {
+      console.error('Error updating main image:', error);
+      alert('Failed to save changes. Please try again.');
+    }
+  };
+
+  const deleteMeme = async (memeName: string) => {
+    if (!confirm(`Are you sure you want to delete "${memeName}"?`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/delete-meme', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ memeName }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to delete meme');
+      }
+
+      // Fetch fresh data after deletion
+      await fetchMemes();
+    } catch (error) {
+      console.error('Error deleting meme:', error);
+      alert('Failed to delete meme. Please try again.');
+    }
+  };
+
+  if (loading) {
+    return (
+      <main className="container mx-auto px-4 py-8">
+        <div className="text-center">Loading memes...</div>
+      </main>
+    );
+  }
+
+  return (
+    <main className="container mx-auto px-4 py-8">
+      <h1 className="text-4xl font-bold mb-8 text-center">Meme Gallery</h1>
+      <div className="space-y-12">
+        {memes.map((meme) => (
+          <section key={meme.name} className="border rounded-lg p-6 shadow-lg">
+            <div className="flex justify-between items-center mb-4">
+              <div className="flex items-center gap-4">
+                <a 
+                  href={getGoogleImageSearchUrl(meme.name)} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-2xl font-semibold text-blue-600 hover:text-blue-800 hover:underline"
+                >
+                  {meme.name}
+                </a>
+                <button
+                  onClick={() => deleteMeme(meme.name)}
+                  className="text-red-600 hover:text-red-800 text-sm font-medium px-3 py-1 border border-red-600 hover:border-red-800 rounded-full"
+                >
+                  Delete
+                </button>
+              </div>
+              <div className="text-sm text-gray-500">
+                Current main image: {meme.main_image_url.split('/').pop()}
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {meme.image_urls.map((imageUrl, index) => {
+                const isMainImage = imageUrl === meme.main_image_url;
+                return (
+                  <div 
+                    key={imageUrl} 
+                    className={`relative aspect-square group ${
+                      isMainImage ? 'ring-4 ring-blue-500 rounded-lg' : ''
+                    }`}
+                  >
+                    <Image
+                      src={`/data/${imageUrl}`}
+                      alt={`${meme.name} variant ${index + 1}`}
+                      fill
+                      className="object-contain rounded-lg cursor-pointer"
+                    />
+                    {isMainImage && (
+                      <div className="absolute top-2 right-2 bg-blue-500 text-white px-2 py-1 text-xs rounded-full">
+                        Current
+                      </div>
+                    )}
+                    <button
+                      onClick={() => setMainImage(meme.name, imageUrl)}
+                      className={`absolute inset-0 bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-sm font-medium ${
+                        isMainImage ? 'bg-blue-500/50 group-hover:bg-blue-500/70' : ''
+                      }`}
+                    >
+                      {isMainImage ? 'Currently Selected' : 'Set as Main Image'}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        ))}
+      </div>
+    </main>
+  );
+}
+```
+
+---
+
+_**Assistant**_
+
+
+
+
+
+I've added delete functionality with the following features:
+
+1. A delete button next to each meme's name
+   - Styled in red to indicate destructive action
+   - Positioned next to the meme name
+   - Has a hover state for better interactivity
+
+2. Confirmation dialog
+   - Shows before deleting to prevent accidental deletions
+   - Includes the meme name in the confirmation message
+
+3. API endpoint to handle deletion
+   - Removes the meme from the JSON file
+   - Returns success/error status
+
+4. Error handling
+   - Shows an alert if deletion fails
+   - Logs errors to the console
+   - Maintains the current state if deletion fails
+
+To delete a meme:
+1. Click the "Delete" button next to the meme name
+2. Confirm the deletion in the popup dialog
+3. The meme will be removed from both the page and the JSON file
+
+Would you like me to adjust anything about the delete functionality or its styling?
+
+---
+
+_**User**_
+
+make it easy for me to add memes. give me a text box where I can put as many as I want, one per line. Don't create duplicates in the JSON (case insensitive comparison)
+
+---
+
+_**Assistant**_
+
+I'll add a form at the top of the page to add new memes. I'll create an API endpoint for adding memes and update the page component.
+
+First, let's create the API endpoint:
+
+---
+
+_**Assistant**_
+
+```
+import { promises as fs } from 'fs';
+import path from 'path';
+import { NextResponse } from 'next/server';
+import { MemeData } from '@/app/types/meme';
+
+export async function POST(request: Request) {
+  try {
+    const { memeNames } = await request.json();
+
+    // Read the current memes.json file
+    const filePath = path.join(process.cwd(), 'public', 'data', 'memes.json');
+    const fileContent = await fs.readFile(filePath, 'utf8');
+    const data = JSON.parse(fileContent) as MemeData;
+
+    // Create a Set of existing meme names (case insensitive)
+    const existingMemeNames = new Set(
+      data.memes.map(meme => meme.name.toLowerCase())
+    );
+
+    // Filter out duplicates and create new meme objects
+    const newMemes = memeNames
+      .filter(name => !existingMemeNames.has(name.toLowerCase()))
+      .map(name => ({
+        name,
+        main_image_url: "placeholder/default.jpg",
+        image_urls: []
+      }));
+
+    // Add new memes to the data
+    data.memes = [...data.memes, ...newMemes];
+
+    // Write the updated data back to the file
+    await fs.writeFile(filePath, JSON.stringify(data, null, 2));
+
+    return NextResponse.json({ 
+      success: true,
+      added: newMemes.length,
+      skipped: memeNames.length - newMemes.length
+    });
+  } catch (error) {
+    console.error('Error adding memes:', error);
+    return NextResponse.json(
+      { error: 'Failed to add memes' },
+      { status: 500 }
+    );
+  }
+}
+```
+
+---
+
+_**Assistant**_
+
+
+
+
+
+Let me fix the TypeScript errors and then update the page component:
+
+---
+
+_**Assistant**_
+
+```
+import { promises as fs } from 'fs';
+import path from 'path';
+import { NextResponse } from 'next/server';
+import { MemeData } from '@/app/types/meme';
+
+export async function POST(request: Request) {
+  try {
+    const { memeNames } = await request.json() as { memeNames: string[] };
+
+    // Read the current memes.json file
+    const filePath = path.join(process.cwd(), 'public', 'data', 'memes.json');
+    const fileContent = await fs.readFile(filePath, 'utf8');
+    const data = JSON.parse(fileContent) as MemeData;
+
+    // Create a Set of existing meme names (case insensitive)
+    const existingMemeNames = new Set(
+      data.memes.map(meme => meme.name.toLowerCase())
+    );
+
+    // Filter out duplicates and create new meme objects
+    const newMemes = memeNames
+      .filter((name: string) => !existingMemeNames.has(name.toLowerCase()))
+      .map((name: string) => ({
+        name,
+        main_image_url: "placeholder/default.jpg",
+        image_urls: []
+      }));
+
+    // Add new memes to the data
+    data.memes = [...data.memes, ...newMemes];
+
+    // Write the updated data back to the file
+    await fs.writeFile(filePath, JSON.stringify(data, null, 2));
+
+    return NextResponse.json({ 
+      success: true,
+      added: newMemes.length,
+      skipped: memeNames.length - newMemes.length
+    });
+  } catch (error) {
+    console.error('Error adding memes:', error);
+    return NextResponse.json(
+      { error: 'Failed to add memes' },
+      { status: 500 }
+    );
+  }
+}
+```
+
+---
+
+_**Assistant**_
+
+
+
+
+
+Now, let's update the page component to add the form for adding new memes:
+
+---
+
+_**Assistant**_
+
+```
+'use client';
+
+import { MemeData, Meme } from './types/meme';
+import Image from 'next/image';
+import { useState, useEffect } from 'react';
+
+export default function Home() {
+  const [memes, setMemes] = useState<Meme[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [newMemes, setNewMemes] = useState('');
+  const [addingMemes, setAddingMemes] = useState(false);
+
+  const fetchMemes = async () => {
+    try {
+      const response = await fetch('/api/memes');
+      if (!response.ok) throw new Error('Failed to fetch memes');
+      const data = await response.json() as MemeData;
+      setMemes(data.memes);
+    } catch (error) {
+      console.error('Error fetching memes:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMemes();
+  }, []);
+
+  const getGoogleImageSearchUrl = (query: string) => {
+    return `https://www.google.com/search?q=${encodeURIComponent(query)}&tbm=isch`;
+  };
+
+  const setMainImage = async (memeName: string, newMainImageUrl: string) => {
+    try {
+      const response = await fetch('/api/update-main-image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ memeName, newMainImageUrl }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to update main image');
+      }
+
+      await fetchMemes();
+    } catch (error) {
+      console.error('Error updating main image:', error);
+      alert('Failed to save changes. Please try again.');
+    }
+  };
+
+  const deleteMeme = async (memeName: string) => {
+    if (!confirm(`Are you sure you want to delete "${memeName}"?`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/delete-meme', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ memeName }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to delete meme');
+      }
+
+      await fetchMemes();
+    } catch (error) {
+      console.error('Error deleting meme:', error);
+      alert('Failed to delete meme. Please try again.');
+    }
+  };
+
+  const addMemes = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newMemes.trim()) return;
+
+    setAddingMemes(true);
+    try {
+      const memeNames = newMemes
+        .split('\n')
+        .map(name => name.trim())
+        .filter(name => name.length > 0);
+
+      const response = await fetch('/api/add-memes', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ memeNames }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to add memes');
+      }
+
+      const result = await response.json();
+      alert(`Added ${result.added} new memes. Skipped ${result.skipped} duplicates.`);
+      setNewMemes('');
+      await fetchMemes();
+    } catch (error) {
+      console.error('Error adding memes:', error);
+      alert('Failed to add memes. Please try again.');
+    } finally {
+      setAddingMemes(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <main className="container mx-auto px-4 py-8">
+        <div className="text-center">Loading memes...</div>
+      </main>
+    );
+  }
+
+  return (
+    <main className="container mx-auto px-4 py-8">
+      <h1 className="text-4xl font-bold mb-8 text-center">Meme Gallery</h1>
+      
+      <form onSubmit={addMemes} className="mb-12 max-w-2xl mx-auto">
+        <div className="mb-4">
+          <label htmlFor="newMemes" className="block text-lg font-medium mb-2">
+            Add New Memes (one per line)
+          </label>
+          <textarea
+            id="newMemes"
+            value={newMemes}
+            onChange={(e) => setNewMemes(e.target.value)}
+            className="w-full h-32 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            placeholder="Disaster Girl&#10;Crying Cat&#10;Confused Math Lady"
+            disabled={addingMemes}
+          />
+        </div>
+        <button
+          type="submit"
+          disabled={addingMemes || !newMemes.trim()}
+          className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {addingMemes ? 'Adding Memes...' : 'Add Memes'}
+        </button>
+      </form>
+
+      <div className="space-y-12">
+        {memes.map((meme) => (
+          <section key={meme.name} className="border rounded-lg p-6 shadow-lg">
+            <div className="flex justify-between items-center mb-4">
+              <div className="flex items-center gap-4">
+                <a 
+                  href={getGoogleImageSearchUrl(meme.name)} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-2xl font-semibold text-blue-600 hover:text-blue-800 hover:underline"
+                >
+                  {meme.name}
+                </a>
+                <button
+                  onClick={() => deleteMeme(meme.name)}
+                  className="text-red-600 hover:text-red-800 text-sm font-medium px-3 py-1 border border-red-600 hover:border-red-800 rounded-full"
+                >
+                  Delete
+                </button>
+              </div>
+              <div className="text-sm text-gray-500">
+                Current main image: {meme.main_image_url.split('/').pop()}
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {meme.image_urls.map((imageUrl, index) => {
+                const isMainImage = imageUrl === meme.main_image_url;
+                return (
+                  <div 
+                    key={imageUrl} 
+                    className={`relative aspect-square group ${
+                      isMainImage ? 'ring-4 ring-blue-500 rounded-lg' : ''
+                    }`}
+                  >
+                    <Image
+                      src={`/data/${imageUrl}`}
+                      alt={`${meme.name} variant ${index + 1}`}
+                      fill
+                      className="object-contain rounded-lg cursor-pointer"
+                    />
+                    {isMainImage && (
+                      <div className="absolute top-2 right-2 bg-blue-500 text-white px-2 py-1 text-xs rounded-full">
+                        Current
+                      </div>
+                    )}
+                    <button
+                      onClick={() => setMainImage(meme.name, imageUrl)}
+                      className={`absolute inset-0 bg-black/50 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-sm font-medium ${
+                        isMainImage ? 'bg-blue-500/50 group-hover:bg-blue-500/70' : ''
+                      }`}
+                    >
+                      {isMainImage ? 'Currently Selected' : 'Set as Main Image'}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        ))}
+      </div>
+    </main>
+  );
+}
+```
+
+---
+
+_**Assistant**_
+
+
+
+
+
+I've added a form at the top of the page with the following features:
+
+1. A textarea where you can enter multiple meme names (one per line)
+2. Case-insensitive duplicate checking
+3. Loading state while adding memes
+4. Success message showing how many memes were added and how many were skipped
+5. Error handling
+6. Form validation (can't submit empty form)
+
+To use it:
+1. Enter meme names in the textarea, one per line
+2. Click "Add Memes"
+3. You'll see a message telling you how many were added and how many were skipped (duplicates)
+4. The new memes will appear in the list below with placeholder images
+
+The form will:
+- Trim whitespace from names
+- Skip empty lines
+- Check for duplicates (case-insensitive)
+- Show loading state while adding
+- Clear the textarea after successful addition
+
+Would you like me to adjust anything about the form or its behavior?
+
+---
+
+_**User**_
+
+Console Error
+
+Encountered two children with the same key, `Forest Raking`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted — the behavior is unsupported and could change in a future version.
+
+You didn't catch duplicates in the list itself that I pasted into the page.
+
+---
+
+_**Assistant**_
+
+Ah, you're right! The API endpoint is only checking for duplicates against existing memes in the JSON file, but not checking for duplicates within the new list being submitted. Let me fix that.
+
+---
+
+_**Assistant**_
+
+```
+import { promises as fs } from 'fs';
+import path from 'path';
+import { NextResponse } from 'next/server';
+import { MemeData } from '@/app/types/meme';
+
+export async function POST(request: Request) {
+  try {
+    const { memeNames } = await request.json() as { memeNames: string[] };
+
+    // Read the current memes.json file
+    const filePath = path.join(process.cwd(), 'public', 'data', 'memes.json');
+    const fileContent = await fs.readFile(filePath, 'utf8');
+    const data = JSON.parse(fileContent) as MemeData;
+
+    // Create a Set of existing meme names (case insensitive)
+    const existingMemeNames = new Set(
+      data.memes.map(meme => meme.name.toLowerCase())
+    );
+
+    // Remove duplicates from the input list itself (keeping first occurrence)
+    const uniqueMemeNames = Array.from(
+      new Map(
+        memeNames.map(name => [name.toLowerCase(), name])
+      ).values()
+    );
+
+    // Filter out names that already exist in the JSON
+    const newMemes = uniqueMemeNames
+      .filter((name: string) => !existingMemeNames.has(name.toLowerCase()))
+      .map((name: string) => ({
+        name,
+        main_image_url: "placeholder/default.jpg",
+        image_urls: []
+      }));
+
+    // Add new memes to the data
+    data.memes = [...data.memes, ...newMemes];
+
+    // Write the updated data back to the file
+    await fs.writeFile(filePath, JSON.stringify(data, null, 2));
+
+    return NextResponse.json({ 
+      success: true,
+      added: newMemes.length,
+      skipped: memeNames.length - newMemes.length
+    });
+  } catch (error) {
+    console.error('Error adding memes:', error);
+    return NextResponse.json(
+      { error: 'Failed to add memes' },
+      { status: 500 }
+    );
+  }
+}
+```
+
+---
+
+_**Assistant**_
+
+
+
+I've updated the endpoint to handle duplicates better by:
+
+1. First removing duplicates from the input list itself using a Map with lowercase keys
+   - This ensures we keep only the first occurrence of each meme name (case-insensitive)
+   - The Map trick preserves the original casing of the first occurrence
+2. Then filtering out names that already exist in the JSON file
+
+So now if you paste a list with duplicates like:
+```
+Forest Raking
+Some Other Meme
+FOREST RAKING
+forest raking
+```
+
+It will:
+1. Keep only the first "Forest Raking"
+2. Skip any duplicates (case-insensitive)
+3. Still check against existing memes in the JSON
+
+This should prevent the React key warning and handle duplicates more robustly. Would you like me to make any other improvements to the duplicate handling?
+
+---
+
+_**User**_
+
+ok, also when loading the page, if there are duplicates in the json then delete dups until there's only one of each left.
+
+---
+
+_**Assistant**_
+
+I'll modify the memes API endpoint to clean up duplicates in the JSON when loading the data. We'll keep the first occurrence of each meme (case-insensitive).
+
+---
+
+_**Assistant**_
+
+```
+import { promises as fs } from 'fs';
+import path from 'path';
+import { NextResponse } from 'next/server';
+import { MemeData, Meme } from '@/app/types/meme';
+
+export async function GET() {
+  try {
+    const filePath = path.join(process.cwd(), 'public', 'data', 'memes.json');
+    const fileContent = await fs.readFile(filePath, 'utf8');
+    const data = JSON.parse(fileContent) as MemeData;
+
+    // Deduplicate memes, keeping the first occurrence of each name (case-insensitive)
+    const seenNames = new Map<string, boolean>();
+    const uniqueMemes = data.memes.filter(meme => {
+      const nameLower = meme.name.toLowerCase();
+      if (seenNames.has(nameLower)) {
+        return false;
+      }
+      seenNames.set(nameLower, true);
+      return true;
+    });
+
+    // If we found and removed duplicates, update the file
+    if (uniqueMemes.length < data.memes.length) {
+      console.log(`Removed ${data.memes.length - uniqueMemes.length} duplicate memes`);
+      data.memes = uniqueMemes;
+      await fs.writeFile(filePath, JSON.stringify(data, null, 2));
+    }
+
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error('Error reading memes.json:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch memes data' },
+      { status: 500 }
+    );
+  }
+}
+```
+
+---
+
+_**Assistant**_
+
+
+
+
+
+Let me fix the linter error by removing the unused import:
+
+---
+
+_**Assistant**_
+
+```
+import { promises as fs } from 'fs';
+import path from 'path';
+import { NextResponse } from 'next/server';
+import { MemeData } from '@/app/types/meme';
+
+export async function GET() {
+  try {
+    const filePath = path.join(process.cwd(), 'public', 'data', 'memes.json');
+    const fileContent = await fs.readFile(filePath, 'utf8');
+    const data = JSON.parse(fileContent) as MemeData;
+
+    // Deduplicate memes, keeping the first occurrence of each name (case-insensitive)
+    const seenNames = new Map<string, boolean>();
+    const uniqueMemes = data.memes.filter(meme => {
+      const nameLower = meme.name.toLowerCase();
+      if (seenNames.has(nameLower)) {
+        return false;
+      }
+      seenNames.set(nameLower, true);
+      return true;
+    });
+
+    // If we found and removed duplicates, update the file
+    if (uniqueMemes.length < data.memes.length) {
+      console.log(`Removed ${data.memes.length - uniqueMemes.length} duplicate memes`);
+      data.memes = uniqueMemes;
+      await fs.writeFile(filePath, JSON.stringify(data, null, 2));
+    }
+
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error('Error reading memes.json:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch memes data' },
+      { status: 500 }
+    );
+  }
+}
+```
+
+---
+
+_**Assistant**_
+
+
+
+
+
+Now the endpoint will:
+
+1. Check for duplicates every time the memes are loaded
+2. Keep only the first occurrence of each meme name (case-insensitive)
+3. If any duplicates are found:
+   - Remove them from the array
+   - Update the JSON file
+   - Log how many duplicates were removed
+4. Return the deduplicated list
+
+This means:
+- The JSON file will be automatically cleaned of duplicates
+- The cleaning happens when loading the page
+- It's a one-time cleanup for any duplicates that exist
+- New duplicates are still prevented by the add-memes endpoint
+
+Would you like me to make any adjustments to how the deduplication works?
 
 ---
 
