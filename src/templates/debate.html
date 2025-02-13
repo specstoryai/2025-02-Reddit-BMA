@@ -16,43 +16,57 @@
         
         <h1>{{ topic.title }}</h1>
         <div class="debate-area">
-            {% if mode == 'player-vs-player' %}
-                <div class="participant human-participant">
-                    <div class="human-avatar">👤</div>
-                    <h2>Player 1</h2>
-                    <textarea placeholder="Make your argument..."></textarea>
-                </div>
-                <div class="participant human-participant">
-                    <div class="human-avatar">👤</div>
-                    <h2>Player 2</h2>
-                    <textarea placeholder="Make your argument..."></textarea>
-                </div>
-            {% elif mode == 'player-vs-ai' %}
-                <div class="participant human-participant">
-                    <div class="human-avatar">👤</div>
-                    <h2>Just a Human</h2>
-                    <textarea placeholder="Make your argument..."></textarea>
-                </div>
-                <div class="participant ai-participant">
-                    <div class="ai-avatar">🤖</div>
-                    <h2>The Rebuttalizer</h2>
-                    <div class="ai-status">Computing devastating counterarguments...</div>
-                    <textarea class="ai-textarea" readonly></textarea>
-                </div>
-            {% else %}
-                <div class="participant ai-participant">
-                    <div class="ai-avatar">🦾</div>
-                    <h2>Master Debator Bot</h2>
-                    <div class="ai-status">Analyzing debate strategies...</div>
-                    <textarea class="ai-textarea" readonly></textarea>
-                </div>
-                <div class="participant ai-participant">
-                    <div class="ai-avatar">🤖</div>
-                    <h2>The Rebuttalizer 6000</h2>
-                    <div class="ai-status">Processing logical fallacies...</div>
-                    <textarea class="ai-textarea" readonly></textarea>
-                </div>
-            {% endif %}
+            <div class="debate-participants">
+                {% if mode == 'player-vs-player' %}
+                    <div class="participant human-participant">
+                        <div class="human-avatar">👤</div>
+                        <h2>Player 1</h2>
+                        <textarea placeholder="Make your argument..."></textarea>
+                    </div>
+                    <div class="participant human-participant">
+                        <div class="human-avatar">👤</div>
+                        <h2>Player 2</h2>
+                        <textarea placeholder="Make your argument..."></textarea>
+                    </div>
+                {% elif mode == 'player-vs-ai' %}
+                    <div class="participant human-participant">
+                        <div class="human-avatar">👤</div>
+                        <h2>Just a Human</h2>
+                        <textarea placeholder="Make your argument..."></textarea>
+                    </div>
+                    <div class="participant ai-participant">
+                        <div class="ai-avatar">🤖</div>
+                        <h2>The Rebuttalizer</h2>
+                        <div class="ai-status">Computing devastating counterarguments...</div>
+                        <textarea class="ai-textarea" readonly></textarea>
+                    </div>
+                {% else %}
+                    <div class="participant ai-participant">
+                        <div class="ai-avatar">🦾</div>
+                        <h2>Master Debator Bot</h2>
+                        {% if initial_state and not initial_state.error %}
+                            <div class="ai-status">Position: {{ initial_state.positions.position_one }}</div>
+                            <textarea class="ai-textarea" readonly>{{ initial_state.arguments.argument_one }}</textarea>
+                        {% else %}
+                            <div class="ai-status">{% if initial_state.error %}Error: {{ initial_state.error }}{% else %}Analyzing debate strategies...{% endif %}</div>
+                            <textarea class="ai-textarea" readonly></textarea>
+                        {% endif %}
+                    </div>
+                    <div class="participant ai-participant">
+                        <div class="ai-avatar">🤖</div>
+                        <h2>The Rebuttalizer 6000</h2>
+                        {% if initial_state and not initial_state.error %}
+                            <div class="ai-status">Position: {{ initial_state.positions.position_two }}</div>
+                            <textarea class="ai-textarea" readonly>{{ initial_state.arguments.argument_two }}</textarea>
+                        {% else %}
+                            <div class="ai-status">{% if initial_state.error %}Error: {{ initial_state.error }}{% else %}Processing logical fallacies...{% endif %}</div>
+                            <textarea class="ai-textarea" readonly></textarea>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+
+            <button class="submit-round">Submit Round 1</button>
 
             <div class="judge-area">
                 <div class="judge-avatar">⚖️</div>
@@ -60,8 +74,6 @@
                 <div class="judge-status">Waiting for arguments...</div>
                 <div class="judgment"></div>
             </div>
-
-            <button class="submit-round">Submit Round 1</button>
         </div>
     </div>
 </body>

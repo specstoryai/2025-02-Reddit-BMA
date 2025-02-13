@@ -2,6 +2,22 @@ from flask import Flask, jsonify, render_template, session, redirect, url_for, r
 import json
 import os
 import re
+from dotenv import load_dotenv
+import logging
+from .ai_debate import get_debate_positions_and_arguments
+
+load_dotenv()  # Load environment variables from .env file
+
+# Configure logging
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler('debug.log'),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-here'  # Required for session management
@@ -58,19 +74,50 @@ def custom_debate():
 
 @app.route('/debate/<topic_id>')
 def debate(topic_id):
-    # Check if it's a custom topic
+    logger.info(f"Entering debate route with topic_id: {topic_id}, mode: {session.get('mode')}")
+    logger.debug(f"Session contents: {dict(session)}")
+    
     if topic_id.startswith('custom-'):
         topic = session.get('custom_topic')
+        logger.info(f"Custom topic: {topic}")
         if not topic:
+            logger.warning("No custom topic found in session")
             return redirect(url_for('index'))
     else:
-        # Load from regular topics
         topics = load_topics()
         topic = next((t for t in topics['topics'] if t['id'] == topic_id), None)
+        logger.info(f"Found topic: {topic}")
         if topic is None:
+            logger.error(f"Topic not found: {topic_id}")
             return "Topic not found", 404
     
-    return render_template('debate.html', topic=topic, mode=session.get('mode', 'player-vs-ai'))
+    # For AI vs. AI mode, get the initial positions and arguments
+    initial_state = None
+    if session.get('mode') == 'ai-vs-ai':
+        logger.info("AI vs. AI mode detected, preparing to call Anthropic API")
+        try:
+            logger.info(f"Calling Anthropic API for topic: {topic['title']}")
+            positions, arguments = get_debate_positions_and_arguments(topic['title'])
+            logger.debug(f"Raw positions response: {positions}")
+            logger.debug(f"Raw arguments response: {arguments}")
+            initial_state = {
+                'positions': positions,
+                'arguments': arguments
+            }
+            logger.info("Successfully created initial state")
+            logger.debug(f"Initial state: {initial_state}")
+        except Exception as e:
+            logger.error(f"Error in AI vs. AI mode: {str(e)}", exc_info=True)
+            app.logger.error(f"Error getting AI debate content: {str(e)}")
+            initial_state = {'error': str(e)}
+    else:
+        logger.info(f"Not in AI vs. AI mode, current mode: {session.get('mode')}")
+    
+    logger.info(f"Rendering debate template with initial_state: {initial_state}")
+    return render_template('debate.html', 
+                         topic=topic, 
+                         mode=session.get('mode', 'player-vs-ai'),
+                         initial_state=initial_state)
 
 if __name__ == '__main__':
     app.run(debug=True) 

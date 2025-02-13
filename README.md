@@ -22,6 +22,7 @@ Ever wished your internet debates were less "keyboard warrior" and more "enlight
 
 - Python 3.8 or higher
 - pip (Python package manager)
+- Anthropic API key
 
 ## Installation
 
@@ -46,21 +47,23 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-4. Set up your environment variables:
-   - Create a `.env` file in the root directory
-   - Add your Anthropic API key:
-   ```
-   ANTHROPIC_API_KEY=your-api-key-here
-   ```
+4. Set up environment variables:
+```bash
+# Create a .env file in the project root
+echo "ANTHROPIC_API_KEY=your_api_key_here" > .env
+```
 
 5. Set up development environment:
 ```bash
 # On macOS/Linux:
 export FLASK_ENV=development
 export FLASK_DEBUG=1
+export FLASK_APP=src.app
 # On Windows:
 set FLASK_ENV=development
 set FLASK_DEBUG=1
+set FLASK_APP=src.app
+
 ```
 
 6. Start the development server:

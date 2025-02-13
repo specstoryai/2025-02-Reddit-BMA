@@ -181,10 +181,16 @@ h1 {
 
 /* Debate Area Styles */
 .debate-area {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    margin-top: 30px;
+}
+
+.debate-participants {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 30px;
-    margin-top: 30px;
 }
 
 .participant {
@@ -258,34 +264,27 @@ textarea:focus {
 }
 
 .judge-area {
-    grid-column: 1 / -1;
-    text-align: center;
-    background: linear-gradient(145deg, #f8f9fa, #e9ecef);
+    background: linear-gradient(145deg, #2c3e50, #34495e);
+    color: white;
     padding: 30px;
     border-radius: 12px;
-    border: 2px solid #dee2e6;
+    text-align: center;
     margin-top: 20px;
+    border: 2px solid #46627f;
 }
 
 .submit-round {
-    grid-column: 1 / -1;
-    width: 300px;
-    margin: 30px auto;
-    padding: 15px 30px;
-    font-size: 1.2em;
-    background: linear-gradient(45deg, #007bff, #0056b3);
+    background: linear-gradient(45deg, #4cc9f0, #4361ee);
     color: white;
     border: none;
+    padding: 15px 30px;
+    font-size: 1.2em;
     border-radius: 8px;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
-}
-
-.submit-round:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
-    background: linear-gradient(45deg, #0056b3, #004085);
+    margin: 20px auto;
+    display: block;
+    min-width: 200px;
 }
 
 @keyframes float {
