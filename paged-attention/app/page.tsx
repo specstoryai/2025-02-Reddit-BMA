@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/hover-card"
 import { ArrowRight, Key, Database, Brain, CheckCircle2, Plus, Info } from 'lucide-react';
 import { Header } from '@/components/Header';
+import { PaperChatSidebar } from '@/components/PaperChatSidebar';
 
 interface CacheEntry {
   key: string;
@@ -674,4 +675,14 @@ const KVCacheDemo = () => {
   );
 };
 
-export default KVCacheDemo;
+export default function Home() {
+  return (
+    <main className="min-h-screen bg-white">
+      <Header />
+      <div className="container mx-auto px-4 py-8 pr-[384px]">
+        <KVCacheDemo />
+      </div>
+      <PaperChatSidebar />
+    </main>
+  )
+}
