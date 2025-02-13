@@ -1,0 +1,27 @@
+{
+  "total_duration_minutes": 11.5,
+  "average_polarity": 0.04041947771997295,
+  "average_subjectivity": 0.5006503525554497,
+  "most_positive_moment": {
+    "time": "0 days 00:05:31.199000",
+    "text": "that night in the steamy sultry air of that night in the steamy sultry air of that night in the steamy sultry air of the maril laga club the president the maril laga club the president the maril laga club the president speared a Sumptuous and beautiful slice speared a Sumptuous and beautiful slice speared a Sumptuous and beautiful slice of chocolate of chocolate cake and brought it to his all knowing cake and brought it to his all knowing cake and brought it to his all knowing lips he chewed it with Steely reserve lips he chewed it with Steely reserve lips he chewed it with Steely reserve and then with the delicious and really and then with the delicious and really and then with the delicious and really wonderful chocolate cake still in his wonderful chocolate cake still in his wonderful chocolate cake still in his mouth he turned to the Chinese president mouth he turned to the Chinese president mouth he turned to the Chinese president who was also Eno enjoying his wonderful",
+    "polarity": 0.653125
+  },
+  "most_negative_moment": {
+    "time": "0 days 00:11:01.199000",
+    "text": "salad salad so thank you Ill see you around",
+    "polarity": -0.5
+  },
+  "top_phrases": {
+    "please stand": 3,
+    "prodigal son": 3,
+    "presidency ive accumulated": 3,
+    "heck theyre firing anchor": 3,
+    "quite well thank": 3,
+    "steamy sultry air": 3,
+    "tom clancy novel": 3,
+    "texas eastern new mexico": 3,
+    "middle name gotcha": 3,
+    "journalistic integrity playing": 2
+  }
+}
