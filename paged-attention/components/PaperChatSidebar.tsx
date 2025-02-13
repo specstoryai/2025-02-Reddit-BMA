@@ -3,17 +3,50 @@
 import { useState } from 'react'
 import { Button } from './ui/button'
 import { Card } from './ui/card'
+import { Loader2 } from 'lucide-react'
 
 export function PaperChatSidebar() {
   const [messages, setMessages] = useState<Array<{role: 'user' | 'assistant', content: string}>>([])
   const [input, setInput] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!input.trim()) return
+    if (!input.trim() || isLoading) return
 
-    setMessages(prev => [...prev, { role: 'user', content: input }])
+    const userMessage = input.trim()
     setInput('')
+    setIsLoading(true)
+
+    // Add user message immediately
+    setMessages(prev => [...prev, { role: 'user', content: userMessage }])
+
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message: userMessage }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to get response')
+      }
+
+      const data = await response.json()
+      
+      // Add AI response
+      setMessages(prev => [...prev, { role: 'assistant', content: data.response }])
+    } catch (error) {
+      console.error('Error in chat:', error)
+      setMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: 'Sorry, I encountered an error processing your request. Please try again.' 
+      }])
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -31,7 +64,7 @@ export function PaperChatSidebar() {
               <div className="text-sm font-medium mb-1">
                 {message.role === 'assistant' ? 'AI' : 'You'}
               </div>
-              <div className="text-sm">{message.content}</div>
+              <div className="text-sm whitespace-pre-wrap">{message.content}</div>
             </Card>
           ))}
         </div>
@@ -44,9 +77,17 @@ export function PaperChatSidebar() {
           onChange={(e) => setInput(e.target.value)}
           placeholder="Ask a question about the paper..."
           className="w-full p-2 border border-gray-200 rounded-md resize-none h-24"
+          disabled={isLoading}
         />
-        <Button type="submit" className="w-full">
-          Send
+        <Button type="submit" disabled={isLoading}>
+          {isLoading ? (
+            <>
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Thinking...
+            </>
+          ) : (
+            'Send'
+          )}
         </Button>
       </form>
     </aside>

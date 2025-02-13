@@ -553,11 +553,11 @@ const KVCacheDemo = () => {
               {/* Cache visualizations */}
               <div className="grid grid-cols-2 gap-8">
                 {/* Traditional KV Cache */}
-                <div className="flex gap-4 items-start">
+                <div className="flex flex-col gap-2">
                   {renderTooltip(tooltips.cache,
-                    <span className="font-mono mt-2">Traditional Cache:</span>
+                    <span className="font-mono">Traditional Cache:</span>
                   )}
-                  <div className="flex-1 border rounded-lg p-4 bg-gray-50">
+                  <div className="border rounded-lg p-4 bg-gray-50">
                     {Object.entries(cache).map(([token, kv], idx) => (
                       <div 
                         key={idx} 
@@ -592,9 +592,9 @@ const KVCacheDemo = () => {
                 </div>
 
                 {/* Paged Attention Cache */}
-                <div className="flex gap-4 items-start">
+                <div className="flex flex-col gap-2">
                   {renderTooltip(tooltips.pagedCache,
-                    <span className="font-mono mt-2">Paged Cache:</span>
+                    <span className="font-mono">Paged Cache:</span>
                   )}
                   {renderPagedCache()}
                 </div>
