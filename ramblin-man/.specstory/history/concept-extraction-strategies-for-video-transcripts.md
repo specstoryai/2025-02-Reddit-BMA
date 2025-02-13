@@ -2560,6 +2560,18 @@ If you still see any issues, please share the error message and I'll help fix th
 
 ---
 
+_**User**_
+
+Update the @README.md to make the steps clear... using yt-dlp for downloading video and transcript, running it through analyze_transcript.py then playing it with play_video.py
+
+---
+
+_**Assistant**_
+
+
+
+---
+
 
 
 ---
