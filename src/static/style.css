@@ -369,6 +369,15 @@ textarea:focus {
     font-family: Arial, sans-serif;
 }
 
+.judgment-text p {
+    margin: 0 0 1.2em 0;
+    text-align: justify;
+}
+
+.judgment-text p:last-child {
+    margin-bottom: 0;
+}
+
 /* Winner Animation */
 .participant.winner {
     animation: winner-pulse 2s ease-in-out infinite;

@@ -174,10 +174,14 @@ def get_debate_judgment(topic: str, argument_one: str, argument_two: str) -> Deb
     # Parse the explanation
     explanation = judgment_text.split('JUDGMENT:')[1].strip()
     
+    # Convert explanation paragraphs into HTML
+    explanation_paragraphs = [p.strip() for p in explanation.split('\n\n') if p.strip()]
+    explanation_html = ''.join([f'<p>{p}</p>' for p in explanation_paragraphs])
+    
     judgment = DebateJudgment(
         winner=winner,
         summary_points=summary_points,
-        explanation=explanation
+        explanation=explanation_html
     )
     
     logger.info(f"Judgment complete. Winner: {winner}")
