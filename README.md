@@ -1,47 +1,104 @@
-# 2025-02-Reddit-BMA
+# The Great Debate - Where Internet Arguments Finally Make Sense! 🎭
 
-## The post that started it all
+Ever wished your internet debates were less "keyboard warrior" and more "enlightened discourse"? Well, probably not, but here we are! The Great Debate is your go-to arena for throwing down about everything from "Does free will exist?" to "Should pineapple go on pizza?" (spoiler: it's complicated). We've taken the internet's favorite pastime—arguing with strangers—and turned it into something almost productive!
 
-Original [Reddit Post](https://www.reddit.com/r/cursor/comments/1io14r6/build_me_anything_challenge_3_devs_8_hours_your/)
+## Features
 
-**Title:** 🚀 Build Me Anything Challenge: 3 Devs, 8 Hours, Your Ideas → Working Prototypes LIVE (Thursday 2/13, 9 AM ET)
+- Structured debate format
+- Multiple debate topics
+- User provided debate topic
+- Human and/or AI participants
+- AI Judge
+- Clean and intuitive user interface
 
+## Categories
 
-<details>
-  
-Tomorrow team [SpecsStory](https://specstory.com/) wants to have some fun and we're teaming up to build as many working prototypes as possible in 8 hrs **for the first-ever "Build Me Anything" challenge!** 
+- Philosophy
+- Religion
+- Politics
+- Culture
 
-*Think "Draw Me Anything" meets speed-composing* ✨ *meets chaos.*
+## Prerequisites
 
-**When:**
+- Python 3.8 or higher
+- pip (Python package manager)
 
-* **Kicks off**: Thursday, February 13th at 9 AM ET
-* **Wraps up:** 5 PM ET
+## Installation
 
-**We need your help!:**
+1. Clone the repository:
+```bash
+git clone https://github.com/specstoryai/2025-02-Reddit-BMA
+cd 2025-02-Reddit-BMA
+git checkout the-great-debate
+```
 
-* Drop your app idea in 1 - 2 sentences
-* We'll spend exactly 1 hour on each (*constraints* breed both creativity and fairness)
+2. Create and activate a virtual environment (recommended):
+```bash
+python -m venv venv
+# On macOS/Linux:
+source venv/bin/activate
+# On Windows:
+.\venv\Scripts\activate
+```
 
-**What you can expect:**
+3. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
 
-* A complete [SpecStory share](https://docs.specstory.com/quickstart#share-your-history) including a quick 1-2 minute video demo of where we got, a GitHub repo with all the code and every prompt we used (to see how we think).
-   * *We'll be updating comments on this post with links to all completed builds throughout the day*
+4. Set up your environment variables:
+   - Create a `.env` file in the root directory
+   - Add your Anthropic API key:
+   ```
+   ANTHROPIC_API_KEY=your-api-key-here
+   ```
 
-**The Math:**
+5. Set up development environment:
+```bash
+# On macOS/Linux:
+export FLASK_ENV=development
+export FLASK_DEBUG=1
+# On Windows:
+set FLASK_ENV=development
+set FLASK_DEBUG=1
+```
 
-* 3 folks × 60-minute builds × 8 hours = 🤯 *Very Optimistically* we'll tackle up to 24 projects! 
+6. Start the development server:
+```bash
+flask run
+```
 
-**The Rules:**
+The application will be running on `http://localhost:5000` with hot reloading enabled. Any changes you make to the Python files will automatically trigger a server reload.
 
-* Keep requests fun (remember, 60 mins!)
-* Safe for work pretty please (keep it clean!)
-* Limit 1 request per Redditor
-* We'll reply and comment to confirm if your request makes the cut
+## Development Features
 
-**Drop your requests below! We'll start assigning them to the team and get building at 9 AM ET sharp! ⏰**
-</details>
+- **Hot Reloading**: Changes to Python files are automatically detected and the server reloads
+- **Debug Mode**: Detailed error pages and interactive debugger
+- **Auto-Reload**: Template changes are reflected immediately
 
+## Project Structure
 
-## The Apps
-[Backpacking gear management with gear list](https://www.reddit.com/r/cursor/comments/1io14r6/comment/mcfjeh3/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button)
+```
+src/
+  ├── data/          # Data files including topics and categories
+  │   └── topics.json
+  ├── templates/     # Jinja2 templates
+  ├── static/        # Static files (CSS, JS, images)
+  └── app.py         # Main application file
+```
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Contact
+
+Project Link: https://github.com/yourusername/great-debate 

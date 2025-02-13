@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ topic.title }} - The Great Debate</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <nav class="header-nav">
+            <a href="{{ url_for('index') }}" class="logo-link">
+                <h1><span class="logo-emoji">🎭</span> The Great Debate</h1>
+            </a>
+        </nav>
+        
+        <h1>{{ topic.title }}</h1>
+        <div class="debate-area">
+            {% if mode == 'player-vs-player' %}
+                <div class="participant human-participant">
+                    <div class="human-avatar">👤</div>
+                    <h2>Player 1</h2>
+                    <textarea placeholder="Make your argument..."></textarea>
+                </div>
+                <div class="participant human-participant">
+                    <div class="human-avatar">👤</div>
+                    <h2>Player 2</h2>
+                    <textarea placeholder="Make your argument..."></textarea>
+                </div>
+            {% elif mode == 'player-vs-ai' %}
+                <div class="participant human-participant">
+                    <div class="human-avatar">👤</div>
+                    <h2>Just a Human</h2>
+                    <textarea placeholder="Make your argument..."></textarea>
+                </div>
+                <div class="participant ai-participant">
+                    <div class="ai-avatar">🤖</div>
+                    <h2>The Rebuttalizer</h2>
+                    <div class="ai-status">Computing devastating counterarguments...</div>
+                    <textarea class="ai-textarea" readonly></textarea>
+                </div>
+            {% else %}
+                <div class="participant ai-participant">
+                    <div class="ai-avatar">🦾</div>
+                    <h2>Master Debator Bot</h2>
+                    <div class="ai-status">Analyzing debate strategies...</div>
+                    <textarea class="ai-textarea" readonly></textarea>
+                </div>
+                <div class="participant ai-participant">
+                    <div class="ai-avatar">🤖</div>
+                    <h2>The Rebuttalizer 6000</h2>
+                    <div class="ai-status">Processing logical fallacies...</div>
+                    <textarea class="ai-textarea" readonly></textarea>
+                </div>
+            {% endif %}
+
+            <div class="judge-area">
+                <div class="judge-avatar">⚖️</div>
+                <h2>The Judge</h2>
+                <div class="judge-status">Waiting for arguments...</div>
+                <div class="judgment"></div>
+            </div>
+
+            <button class="submit-round">Submit Round 1</button>
+        </div>
+    </div>
+</body>
+</html> 

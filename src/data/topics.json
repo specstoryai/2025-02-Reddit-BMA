@@ -1,0 +1,84 @@
+{
+  "topics": [
+    {
+      "id": "free-will",
+      "title": "Free Will vs. Determinism",
+      "category": "philosophy"
+    },
+    {
+      "id": "objective-morality",
+      "title": "Is Objective Morality Real?",
+      "category": "philosophy"
+    },
+    {
+      "id": "ai-fear",
+      "title": "Should We Fear Artificial Intelligence?",
+      "category": "philosophy"
+    },
+    {
+      "id": "consciousness",
+      "title": "What is Consciousness?",
+      "category": "philosophy"
+    },
+    {
+      "id": "god-existence",
+      "title": "Does God Exist?",
+      "category": "religion"
+    },
+    {
+      "id": "religion-government",
+      "title": "Should Religion Play a Role in Government?",
+      "category": "religion"
+    },
+    {
+      "id": "science-religion",
+      "title": "Can Science and Religion Coexist?",
+      "category": "religion"
+    },
+    {
+      "id": "afterlife",
+      "title": "Is There Life After Death?",
+      "category": "religion"
+    },
+    {
+      "id": "minimum-wage",
+      "title": "Should the Minimum Wage be Increased?",
+      "category": "politics"
+    },
+    {
+      "id": "gun-control",
+      "title": "Gun Control: Rights vs. Regulation",
+      "category": "politics"
+    },
+    {
+      "id": "ubi",
+      "title": "Universal Basic Income: Beneficial or Harmful?",
+      "category": "politics"
+    },
+    {
+      "id": "mandatory-voting",
+      "title": "Should Voting be Mandatory?",
+      "category": "politics"
+    },
+    {
+      "id": "social-media",
+      "title": "Does Social Media Do More Harm Than Good?",
+      "category": "culture"
+    },
+    {
+      "id": "free-college",
+      "title": "Should College Education be Free?",
+      "category": "culture"
+    },
+    {
+      "id": "cancel-culture",
+      "title": "Is Cancel Culture Justified?",
+      "category": "culture"
+    },
+    {
+      "id": "remote-work",
+      "title": "Is Remote Work the Future?",
+      "category": "culture"
+    }
+  ]
+} 

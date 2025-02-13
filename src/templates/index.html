@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Great Debate</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <nav class="header-nav">
+            <a href="{{ url_for('index') }}" class="logo-link">
+                <h1><span class="logo-emoji">🎭</span> The Great Debate</h1>
+            </a>
+        </nav>
+
+        <div class="mode-selection">
+            <h2>Select Your Battle Style</h2>
+            <div class="mode-buttons">
+                <a href="{{ url_for('set_mode', mode_name='player-vs-player') }}" 
+                   class="mode-button {% if current_mode == 'player-vs-player' %}selected{% endif %}">
+                    🤝 Human vs Human
+                </a>
+                <a href="{{ url_for('set_mode', mode_name='player-vs-ai') }}" 
+                   class="mode-button {% if current_mode == 'player-vs-ai' %}selected{% endif %}">
+                    🤖 Human vs AI
+                </a>
+                <a href="{{ url_for('set_mode', mode_name='ai-vs-ai') }}" 
+                   class="mode-button {% if current_mode == 'ai-vs-ai' %}selected{% endif %}">
+                    ⚡ AI vs AI
+                </a>
+            </div>
+        </div>
+
+        <div class="topics">
+            <h2>Pick Your Battle</h2>
+            {% for category in ['philosophy', 'religion', 'politics', 'culture'] %}
+                <div class="category">
+                    <h3>{{ category.title() }}</h3>
+                    <ul>
+                        {% for topic in topics if topic.category == category %}
+                            <li>
+                                <a href="{{ url_for('debate', topic_id=topic.id) }}">{{ topic.title }}</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="custom-topic">
+            <h2>🎯 Got Your Own Battle in Mind?</h2>
+            <p class="custom-topic-intro">Can't find what you're looking for? Throw your own topic into the ring!</p>
+            <form action="{{ url_for('custom_debate') }}" method="POST" class="custom-topic-form">
+                <div class="form-group">
+                    <input type="text" id="topic-title" name="topic" 
+                           placeholder="e.g., Should Pineapple Go on Pizza? Is Time Travel Possible? Are Hot Dogs Sandwiches?" required>
+                </div>
+                <button type="submit" class="custom-topic-submit">🎭 Let the Battle Begin! 🎭</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html> 
