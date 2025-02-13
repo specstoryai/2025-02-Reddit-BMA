@@ -16,8 +16,51 @@ interface BlueskyPost {
   };
 }
 
+interface CacheData {
+  posts: BlueskyPost[];
+  cursor: string | null;
+  timestamp: number;
+}
+
 interface BlueskyFeedProps {
   mapRef: React.RefObject<MapHandle | null>;
+}
+
+const CACHE_KEY = 'bluesky-restaurants-cache';
+const CACHE_DURATION = 1000 * 60 * 60; // 1 hour in milliseconds
+
+function getCache(): CacheData | null {
+  try {
+    const cached = localStorage.getItem(CACHE_KEY);
+    if (!cached) return null;
+
+    const data: CacheData = JSON.parse(cached);
+    const age = Date.now() - data.timestamp;
+    
+    // Return null if cache is too old
+    if (age > CACHE_DURATION) {
+      localStorage.removeItem(CACHE_KEY);
+      return null;
+    }
+    
+    return data;
+  } catch (err) {
+    console.error('Error reading cache:', err);
+    return null;
+  }
+}
+
+function updateCache(posts: BlueskyPost[], cursor: string | null) {
+  try {
+    const cacheData: CacheData = {
+      posts,
+      cursor,
+      timestamp: Date.now()
+    };
+    localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
+  } catch (err) {
+    console.error('Error updating cache:', err);
+  }
 }
 
 export default function BlueskyFeed({ mapRef }: BlueskyFeedProps) {
@@ -25,10 +68,37 @@ export default function BlueskyFeed({ mapRef }: BlueskyFeedProps) {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [isShowingCached, setIsShowingCached] = useState(false);
+  const [cacheAge, setCacheAge] = useState<string>('');
 
   async function fetchPosts(cursor?: string) {
     try {
       setIsLoading(true);
+      setIsShowingCached(false);
+
+      // If no cursor (initial load), check cache first
+      if (!cursor) {
+        const cached = getCache();
+        if (cached) {
+          console.log('Using cached data');
+          setPosts(cached.posts);
+          setNextCursor(cached.cursor);
+          setIsLoading(false);
+          setIsShowingCached(true);
+          
+          // Calculate how long ago the cache was created
+          const ageInMinutes = Math.floor((Date.now() - cached.timestamp) / (1000 * 60));
+          if (ageInMinutes < 60) {
+            setCacheAge(`${ageInMinutes}m ago`);
+          } else {
+            const hours = Math.floor(ageInMinutes / 60);
+            const minutes = ageInMinutes % 60;
+            setCacheAge(`${hours}h ${minutes}m ago`);
+          }
+          return;
+        }
+      }
+
       const url = new URL('/api/bluesky/posts', window.location.origin);
       url.searchParams.set('limit', '100');
       if (cursor) {
@@ -41,14 +111,23 @@ export default function BlueskyFeed({ mapRef }: BlueskyFeedProps) {
       }
       const data = await response.json();
       
+      let newPosts: BlueskyPost[];
       if (cursor) {
         // Append new posts
-        setPosts(currentPosts => [...currentPosts, ...data.posts]);
+        newPosts = [...posts, ...data.posts];
+        setPosts(newPosts);
       } else {
         // Replace posts for initial load
-        setPosts(data.posts);
+        newPosts = data.posts;
+        setPosts(newPosts);
       }
+      
       setNextCursor(data.cursor || null);
+
+      // Update cache on initial load or when getting a fresh set of posts
+      if (!cursor) {
+        updateCache(newPosts, data.cursor || null);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load posts');
     } finally {
@@ -84,7 +163,38 @@ export default function BlueskyFeed({ mapRef }: BlueskyFeedProps) {
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-lg">
-      <h2 className="text-xl font-semibold mb-4">Recent Restaurant Reviews</h2>
+      <div className="flex flex-col mb-4">
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl font-semibold">Recent Restaurant Reviews</h2>
+          <button
+            onClick={() => {
+              localStorage.removeItem(CACHE_KEY);
+              fetchPosts();
+            }}
+            className="text-xs px-2 py-1 text-blue-500 hover:text-blue-600 transition-colors"
+          >
+            Refresh
+          </button>
+        </div>
+        {isShowingCached && (
+          <div className="flex items-center mt-1 text-xs text-gray-500">
+            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Showing cached data from {cacheAge} • </span>
+            <button 
+              onClick={() => {
+                localStorage.removeItem(CACHE_KEY);
+                fetchPosts();
+              }}
+              className="ml-1 text-blue-500 hover:text-blue-600 transition-colors"
+            >
+              Update now
+            </button>
+          </div>
+        )}
+      </div>
+
       <div className="space-y-4">
         {posts.map((post, index) => (
           <div 

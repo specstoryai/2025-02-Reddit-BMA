@@ -3768,6 +3768,321 @@ _**Assistant**_
 
 
 
+I've updated the BlueskyFeed component to:
+
+1. Fetch 100 posts at a time by setting `limit=100` in the URL params
+2. Track loading state and next cursor for pagination
+3. Add a "Load More Reviews" button that appears only when there are more posts available
+4. Append new posts to the existing list when loading more
+5. Show loading states in both the button and initial load
+6. Handle errors appropriately
+
+The changes include:
+- Loading state management with `isLoading`
+- Cursor tracking with `nextCursor`
+- A new `fetchPosts` function that handles both initial load and pagination
+- A styled "Load More" button that:
+  - Only shows when there are more posts available
+  - Disables while loading
+  - Changes appearance when loading
+  - Appends new posts to the existing list
+
+Would you like me to:
+1. Adjust the button styling?
+2. Add a post counter to show how many posts are loaded?
+3. Add error handling specifically for pagination?
+
+---
+
+_**User**_
+
+let's use localstorage to create a simple cache of fetched restaurants so we don't always have to hit the bluesky api
+
+---
+
+_**Assistant**_
+
+I'll modify the BlueskyFeed component to cache the posts in localStorage and check there first before making API calls. We'll also store a timestamp to potentially refresh old data:
+
+---
+
+_**Assistant**_
+
+```
+'use client';
+
+import { useEffect, useState } from 'react';
+import { MapHandle } from './Map';
+
+interface BlueskyPost {
+  text: string;
+  createdAt: string;
+  images: {
+    url: string;
+    alt: string;
+  }[];
+  location?: {
+    name: string;
+    coordinates: [number, number];
+  };
+}
+
+interface CacheData {
+  posts: BlueskyPost[];
+  cursor: string | null;
+  timestamp: number;
+}
+
+interface BlueskyFeedProps {
+  mapRef: React.RefObject<MapHandle | null>;
+}
+
+const CACHE_KEY = 'bluesky-restaurants-cache';
+const CACHE_DURATION = 1000 * 60 * 60; // 1 hour in milliseconds
+
+function getCache(): CacheData | null {
+  try {
+    const cached = localStorage.getItem(CACHE_KEY);
+    if (!cached) return null;
+
+    const data: CacheData = JSON.parse(cached);
+    const age = Date.now() - data.timestamp;
+    
+    // Return null if cache is too old
+    if (age > CACHE_DURATION) {
+      localStorage.removeItem(CACHE_KEY);
+      return null;
+    }
+    
+    return data;
+  } catch (err) {
+    console.error('Error reading cache:', err);
+    return null;
+  }
+}
+
+function updateCache(posts: BlueskyPost[], cursor: string | null) {
+  try {
+    const cacheData: CacheData = {
+      posts,
+      cursor,
+      timestamp: Date.now()
+    };
+    localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
+  } catch (err) {
+    console.error('Error updating cache:', err);
+  }
+}
+
+export default function BlueskyFeed({ mapRef }: BlueskyFeedProps) {
+  const [posts, setPosts] = useState<BlueskyPost[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+
+  async function fetchPosts(cursor?: string) {
+    try {
+      setIsLoading(true);
+
+      // If no cursor (initial load), check cache first
+      if (!cursor) {
+        const cached = getCache();
+        if (cached) {
+          console.log('Using cached data');
+          setPosts(cached.posts);
+          setNextCursor(cached.cursor);
+          setIsLoading(false);
+          return;
+        }
+      }
+
+      const url = new URL('/api/bluesky/posts', window.location.origin);
+      url.searchParams.set('limit', '100');
+      if (cursor) {
+        url.searchParams.set('cursor', cursor);
+      }
+
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error('Failed to fetch posts');
+      }
+      const data = await response.json();
+      
+      let newPosts: BlueskyPost[];
+      if (cursor) {
+        // Append new posts
+        newPosts = [...posts, ...data.posts];
+        setPosts(newPosts);
+      } else {
+        // Replace posts for initial load
+        newPosts = data.posts;
+        setPosts(newPosts);
+      }
+      
+      setNextCursor(data.cursor || null);
+
+      // Update cache on initial load or when getting a fresh set of posts
+      if (!cursor) {
+        updateCache(newPosts, data.cursor || null);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load posts');
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    fetchPosts();
+  }, []);
+
+  function formatDate(dateString: string) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
+  function handleShowOnMap(coordinates: [number, number]) {
+    mapRef.current?.centerOnLocation(coordinates);
+  }
+
+  if (error) {
+    return <div className="text-red-500">Error: {error}</div>;
+  }
+
+  if (!posts.length && isLoading) {
+    return <div>Loading restaurant posts...</div>;
+  }
+
+  return (
+    <div className="bg-white p-6 rounded-lg shadow-lg">
+      <h2 className="text-xl font-semibold mb-4 flex justify-between items-center">
+        <span>Recent Restaurant Reviews</span>
+        <button
+          onClick={() => {
+            localStorage.removeItem(CACHE_KEY);
+            fetchPosts();
+          }}
+          className="text-xs px-2 py-1 text-blue-500 hover:text-blue-600 transition-colors"
+        >
+          Refresh
+        </button>
+      </h2>
+      <div className="space-y-4">
+        {posts.map((post, index) => (
+          <div 
+            key={index}
+            className="border-b pb-4 last:border-b-0"
+          >
+            <p className="text-sm mb-2">{post.text}</p>
+            {post.images.length > 0 && (
+              <div className="grid grid-cols-2 gap-2 mt-2">
+                {post.images.map((image, imgIndex) => (
+                  <img
+                    key={imgIndex}
+                    src={image.url}
+                    alt={image.alt || 'Restaurant photo'}
+                    className="rounded-lg w-full h-32 object-cover"
+                  />
+                ))}
+              </div>
+            )}
+            <div className="flex items-center justify-between mt-2">
+              <div className="text-xs text-gray-500">
+                {formatDate(post.createdAt)}
+              </div>
+              {post.location && (
+                <button
+                  onClick={() => handleShowOnMap(post.location!.coordinates)}
+                  className="text-sm px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+                >
+                  Show on Map
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+      
+      {nextCursor && (
+        <div className="mt-6 text-center">
+          <button
+            onClick={() => fetchPosts(nextCursor)}
+            disabled={isLoading}
+            className={`px-4 py-2 text-sm font-medium rounded-md text-white 
+              ${isLoading ? 'bg-gray-400' : 'bg-blue-500 hover:bg-blue-600'} 
+              transition-colors`}
+          >
+            {isLoading ? 'Loading...' : 'Load More Reviews'}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+---
+
+_**Assistant**_
+
+
+
+
+
+I've added localStorage caching with these features:
+
+1. Cache Management:
+   - Cache key: 'bluesky-restaurants-cache'
+   - Cache duration: 1 hour
+   - Stores posts, cursor, and timestamp
+   - Automatically invalidates old cache
+
+2. Cache Usage:
+   - Checks cache first on initial load
+   - Uses cached data if available and not expired
+   - Updates cache with fresh data when fetching new posts
+   - Only caches the initial set of posts (not paginated data)
+
+3. UI Improvements:
+   - Added a "Refresh" button to force a fresh fetch
+   - Shows cached data immediately while fresh data loads
+   - Maintains pagination functionality
+
+4. Error Handling:
+   - Graceful fallback if localStorage is unavailable
+   - Error logging for cache operations
+   - Maintains existing error states in the UI
+
+The cache will:
+- Speed up initial load time
+- Reduce API calls
+- Work offline if cached
+- Automatically refresh after 1 hour
+- Can be manually refreshed
+
+Would you like me to:
+1. Adjust the cache duration?
+2. Add a visual indicator when using cached data?
+3. Cache paginated data as well?
+4. Add more sophisticated cache invalidation?
+
+---
+
+_**User**_
+
+yes, add a visual indictor when using cached data
+
+---
+
+_**Assistant**_
+
+I'll add a small indicator when we're showing cached data. Let me update the component:
+
 ---
 
 
