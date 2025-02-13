@@ -34,8 +34,10 @@ const GenerationTimeline = ({ translations, loading, submittedText }) => {
               </div>
             )}
             <img src={gen.character} alt={gen.name} className="timeline-character" />
-            <h2>{gen.period}</h2>
-            <h3>{gen.name}</h3>
+            <div className="timeline-label">
+              <h2>{gen.period}</h2>
+              <h3>{gen.name}</h3>
+            </div>
           </li>
         ))}
       </ul>
