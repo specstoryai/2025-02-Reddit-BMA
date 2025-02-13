@@ -1,0 +1,129 @@
+{
+  "categories": {
+    "essentials": {
+      "first_aid_kit": {
+        "name": "First Aid Kit",
+        "dimensions": {
+          "height": 6,
+          "width": 8,
+          "depth": 3,
+          "volume_liters": 0.5
+        },
+        "priority": "high"
+      },
+      "water_bottle": {
+        "name": "1L Water Bottle",
+        "dimensions": {
+          "height": 10,
+          "width": 3,
+          "depth": 3,
+          "volume_liters": 1
+        },
+        "priority": "high"
+      },
+      "headlamp": {
+        "name": "Headlamp",
+        "dimensions": {
+          "height": 2,
+          "width": 2.5,
+          "depth": 1.5,
+          "volume_liters": 0.1
+        },
+        "priority": "high"
+      }
+    },
+    "clothing": {
+      "rain_jacket": {
+        "name": "Rain Jacket",
+        "dimensions": {
+          "height": 12,
+          "width": 8,
+          "depth": 4,
+          "volume_liters": 1.5
+        },
+        "compressible": true,
+        "priority": "medium"
+      },
+      "fleece": {
+        "name": "Fleece Jacket",
+        "dimensions": {
+          "height": 12,
+          "width": 10,
+          "depth": 6,
+          "volume_liters": 2.5
+        },
+        "compressible": true,
+        "priority": "medium"
+      }
+    },
+    "sleep": {
+      "sleeping_bag": {
+        "name": "Sleeping Bag",
+        "dimensions": {
+          "height": 15,
+          "width": 8,
+          "depth": 8,
+          "volume_liters": 10
+        },
+        "compressible": true,
+        "priority": "high"
+      },
+      "sleeping_pad": {
+        "name": "Sleeping Pad",
+        "dimensions": {
+          "height": 12,
+          "width": 6,
+          "depth": 6,
+          "volume_liters": 3
+        },
+        "compressible": true,
+        "priority": "high"
+      }
+    },
+    "food": {
+      "day_food": {
+        "name": "Food (per day)",
+        "dimensions": {
+          "height": 8,
+          "width": 6,
+          "depth": 4,
+          "volume_liters": 2
+        },
+        "priority": "high",
+        "stackable": true
+      },
+      "stove": {
+        "name": "Camping Stove",
+        "dimensions": {
+          "height": 4,
+          "width": 4,
+          "depth": 3,
+          "volume_liters": 0.5
+        },
+        "priority": "medium"
+      }
+    },
+    "electronics": {
+      "power_bank": {
+        "name": "Power Bank",
+        "dimensions": {
+          "height": 6,
+          "width": 3,
+          "depth": 1,
+          "volume_liters": 0.2
+        },
+        "priority": "low"
+      },
+      "gps_device": {
+        "name": "GPS Device",
+        "dimensions": {
+          "height": 4,
+          "width": 2,
+          "depth": 1,
+          "volume_liters": 0.1
+        },
+        "priority": "medium"
+      }
+    }
+  }
+} 

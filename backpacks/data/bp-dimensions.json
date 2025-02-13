@@ -1,0 +1,132 @@
+{
+    "backpack_types": {
+      "hydration": {
+        "dimensions": {
+          "height": 11,
+          "width": 10,
+          "depth": 4,
+          "dimensions_cm": {
+            "height": 27.9,
+            "width": 25.4,
+            "depth": 10.2
+          }
+        },
+        "capacity": {
+          "liters": 20,
+          "gallons": 3.6
+        }
+      },
+      "everyday": {
+        "dimensions": {
+          "height": 22,
+          "width": 14,
+          "depth": 9,
+          "dimensions_cm": {
+            "height": 55.9,
+            "width": 35.6,
+            "depth": 22.9
+          }
+        },
+        "capacity": {
+          "liters": {
+            "min": 15,
+            "max": 35
+          },
+          "gallons": {
+            "min": 4,
+            "max": 9.2
+          }
+        }
+      },
+      "hiking": {
+        "dimensions": {
+          "height": 30,
+          "width": 18.5,
+          "depth": 12.5,
+          "dimensions_cm": {
+            "height": 76.2,
+            "width": 47,
+            "depth": 31.8
+          }
+        },
+        "capacity": {
+          "liters": {
+            "min": 20,
+            "max": 60
+          },
+          "gallons": {
+            "min": 5.3,
+            "max": 15.9
+          }
+        }
+      }
+    },
+    "capacity_based": {
+      "weekend": {
+        "dimensions": {
+          "height": 21,
+          "width": 11,
+          "depth": 8,
+          "dimensions_cm": {
+            "height": 53.3,
+            "width": 27.9,
+            "depth": 20.3
+          }
+        },
+        "capacity": {
+          "liters": {
+            "min": 30,
+            "max": 50
+          },
+          "gallons": {
+            "min": 7.9,
+            "max": 13.2
+          }
+        }
+      },
+      "multiday": {
+        "dimensions": {
+          "height": 27,
+          "width": 16,
+          "depth": 9,
+          "dimensions_cm": {
+            "height": 68.6,
+            "width": 40.6,
+            "depth": 22.9
+          }
+        },
+        "capacity": {
+          "liters": {
+            "min": 50,
+            "max": 80
+          },
+          "gallons": {
+            "min": 13.2,
+            "max": 21.1
+          }
+        }
+      },
+      "extended_trip": {
+        "dimensions": {
+          "height": 18,
+          "width": 13,
+          "depth": 9,
+          "dimensions_cm": {
+            "height": 45.7,
+            "width": 33,
+            "depth": 22.9
+          }
+        },
+        "capacity": {
+          "liters": {
+            "min": 70,
+            "max": 100
+          },
+          "gallons": {
+            "min": 18.5,
+            "max": 26.4
+          }
+        }
+      }
+    }
+  }
