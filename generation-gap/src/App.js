@@ -61,10 +61,10 @@ function App() {
   return (
     <div className="App">
       <div className="input-container">
+        <div className="character-count">
+          {text.length}/{maxTranslationLength} characters
+        </div>
         <div className="input-text-container">
-          <div className="character-count">
-            {text.length}/{maxTranslationLength} characters
-          </div>
           <textarea
             value={text}
             onChange={handleTextChange}
@@ -74,15 +74,15 @@ function App() {
             className="text-input"
             autoFocus
           />
-        </div>
         <div className="submit-button-container">
           <button 
             onClick={handleSubmit}
             className="submit-button"
             disabled={!text.trim() || Object.values(loading).some(Boolean)}
-          >
+            >
           Speak
         </button>
+        </div>
       </div>
       </div>
       <div className="timeline-content-wrapper">

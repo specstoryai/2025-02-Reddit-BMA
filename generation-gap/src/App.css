@@ -9,12 +9,12 @@
   width: 100%;
   max-width: 600px;
   display: flex;
+  flex-direction: column;
 }
 
 .input-text-container {
   display: flex;
   flex: 1;
-  flex-direction: column;
   gap: 10px;
 }
 
@@ -54,7 +54,7 @@
 
 .character-count {
   color: var(--color-text);
-  margin-bottom: 5px;
+  margin-bottom: 15px;
   font-size: 0.875rem; /* 14px */
   font-family: var(--font-mono);
   margin-left: 20px;
@@ -62,19 +62,24 @@
 
 .submit-button-container {
   display: flex;
+  margin-left: 16px;
 }
-
 
 .submit-button {
   background-color: var(--color-primary);
   color: white;
   border: none;
-  border-radius: 100%;
-  padding: 30px;
+  border-radius: 50%;
+  width: 80px;
+  height: 80px;
   font-size: 1rem;
   font-family: var(--font-sans);
   cursor: pointer;
   transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
 }
 
 .submit-button:hover {
