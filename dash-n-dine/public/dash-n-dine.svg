@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Background circle -->
+  <circle cx="100" cy="100" r="90" fill="#4A90E2" />
+  
+  <!-- Running path/dash line -->
+  <path d="M40 100 Q 70 70, 100 100 T 160 100" 
+        fill="none" 
+        stroke="white" 
+        stroke-width="8" 
+        stroke-linecap="round"
+        stroke-dasharray="1, 12"/>
+</svg>
