@@ -1,0 +1,220 @@
+:root {
+  --grid-width: 100px;
+}
+
+.timeline-container {
+  font-family: sans-serif;
+  padding: 20px;
+  background: white;
+  position: relative;
+  z-index: 1;
+  min-width: fit-content;
+}
+
+h1 {
+  display: none; /* Removing the title since it's not needed */
+}
+
+/* Timeline - Years */
+.timelines-years {
+  position: relative;
+  padding: 0 0 0 200px;
+  margin: 0;
+  white-space: nowrap;
+  border-top: 1px solid #ccc;
+  list-style: none;
+  font-size: 0;
+}
+
+.timelines-years li {
+  position: relative;
+  top: -6px;  
+  display: inline-block;
+  width: calc(var(--grid-width) * 2);
+  color: #666;
+  font-size: 11px;
+  line-height: 11px;
+  text-indent: -12px;
+}
+
+/* Timeline - Events */
+.timeline-events {
+  position: relative;
+  padding: 0;
+  list-style: none;
+  white-space: nowrap;
+  font-size: 0;
+  margin-bottom: 20px;
+  min-width: fit-content;
+}
+
+.timeline-events li {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 10px;
+  padding-right: 20px;
+  text-align: center;
+  vertical-align: top;
+  height: 300px; /* Fixed height to ensure consistent spacing */
+}
+
+.timeline-character {
+  width: 80px;
+  height: auto;
+  position: absolute;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.speech-bubble {
+  position: absolute;
+  background: #fff;
+  border: 2px solid #333;
+  border-radius: 10px;
+  padding: 15px;
+  width: 180px;
+  min-height: 60px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  bottom: 140px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  box-sizing: border-box;
+}
+
+.speech-bubble:after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border: 10px solid transparent;
+  border-top-color: #fff;
+  border-bottom: 0;
+  margin-left: -10px;
+  z-index: 2;
+}
+
+.speech-bubble:before {
+  content: '';
+  position: absolute;
+  bottom: -12px;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border: 11px solid transparent;
+  border-top-color: #333;
+  border-bottom: 0;
+  margin-left: -11px;
+  z-index: 1;
+}
+
+.translated-text {
+  font-size: 14px;
+  line-height: 1.4;
+  color: #444;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+  text-align: left;
+  width: 100%;
+  max-width: 100%;
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-style: italic;
+  color: #666;
+  min-height: 40px;
+  white-space: normal;
+}
+
+.loading::after {
+  content: '';
+  width: 12px;
+  height: 12px;
+  margin-left: 8px;
+  border: 2px solid #666;
+  border-radius: 50%;
+  border-top-color: transparent;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.timeline-events h2,
+.timeline-events h3 {
+  margin: 0 0 1px 0;
+  font-weight: normal;
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.timeline-events h2 {
+  color: #666;
+  text-transform: uppercase;
+}
+
+.timeline-events h3 {
+  font-size: 14px;
+}
+
+.timeline-events h4 {
+  display: none; /* Hide the quotes since they're in speech bubbles now */
+}
+
+.timeline-events li:before {
+  position: absolute;
+  left: 0;
+  bottom: -20px;
+  height: 4px;
+  border-radius: 4px;
+  content: '';
+}
+
+/* Timeline - Events - Grid */
+.timeline-event-years-1 { width: calc(var(--grid-width) * 2); }
+.timeline-event-years-2 { width: calc(var(--grid-width) * 3); }
+.timeline-event-years-3 { width: calc(var(--grid-width) * 3); }
+.timeline-event-years-4 { width: calc(var(--grid-width) * 4); }
+.timeline-event-years-6 { width: calc(var(--grid-width) * 5); }
+.timeline-event-years-7 { width: calc(var(--grid-width) * 4); }
+
+/* Timeline - Events - Colors */
+.timeline-events li:nth-child(1):before {
+  background: #4A8B8F;
+  width: calc(100% - 20px);
+}
+.timeline-events li:nth-child(1) h3 { color: #4A8B8F; }
+
+.timeline-events li:nth-child(2):before {
+  background: #DD3D01;
+  width: calc(100% - 20px);
+}
+.timeline-events li:nth-child(2) h3 { color: #DD3D01; }
+
+.timeline-events li:nth-child(3):before {
+  background: #56C2F3;
+  width: calc(100% - 20px);
+}
+.timeline-events li:nth-child(3) h3 { color: #56C2F3; }
+
+.timeline-events li:nth-child(4):before {
+  background: #FF9704;
+  width: calc(100% - 20px);
+}
+.timeline-events li:nth-child(4) h3 { color: #FF9704; }
+
+.timeline-events li:nth-child(5):before {
+  background: #C2E34E;
+  width: calc(100% - 20px);
+}
+.timeline-events li:nth-child(5) h3 { color: #C2E34E; } 

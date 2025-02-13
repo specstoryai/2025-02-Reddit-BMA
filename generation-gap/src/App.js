@@ -9,6 +9,7 @@ import character5 from './assets/character-5.png';
 import character6 from './assets/character-6.png';
 import { generations, getRandomGenerations } from './utils/generations';
 import { translateText } from './utils/anthropicClient';
+import GenerationTimeline from './components/GenerationTimeline';
 
 function App() {
   const [text, setText] = useState('');
@@ -89,7 +90,14 @@ function App() {
     </div>
   );
 
-  const characterImages = [character1, character2, character3, character4, character5, character6];
+  const characterImages = [
+    character1, // Generation Alpha (leftmost)
+    character2, // Generation Z
+    character3, // Silent Generation
+    character4, // Baby Boomers
+    character5, // Generation X (rightmost)
+    character6  // Not shown in timeline
+  ];
 
   return (
     <div className="App">
@@ -115,17 +123,12 @@ function App() {
           </button>
         </div>
       </div>
-      <div className="characters-container">
-        {activeGenerations.map((generation, index) => (
-          <CharacterWithSpeechBubble
-            key={generation.name}
-            image={characterImages[index]}
-            alt={`Character ${index + 1}`}
-            text={submittedText}
-            generation={generation}
-            index={index}
-          />
-        ))}
+      <div className="timeline-scroll-container">
+        <GenerationTimeline 
+          translations={translations}
+          loading={loading}
+          submittedText={submittedText}
+        />
       </div>
     </div>
   );
