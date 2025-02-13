@@ -1846,6 +1846,18 @@ The logic for the Paged Cache and other parts of the visualization remain unchan
 
 ---
 
+_**User**_
+
+make sure the ui components all live inside the paged-attention folder
+
+---
+
+_**Assistant**_
+
+
+
+---
+
 
 
 ---
