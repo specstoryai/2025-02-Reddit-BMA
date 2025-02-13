@@ -14,21 +14,28 @@ function getBackpackVolume(backpack: BackpackType): number {
 }
 
 function organizeByPriority(items: PackedItem[]): PackingResult['packingStrategy'] {
-  const bottomLayer = items.filter(item => 
-    item.priority === 'high' && (item.compressible || item.dimensions.volume_liters > 5)
-  );
+  let remainingItems = [...items];
   
-  const middleLayer = items.filter(item => 
-    (item.priority === 'medium' || (item.priority === 'high' && !bottomLayer.includes(item)))
-  );
-  
-  const topLayer = items.filter(item => 
-    item.priority === 'low' || item.stackable
-  );
-  
-  const pockets = items.filter(item => 
+  // First, identify pocket items (small essentials)
+  const pockets = remainingItems.filter(item => 
     item.dimensions.volume_liters < 1 && !item.stackable
   );
+  remainingItems = remainingItems.filter(item => !pockets.includes(item));
+
+  // Then, identify bottom layer items (heavy and compressible high-priority)
+  const bottomLayer = remainingItems.filter(item => 
+    item.priority === 'high' && (item.compressible || item.dimensions.volume_liters > 5)
+  );
+  remainingItems = remainingItems.filter(item => !bottomLayer.includes(item));
+  
+  // Next, identify top layer items (stackable and low priority)
+  const topLayer = remainingItems.filter(item => 
+    item.priority === 'low' || item.stackable
+  );
+  remainingItems = remainingItems.filter(item => !topLayer.includes(item));
+  
+  // Everything else goes in the middle layer
+  const middleLayer = remainingItems;
 
   return { bottomLayer, middleLayer, topLayer, pockets };
 }

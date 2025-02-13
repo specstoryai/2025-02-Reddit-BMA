@@ -59,10 +59,6 @@ export function PackingList({ packingResult, onRemoveItem }: PackingListProps) {
 
   return (
     <div className="bg-gray-50 rounded-xl p-6">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">Packing Summary</h2>
-      </div>
-
       {packingStrategy && (
         <div className="space-y-4">
           <PackingSection
