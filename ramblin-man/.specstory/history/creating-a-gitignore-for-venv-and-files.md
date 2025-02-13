@@ -2400,6 +2400,32 @@ The graph will have a dark theme with white text and grid lines to match the tra
 
 ---
 
+_**User**_
+
+let's add a scrubber line to the sentiment analysis window that matches up with the time position of the video showing in mpv
+
+---
+
+_**Assistant**_
+
+I'll modify the sentiment window to include a vertical line that moves with the video playback. We'll need to update both the sentiment window creation and the update loop:
+
+---
+
+_**Assistant**_
+
+```
+undefined
+```
+
+---
+
+_**Assistant**_
+
+
+
+---
+
 
 
 ---

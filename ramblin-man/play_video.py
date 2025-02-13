@@ -107,8 +107,8 @@ def get_current_lines(transcript, current_time, window_size=5):
     
     return "\n".join(lines)
 
-def show_sentiment_window(root, video_path):
-    """Create a window showing the sentiment analysis graph."""
+def show_sentiment_window(root, video_path, socket_path):
+    """Create a window showing the sentiment analysis graph with a time scrubber."""
     sentiment_window = tk.Toplevel(root)
     sentiment_window.title("Sentiment Analysis")
     
@@ -156,6 +156,9 @@ def show_sentiment_window(root, video_path):
         ax.plot(times, polarity, label='Polarity', color='blue', marker='o')
         ax.plot(times, subjectivity, label='Subjectivity', color='red', marker='s')
         
+        # Add initial scrubber line (will be updated)
+        scrubber_line = ax.axvline(x=0, color='yellow', alpha=0.5, linestyle='--')
+        
         # Customize the plot
         ax.set_xlabel('Time (minutes)', color='white')
         ax.set_ylabel('Score', color='white')
@@ -176,6 +179,37 @@ def show_sentiment_window(root, video_path):
         canvas = FigureCanvasTkAgg(fig, master=sentiment_window)
         canvas.draw()
         canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+        
+        # Function to update scrubber position
+        def update_scrubber():
+            try:
+                # Connect to mpv's IPC socket
+                sock = socket.socket(socket.AF_UNIX)
+                sock.connect(socket_path)
+                
+                while True:
+                    # Get current playback position
+                    sock.send(b'{ "command": ["get_property", "playback-time"] }\n')
+                    response = sock.recv(1024).decode()
+                    try:
+                        current_time = json.loads(response)['data']
+                        # Convert to minutes for the graph
+                        current_minutes = current_time / 60
+                        
+                        # Update scrubber line position
+                        scrubber_line.set_xdata([current_minutes, current_minutes])
+                        canvas.draw_idle()  # Redraw only the updated part
+                    except (json.JSONDecodeError, KeyError):
+                        pass
+                    
+                    time.sleep(0.1)  # Update 10 times per second
+                    
+            except (socket.error, ConnectionRefusedError):
+                sentiment_window.quit()
+        
+        # Start update thread
+        update_thread = threading.Thread(target=update_scrubber, daemon=True)
+        update_thread.start()
         
     except Exception as e:
         # If there's an error loading or plotting the data, show error message
@@ -230,7 +264,7 @@ def show_transcript_window(video_path, socket_path):
     text_widget.pack(fill=tk.BOTH, expand=True)
     
     # Create the sentiment analysis window
-    sentiment_window = show_sentiment_window(root, video_path)
+    sentiment_window = show_sentiment_window(root, video_path, socket_path)
     
     # Function to update transcript based on playback position
     def update_transcript():
