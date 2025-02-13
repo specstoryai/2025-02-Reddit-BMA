@@ -68,10 +68,12 @@ function calculateDistance(
 
 export default function NearbyRestaurants({ selectedSegment, mapRef }: NearbyRestaurantsProps) {
   const [nearbyRestaurants, setNearbyRestaurants] = useState<Restaurant[]>([]);
+  const [totalRestaurants, setTotalRestaurants] = useState<number>(0);
 
   useEffect(() => {
     if (!selectedSegment) {
       setNearbyRestaurants([]);
+      setTotalRestaurants(0);
       return;
     }
 
@@ -98,6 +100,8 @@ export default function NearbyRestaurants({ selectedSegment, mapRef }: NearbyRes
         }
         return acc;
       }, []);
+
+      setTotalRestaurants(locations.length);
       
       // Calculate distances and sort
       const restaurantsWithDistance = locations.map((loc: CachedLocation) => ({
@@ -144,7 +148,14 @@ export default function NearbyRestaurants({ selectedSegment, mapRef }: NearbyRes
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-lg">
-      <h2 className="text-xl font-semibold mb-4">Nearby Restaurants</h2>
+      <div className="flex flex-col mb-4">
+        <h2 className="text-xl font-semibold">Nearby Restaurants</h2>
+        {totalRestaurants > 0 && (
+          <p className="text-sm text-gray-500 mt-1">
+            Showing closest 3 of {totalRestaurants} restaurants
+          </p>
+        )}
+      </div>
       <div className="space-y-4">
         {nearbyRestaurants.map((restaurant, index) => (
           <div key={index} className="border-b pb-3 last:border-b-0">

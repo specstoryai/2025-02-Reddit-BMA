@@ -139,18 +139,17 @@ export default function BlueskyFeed({ mapRef }: BlueskyFeedProps) {
         // Append new posts
         newPosts = [...posts, ...data.posts];
         setPosts(newPosts);
+        // Update cache with all posts when loading more
+        updateCache(newPosts, data.cursor || null);
       } else {
         // Replace posts for initial load
         newPosts = data.posts;
         setPosts(newPosts);
+        // Update cache on initial load
+        updateCache(newPosts, data.cursor || null);
       }
       
       setNextCursor(data.cursor || null);
-
-      // Update cache on initial load or when getting a fresh set of posts
-      if (!cursor) {
-        updateCache(newPosts, data.cursor || null);
-      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load posts');
     } finally {

@@ -5123,6 +5123,263 @@ _**Assistant**_
 I've made the following changes:
 1. Moved the NearbyRestaurants component to the right column
 2. Placed it above the BlueskyFeed component
+3. Added proper spacing between the components using `space-y-8`
+4. Cleaned up the nested div structure
+
+The layout now shows:
+- Map and Strava segments on the left (2 columns wide)
+- Nearby Restaurants followed by Recent Restaurant Reviews on the right (1 column wide)
+
+Would you like me to:
+1. Adjust the spacing between components?
+2. Change the layout structure further?
+3. Make any other visual improvements?
+
+---
+
+_**User**_
+
+in the nearby restaurants widget, show how many total restaurants were searched to find the nearby ones
+
+---
+
+_**Assistant**_
+
+I'll modify the NearbyRestaurants component to show the total number of restaurants in the cache that were searched.
+
+---
+
+_**Assistant**_
+
+```
+export default function NearbyRestaurants({ selectedSegment, mapRef }: NearbyRestaurantsProps) {
+  const [nearbyRestaurants, setNearbyRestaurants] = useState<Restaurant[]>([]);
+  const [totalRestaurants, setTotalRestaurants] = useState<number>(0);
+
+  useEffect(() => {
+    if (!selectedSegment) {
+      setNearbyRestaurants([]);
+      setTotalRestaurants(0);
+      return;
+    }
+
+    // Get cached restaurants
+    const CACHE_KEY = 'bluesky-restaurants-cache';
+    const cached = localStorage.getItem(CACHE_KEY);
+    if (!cached) return;
+
+    try {
+      const cacheData = JSON.parse(cached) as CacheData;
+      if (!cacheData.posts || !Array.isArray(cacheData.posts)) {
+        console.error('Invalid cache data structure');
+        return;
+      }
+
+      // Extract locations from posts
+      const locations = cacheData.posts.reduce<CachedLocation[]>((acc, post, index) => {
+        if (post.location) {
+          acc.push({
+            name: post.location.name,
+            coordinates: post.location.coordinates,
+            postIndex: index
+          });
+        }
+        return acc;
+      }, []);
+
+      setTotalRestaurants(locations.length);
+      
+      // Calculate distances and sort
+      const restaurantsWithDistance = locations.map((loc: CachedLocation) => ({
+        name: loc.name,
+        coordinates: loc.coordinates,
+        postIndex: loc.postIndex,
+        distance: calculateDistance(
+          selectedSegment.start_latlng[0],
+          selectedSegment.start_latlng[1],
+          // Convert from [lng, lat] to [lat, lng] for calculation
+          loc.coordinates[1],
+          loc.coordinates[0]
+        )
+      }));
+
+      // Sort by distance and take top 3
+      const closest = restaurantsWithDistance
+        .sort((a: Restaurant, b: Restaurant) => a.distance - b.distance)
+        .slice(0, 3);
+
+      setNearbyRestaurants(closest);
+    } catch (err) {
+      console.error('Error finding nearby restaurants:', err);
+    }
+  }, [selectedSegment]);
+
+  // ... rest of the component code ...
+
+  return (
+    <div className="bg-white p-6 rounded-lg shadow-lg">
+      <div className="flex flex-col mb-4">
+        <h2 className="text-xl font-semibold">Nearby Restaurants</h2>
+        {totalRestaurants > 0 && (
+          <p className="text-sm text-gray-500 mt-1">
+            Showing closest 3 of {totalRestaurants} restaurants
+          </p>
+        )}
+      </div>
+      <div className="space-y-4">
+        {nearbyRestaurants.map((restaurant, index) => (
+          <div key={index} className="border-b pb-3 last:border-b-0">
+            <div className="flex justify-between items-start">
+              <div>
+                <h3 className="font-medium">{restaurant.name}</h3>
+                <p className="text-sm text-gray-500">
+                  {restaurant.distance.toFixed(1)}km from start
+                </p>
+              </div>
+              <button
+                onClick={() => handleShowOnMap(restaurant.coordinates)}
+                className="text-sm px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+              >
+                Show on Map
+              </button>
+            </div>
+          </div>
+        ))}
+        {nearbyRestaurants.length === 0 && (
+          <p className="text-sm text-gray-500 text-center">
+            No restaurants found nearby
+          </p>
+        )}
+      </div>
+    </div>
+  );
+```
+
+---
+
+_**Assistant**_
+
+
+
+I've updated the NearbyRestaurants component to:
+
+1. Add a `totalRestaurants` state to track the total number of restaurants in the cache
+2. Set the total count when processing the cached locations
+3. Reset the count when no segment is selected
+4. Add a subtitle showing "Showing closest 3 of X restaurants" when there are restaurants available
+5. Maintain the existing empty state message when no restaurants are found
+
+The component now provides more context about how many restaurants were considered when finding the nearest ones. Would you like me to:
+
+1. Adjust the styling of the count message?
+2. Change the wording of the message?
+3. Add any additional information about the search?
+
+---
+
+_**User**_
+
+I notice that no matter how many times I've loaded more in the bluesky component the total cache size only ever seems to be 100. Is this a problem with the caching or with the nearby-restaurants widget?
+
+
+---
+
+_**Assistant**_
+
+The issue is in the caching logic. Looking at the `BlueskyFeed` component, when we load more posts using the cursor, we're not updating the cache with the new posts. We only update the cache on the initial load.
+
+Let me fix this in the `BlueskyFeed` component:
+
+---
+
+_**Assistant**_
+
+```
+  async function fetchPosts(cursor?: string) {
+    try {
+      setIsLoading(true);
+      setIsShowingCached(false);
+
+      // If no cursor (initial load), check cache first
+      if (!cursor) {
+        const cached = getCache();
+        if (cached) {
+          console.log('Using cached data');
+          setPosts(cached.posts);
+          setNextCursor(cached.cursor);
+          setIsLoading(false);
+          setIsShowingCached(true);
+          
+          // Calculate how long ago the cache was created
+          const ageInMinutes = Math.floor((Date.now() - cached.timestamp) / (1000 * 60));
+          if (ageInMinutes < 60) {
+            setCacheAge(`${ageInMinutes}m ago`);
+          } else {
+            const hours = Math.floor(ageInMinutes / 60);
+            const minutes = ageInMinutes % 60;
+            setCacheAge(`${hours}h ${minutes}m ago`);
+          }
+          return;
+        }
+      }
+
+      const url = new URL('/api/bluesky/posts', window.location.origin);
+      url.searchParams.set('limit', '100');
+      if (cursor) {
+        url.searchParams.set('cursor', cursor);
+      }
+
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error('Failed to fetch posts');
+      }
+      const data = await response.json();
+      
+      let newPosts: BlueskyPost[];
+      if (cursor) {
+        // Append new posts
+        newPosts = [...posts, ...data.posts];
+        setPosts(newPosts);
+        // Update cache with all posts when loading more
+        updateCache(newPosts, data.cursor || null);
+      } else {
+        // Replace posts for initial load
+        newPosts = data.posts;
+        setPosts(newPosts);
+        // Update cache on initial load
+        updateCache(newPosts, data.cursor || null);
+      }
+      
+      setNextCursor(data.cursor || null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load posts');
+    } finally {
+      setIsLoading(false);
+    }
+  }
+```
+
+---
+
+_**Assistant**_
+
+
+
+I've fixed the issue by:
+
+1. Moving the `updateCache` call to happen on both initial load AND when loading more posts
+2. Ensuring that when we load more posts, we cache the complete list (previous posts + new posts)
+3. Maintaining the same caching structure but with all loaded posts included
+
+Now when you load more posts:
+1. The new posts will be added to the existing posts in state
+2. The entire collection of posts will be cached
+3. The NearbyRestaurants component will see all restaurants from all loaded posts when calculating distances
+
+This should now correctly show the total number of restaurants from all loaded posts, not just the first 100. Would you like me to:
+1. Add logging to verify the cache size?
+2. Make any other improvements to the caching logic?
+3. Add a visual indicator of how many posts have been loaded?
 
 ---
 
