@@ -2,9 +2,8 @@
   text-align: center;
   min-height: 100vh;
   background: white;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
 }
 
 .App-logo {
@@ -43,10 +42,15 @@
 }
 
 .input-container {
-  flex: 0 0 auto;
-  max-width: 800px;
-  margin: 20px auto;
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 600px;
   padding: 20px;
+  background: white;
+  z-index: 10;
 }
 
 .text-input {
@@ -232,12 +236,21 @@
 }
 
 .timeline-scroll-container {
-  flex: 0 0 auto;
-  width: 100%;
-  overflow-x: auto;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  overflow-x: scroll;
   -webkit-overflow-scrolling: touch;
-  margin-top: auto;
-  padding-bottom: 20px;
+  background: white;
+}
+
+.timeline-content-wrapper {
+  padding-top: 200px; /* Space for fixed input container */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera */

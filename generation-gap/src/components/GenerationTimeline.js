@@ -17,7 +17,6 @@ const GenerationTimeline = ({ translations, loading, submittedText }) => {
 
   return (
     <div className="timeline-container">
-      <h1>Generation Timeline</h1>
       <ul className="timeline-events">
         {generations.map((gen, index) => (
           <li key={gen.name} className={`timeline-event-years-${index === 0 ? 7 : index === 1 ? 6 : index === 2 ? 4 : 3}`}>

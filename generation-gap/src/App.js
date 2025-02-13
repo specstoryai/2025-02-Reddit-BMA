@@ -123,12 +123,14 @@ function App() {
           </button>
         </div>
       </div>
-      <div className="timeline-scroll-container">
-        <GenerationTimeline 
-          translations={translations}
-          loading={loading}
-          submittedText={submittedText}
-        />
+      <div className="timeline-content-wrapper">
+        <div className="timeline-scroll-container">
+          <GenerationTimeline 
+            translations={translations}
+            loading={loading}
+            submittedText={submittedText}
+          />
+        </div>
       </div>
     </div>
   );
