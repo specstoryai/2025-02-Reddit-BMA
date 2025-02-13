@@ -104,8 +104,9 @@ function App() {
           onChange={handleTextChange}
           onKeyPress={handleKeyPress}
           maxLength={maxTranslationLength}
-          placeholder="What do you want to hear?"
+          placeholder="Give us something to say?"
           className="text-input"
+          autoFocus
         />
         <div className="input-footer">
           <div className="character-count">
