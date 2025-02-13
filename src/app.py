@@ -80,19 +80,26 @@ def debate(topic_id):
 
 @app.route('/api/get-ai-responses', methods=['POST'])
 def get_ai_responses():
+    logger.info(f"Received request data: {request.get_data(as_text=True)}")
+    logger.info(f"Request content type: {request.content_type}")
+    logger.info(f"Request JSON: {request.json}")
+    
     topic = request.json.get('topic')
+    logger.info(f"Extracted topic: {topic}")
+    
     if not topic:
-        return jsonify({'error': 'No topic provided'}), 400
+        logger.error("No topic provided in request")
+        return jsonify({'error': 'No topic provided'}), 400, {'Content-Type': 'application/json'}
     
     try:
         positions, arguments = get_debate_positions_and_arguments(topic)
         return jsonify({
             'positions': positions,
             'arguments': arguments
-        })
+        }), 200, {'Content-Type': 'application/json'}
     except Exception as e:
         logger.error(f"Error getting AI responses: {str(e)}", exc_info=True)
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': str(e)}), 500, {'Content-Type': 'application/json'}
 
 if __name__ == '__main__':
     app.run(debug=True) 
