@@ -12,7 +12,12 @@ interface StravaSegment {
   end_latlng: [number, number];
 }
 
-export default function StravaSegments() {
+interface StravaSegmentsProps {
+  onSegmentSelect: (segment: StravaSegment | null) => void;
+  selectedSegment: StravaSegment | null;
+}
+
+export default function StravaSegments({ onSegmentSelect, selectedSegment }: StravaSegmentsProps) {
   const [segments, setSegments] = useState<StravaSegment[]>([]);
   const [error, setError] = useState<string | null>(null);
 
@@ -46,7 +51,13 @@ export default function StravaSegments() {
       <h2 className="text-xl font-semibold mb-4">Popular Routes Nearby</h2>
       <div className="space-y-4">
         {segments.map((segment, index) => (
-          <div key={index} className="border-b pb-3 last:border-b-0">
+          <div 
+            key={index} 
+            className={`border-b pb-3 last:border-b-0 cursor-pointer hover:bg-gray-50 p-2 rounded transition-colors ${
+              selectedSegment === segment ? 'bg-blue-50 hover:bg-blue-100' : ''
+            }`}
+            onClick={() => onSegmentSelect(selectedSegment === segment ? null : segment)}
+          >
             <h3 className="font-medium">{segment.name}</h3>
             <div className="text-sm text-gray-600 mt-1">
               <p>Distance: {(segment.distance / 1000).toFixed(1)}km</p>

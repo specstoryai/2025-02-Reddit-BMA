@@ -790,6 +790,219 @@ Let me fix the duplicate property in the interface:
 
 ---
 
+_**Assistant**_
+
+```
+'use client';
+
+import { useEffect, useState } from 'react';
+
+interface StravaSegment {
+  name: string;
+  distance: number;
+  avg_grade: number;
+  elev_difference: number;
+  climb_category: number;
+  start_latlng: [number, number];
+  end_latlng: [number, number];
+}
+
+// ... rest of the file stays the same ...
+```
+
+---
+
+_**Assistant**_
+
+
+
+
+
+Let's also update the API route to log the response so we can see exactly what data we're getting from Strava:
+
+---
+
+_**Assistant**_
+
+```
+import { NextResponse } from 'next/server';
+
+const BOSTON_COORDS = {
+  lat: 42.3601,
+  lng: -71.0589
+};
+
+export async function GET() {
+  try {
+    // Explore segments in a bounding box around Boston
+    const bounds = {
+      min_lat: BOSTON_COORDS.lat - 0.1,
+      max_lat: BOSTON_COORDS.lat + 0.1,
+      min_lng: BOSTON_COORDS.lng - 0.1,
+      max_lng: BOSTON_COORDS.lng + 0.1
+    };
+
+    const response = await fetch(
+      `https://www.strava.com/api/v3/segments/explore?bounds=${bounds.min_lat},${bounds.min_lng},${bounds.max_lat},${bounds.max_lng}&activity_type=running`,
+      {
+        headers: {
+          'Authorization': `Bearer ${process.env.NEXT_STRAVA_ACCESS_TOKEN}`
+        }
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch from Strava API');
+    }
+
+    const data = await response.json();
+    console.log('Strava API response:', JSON.stringify(data, null, 2));
+    return NextResponse.json(data);
+  } catch (error) {
+    console.error('Strava API error:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch segments' },
+      { status: 500 }
+    );
+  }
+}
+```
+
+---
+
+_**Assistant**_
+
+
+
+
+
+I've made several changes to fix the error and improve the code:
+
+1. Updated the `StravaSegment` interface to match the actual Strava API response structure:
+   - Changed `average_grade` to `avg_grade`
+   - Changed elevation fields to use `elev_difference`
+   - Added `climb_category` and lat/lng coordinates
+   - Removed duplicate property
+
+2. Made the component more resilient to missing data:
+   - Added optional chaining (`?.`) to handle potentially undefined values
+   - Added fallback "N/A" values when data is missing
+   - Changed the displayed information to show climb category instead of activity type
+
+3. Added response logging in the API route to help us debug the exact data structure we're getting from Strava
+
+The component should now handle the Strava API response correctly without throwing errors. You should see the segment data in your browser's console, which will help us further refine the interface if needed.
+
+Would you like me to make any adjustments to how the data is displayed or add any additional error handling?
+
+---
+
+_**User**_
+
+Let me click on one of the routes and display it on the mapbox map.
+
+---
+
+_**Assistant**_
+
+I'll help you implement this feature. We'll need to:
+1. Add a click handler for segments
+2. Create a state to track the selected segment
+3. Update the map to show the selected route
+
+First, let's modify the Map component to accept and display the selected segment:
+
+---
+
+_**Assistant**_
+
+```
+'use client';
+
+import { useEffect, useRef } from 'react';
+import mapboxgl from 'mapbox-gl';
+
+interface MapProps {
+  selectedSegment?: {
+    name: string;
+    start_latlng: [number, number];
+    end_latlng: [number, number];
+  } | null;
+}
+
+export default function Map({ selectedSegment }: MapProps) {
+  const mapContainer = useRef<HTMLDivElement>(null);
+  const map = useRef<mapboxgl.Map | null>(null);
+  const markerStart = useRef<mapboxgl.Marker | null>(null);
+  const markerEnd = useRef<mapboxgl.Marker | null>(null);
+
+  useEffect(() => {
+    if (map.current) return;
+    if (!mapContainer.current) return;
+
+    mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_API_TOKEN as string;
+    
+    map.current = new mapboxgl.Map({
+      container: mapContainer.current,
+      style: 'mapbox://styles/mapbox/streets-v12',
+      center: [-71.0589, 42.3601], // Boston coordinates
+      zoom: 12
+    });
+  }, []);
+
+  // Handle selected segment changes
+  useEffect(() => {
+    if (!map.current || !selectedSegment) {
+      // Clear markers if no segment is selected
+      markerStart.current?.remove();
+      markerEnd.current?.remove();
+      return;
+    }
+
+    // Remove existing markers
+    markerStart.current?.remove();
+    markerEnd.current?.remove();
+
+    // Add start marker
+    markerStart.current = new mapboxgl.Marker({ color: '#00ff00' })
+      .setLngLat([selectedSegment.start_latlng[1], selectedSegment.start_latlng[0]])
+      .setPopup(new mapboxgl.Popup().setHTML('Start: ' + selectedSegment.name))
+      .addTo(map.current);
+
+    // Add end marker
+    markerEnd.current = new mapboxgl.Marker({ color: '#ff0000' })
+      .setLngLat([selectedSegment.end_latlng[1], selectedSegment.end_latlng[0]])
+      .setPopup(new mapboxgl.Popup().setHTML('End: ' + selectedSegment.name))
+      .addTo(map.current);
+
+    // Fit map to show both markers
+    const bounds = new mapboxgl.LngLatBounds()
+      .extend([selectedSegment.start_latlng[1], selectedSegment.start_latlng[0]])
+      .extend([selectedSegment.end_latlng[1], selectedSegment.end_latlng[0]]);
+
+    map.current.fitBounds(bounds, {
+      padding: 100,
+      duration: 1000
+    });
+  }, [selectedSegment]);
+
+  return (
+    <div 
+      ref={mapContainer} 
+      className="w-full h-[400px] rounded-lg shadow-lg"
+    />
+  );
+}
+```
+
+---
+
+_**Assistant**_
+
+
+
+---
+
 
 
 ---
