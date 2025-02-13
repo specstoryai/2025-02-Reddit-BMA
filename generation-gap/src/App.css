@@ -70,9 +70,10 @@
   color: white;
   border: none;
   border-radius: 50%;
-  width: 80px;
-  height: 80px;
-  font-size: 1rem;
+  width: 100px;
+  height: 100px;
+  font-size: 1.2rem;
+  font-weight: 800;
   font-family: var(--font-sans);
   cursor: pointer;
   transition: all 0.2s ease;
@@ -91,9 +92,6 @@
   opacity: 0.7;
   cursor: not-allowed;
 }
-
-
-
 
 .characters-container {
   display: flex;
@@ -136,14 +134,11 @@
   margin-bottom: 40px; /* Reduced space between character and timeline */
 }
 
-
 .translated-text {
   font-size: 0.875rem; /* 14px */
   line-height: 1.4;
   color: var(--color-text);
 }
-
-
 
 .loading {
   display: flex;
