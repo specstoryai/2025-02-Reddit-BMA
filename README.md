@@ -43,5 +43,11 @@ Tomorrow team [SpecsStory](https://specstory.com/) wants to have some fun and 
 </details>
 
 
-## The Apps
-[Backpacking gear management with gear list](https://www.reddit.com/r/cursor/comments/1io14r6/comment/mcfjeh3/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button)
+## Completed Apps
+
+- [yenrabbit_art's request](https://www.reddit.com/r/cursor/comments/1io14r6/comment/mcfrcog/): _I'd love to see a 'paged attention' implementation with visualizations for teaching_
+    - Overview Video, Cursor Exchange and Link to Source Code: https://share.specstory.com/stories/b4949812-fb12-44b2-ae15-4b0ac8e71040
+
+- [Tincr's Request](https://www.reddit.com/r/cursor/comments/1io14r6/comment/mchiofi/): _Chrome extension that analyzes my browsing history, pulls the content of interesting pages / articles / blogs / etc and turns it into a feed._
+   - Overview Video, Cursor Exchange and Link to Source Code: https://share.specstory.com/stories/e9cc3402-af44-4a6e-9d93-6a453c88ded3
+
