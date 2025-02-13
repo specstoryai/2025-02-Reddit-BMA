@@ -35,14 +35,12 @@ export default function Home() {
                 onSegmentSelect={setSelectedSegment}
               />
             </div>
-            <div className="mt-8">
-              <NearbyRestaurants
-                selectedSegment={selectedSegment}
-                mapRef={mapRef}
-              />
-            </div>
           </div>
-          <div>
+          <div className="space-y-8">
+            <NearbyRestaurants
+              selectedSegment={selectedSegment}
+              mapRef={mapRef}
+            />
             <BlueskyFeed mapRef={mapRef} />
           </div>
         </div>

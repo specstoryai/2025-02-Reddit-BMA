@@ -5071,6 +5071,61 @@ Would you like me to:
 
 ---
 
+_**User**_
+
+Let's move the nearby restaurants ui component above the Recent Restaurant Reviews component
+
+---
+
+_**Assistant**_
+
+I'll modify the main page layout to move the NearbyRestaurants component above the BlueskyFeed component.
+
+---
+
+_**Assistant**_
+
+```
+  return (
+    <div className="min-h-screen p-8">
+      <main className="max-w-6xl mx-auto space-y-8">
+        <h1 className="text-3xl font-bold">Welcome to Dash-N-Dine</h1>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2">
+            <Map ref={mapRef} selectedSegment={selectedSegment} />
+            <div className="mt-8">
+              <StravaSegments 
+                selectedSegment={selectedSegment}
+                onSegmentSelect={setSelectedSegment}
+              />
+            </div>
+          </div>
+          <div className="space-y-8">
+            <NearbyRestaurants
+              selectedSegment={selectedSegment}
+              mapRef={mapRef}
+            />
+            <BlueskyFeed mapRef={mapRef} />
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+```
+
+---
+
+_**Assistant**_
+
+
+
+I've made the following changes:
+1. Moved the NearbyRestaurants component to the right column
+2. Placed it above the BlueskyFeed component
+
+---
+
 
 
 ---
