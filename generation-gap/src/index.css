@@ -1,5 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@400;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Aleo:wght@400&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Varela+Round&display=swap');
 
 :root {
@@ -19,7 +19,7 @@
   /* Font family variables */
   --font-mono: 'Space Mono', monospace;
   --font-sans: 'Varela Round', sans-serif;
-  --font-serif: 'Lora', serif;
+  --font-serif: 'Aleo', serif;
 }
 
 body {

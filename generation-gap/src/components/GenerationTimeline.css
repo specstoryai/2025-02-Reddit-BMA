@@ -1,12 +1,22 @@
 :root {
-  --grid-width: var(--timeline-grid-width, 100px);
+  --px-per-year: 25px;
+  --year-span: 100; /* Total years from 1920 to 2020 */
+  --grid-columns: 11; /* Number of decade markers */
+
+  /* Generation colors */
+  --gen-color-1: var(--color-blue);
+  --gen-color-2: var(--color-teal);
+  --gen-color-3: var(--color-light-blue);
+  --gen-color-4: var(--color-purple);
+  --gen-color-5: var(--color-green);
+  --gen-color-6: var(--color-orange);
 }
 
 .timeline-container {
   font-family: var(--font-mono);
   position: relative;
   z-index: 1;
-  min-width: fit-content;
+  min-width: calc(110 * var(--px-per-year)); /* 110 years */
   margin-top: 300px;
 }
 
@@ -17,30 +27,32 @@ h1 {
 /* Timeline - Years */
 .timelines-years {
   position: relative;
-  padding: 0 0 0 200px;
-  margin: 0;
-  white-space: nowrap;
   border-top: 1px solid #ccc;
   list-style: none;
   font-size: 0;
-  margin-bottom: 20px; /* Add space between year markers and generation labels */
+  width: calc(110 * var(--px-per-year));
 }
 
 .timelines-years li {
   position: relative;
-  top: -6px;  
+  top: -9px;  
+  font-weight: 700;
   display: inline-block;
-  width: calc(var(--grid-width) * 2);
+  width: calc(10 * var(--px-per-year)); /* One decade = 10 years */
   color: #666;
-  font-size: 0.75rem; /* 12px */
+  font-size: 0.75rem;
   text-indent: -12px;
   font-family: var(--font-mono);
+  text-shadow: -1px -1px 0 #fff,  
+               1px -1px 0 #fff,
+               -1px 1px 0 #fff,
+               1px 1px 0 #fff;
 }
 
 /* Timeline - Events */
 .timeline-events {
   position: relative;
-  padding: 0;
+  padding: 0 0 0 200px; /* Match the years container padding */
   list-style: none;
   white-space: nowrap;
   font-size: 0;
@@ -50,10 +62,10 @@ h1 {
 .timeline-events li {
   position: relative;
   display: inline-block;
-  padding-right: 20px;
+  padding-right: 0;
   text-align: center;
   vertical-align: top;
-  height: 450px; /* Increased to accommodate the lower labels */
+  height: 450px;
 }
 
 .timeline-character {
@@ -70,15 +82,14 @@ h1 {
   position: absolute;
   background: #f5f5f5;
   border: none;
-  border-radius: 30px;
-  padding: 30px;
-  width: 280px;
+  border-radius: 40px;
+  padding: 35px;
+  width: 290px;
   min-height: 60px;
-  bottom: 220px; /* Position above the character */
+  bottom: 240px; /* Position above the character */
   left: 50%;
-  font-size: 2rem;
   transform: translateX(-50%);
-  z-index: 2;
+  z-index: 10;
   box-sizing: border-box;
 }
 
@@ -96,17 +107,12 @@ h1 {
   z-index: 2;
 }
 
-.speech-bubble:before {
-  display: none; /* Remove the outline triangle */
-}
 
 .translated-text {
   font-family: var(--font-serif);
-  font-size: 0.875rem; /* 14px */
-  line-height: 1.4;
+  font-size: .9rem;
+  line-height: 1.5;
   color: #444;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
   white-space: normal;
   text-align: left;
   width: 100%;
@@ -143,7 +149,7 @@ h1 {
 
 .timeline-label {
   position: absolute;
-  bottom: -105px;  /* Adjusted to make room for age range */
+  bottom: -140px;  /* Adjusted to make room for age range */
   left: 0;
   right: 20px;
   text-align: center;
@@ -152,71 +158,56 @@ h1 {
 
 .timeline-label h2 {
   color: #666;
-  text-transform: uppercase;
-  font-size: 0.6875rem; /* 11px */
+  font-size: 1.2rem;
+  margin: 0;
 }
 
 .timeline-label h3 {
-  font-size: 0.875rem; /* 14px */
-  margin-top: 5px;
+  font-size: 0.875rem;
+  margin-top: 10px;
+  margin-bottom: 0;
 }
 
 .timeline-label .age-range {
-  font-size: 0.75rem; /* 12px */
-  color: #666;
-  margin-top: 2px;
-  font-style: italic;
-}
-
-.timeline-events h4 {
-  display: none; /* Hide the quotes since they're in speech bubbles now */
+  font-size: 0.75rem;
 }
 
 .timeline-events li:before {
   position: absolute;
   left: 0;
-  bottom: 40px;
-  height: 4px;
-  border-radius: 4px;
+  bottom: 30px;
+  height: 8px;
   content: '';
+  width: 100%;
 }
 
-/* Timeline - Events - Grid */
-/* Note: Individual generation widths are now controlled by inline styles */
+
+/* Timeline - Events */
+/* Base width calculations using --px-per-year */
+.timeline-event-years-3 { 
+  margin-left: calc(8 * var(--px-per-year)); /* 1928-1920 = 8 years */
+  width: calc(17 * var(--px-per-year)) !important; /* 1945-1928 = 17 years */
+} /* Silent Generation: 1928-1945 */
+
+.timeline-event-years-4 { width: calc(18 * var(--px-per-year)) !important; } /* Baby Boomers: 1946-1964 */
+.timeline-event-years-5 { width: calc(15 * var(--px-per-year)) !important; } /* Generation X: 1965-1980 */
+.timeline-event-years-6 { width: calc(15 * var(--px-per-year)) !important; } /* Millennials: 1981-1996 */
+.timeline-event-years-7 { width: calc(12 * var(--px-per-year)) !important; } /* Generation Z: 1997-2009 */
+.timeline-event-years-8 { width: calc(14 * var(--px-per-year)) !important; } /* Generation Alpha: 2010-2024 */
 
 /* Timeline - Events - Colors */
-.timeline-events li:nth-child(1):before {
-  background: var(--color-blue);
-  width: calc(100% - 20px);
-}
-.timeline-events li:nth-child(1) .timeline-label h3 { color: var(--color-blue); }
+/* Apply colors using nth-child */
+.timeline-events li:nth-child(1):before { background: var(--gen-color-1); }
+.timeline-events li:nth-child(2):before { background: var(--gen-color-2); }
+.timeline-events li:nth-child(3):before { background: var(--gen-color-3); }
+.timeline-events li:nth-child(4):before { background: var(--gen-color-4); }
+.timeline-events li:nth-child(5):before { background: var(--gen-color-5); }
+.timeline-events li:nth-child(6):before { background: var(--gen-color-6); }
 
-.timeline-events li:nth-child(2):before {
-  background: var(--color-teal);
-  width: calc(100% - 20px);
-}
-.timeline-events li:nth-child(2) .timeline-label h3 { color: var(--color-teal); }
-
-.timeline-events li:nth-child(3):before {
-  background: var(--color-light-blue);
-  width: calc(100% - 20px);
-}
-.timeline-events li:nth-child(3) .timeline-label h3 { color: var(--color-light-blue); }
-
-.timeline-events li:nth-child(4):before {
-  background: var(--color-purple);
-  width: calc(100% - 20px);
-}
-.timeline-events li:nth-child(4) .timeline-label h3 { color: var(--color-purple); }
-
-.timeline-events li:nth-child(5):before {
-  background: var(--color-green);
-  width: calc(100% - 20px);
-}
-.timeline-events li:nth-child(5) .timeline-label h3 { color: var(--color-green); }
-
-.timeline-events li:nth-child(6):before {
-  background: var(--color-orange);
-  width: calc(100% - 20px);
-}
-.timeline-events li:nth-child(6) .timeline-label h3 { color: var(--color-orange); } 
+/* Apply text colors using the same variables */
+.timeline-events li:nth-child(1) .timeline-label h3 { color: var(--gen-color-1); }
+.timeline-events li:nth-child(2) .timeline-label h3 { color: var(--gen-color-2); }
+.timeline-events li:nth-child(3) .timeline-label h3 { color: var(--gen-color-3); }
+.timeline-events li:nth-child(4) .timeline-label h3 { color: var(--gen-color-4); }
+.timeline-events li:nth-child(5) .timeline-label h3 { color: var(--gen-color-5); }
+.timeline-events li:nth-child(6) .timeline-label h3 { color: var(--gen-color-6); } 

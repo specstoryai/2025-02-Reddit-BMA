@@ -2,7 +2,7 @@
 
 .input-container {
   position: fixed;
-  margin-top: 80px;
+  margin-top: 50px;
   top: 0;
   left: 50%;
   transform: translateX(-50%);
@@ -132,12 +132,6 @@
   width: 100px;
   height: auto;
   margin-bottom: 40px; /* Reduced space between character and timeline */
-}
-
-.translated-text {
-  font-size: 0.875rem; /* 14px */
-  line-height: 1.4;
-  color: var(--color-text);
 }
 
 .loading {

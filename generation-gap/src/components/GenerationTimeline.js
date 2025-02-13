@@ -24,7 +24,7 @@ const GenerationTimeline = ({ translations, loading, submittedText }) => {
     <div className="timeline-container">
       <ul className="timeline-events">
         {generations.map((gen, index) => (
-          <li key={gen.name} className={`timeline-event-years-${index + 3}`} style={{ width: gen.timelineWidth }}>
+          <li key={gen.name} className={`timeline-event-years-${index + 3}`}>
             {submittedText && (
               <div className="speech-bubble">
                 <div className="translated-text">
@@ -40,8 +40,8 @@ const GenerationTimeline = ({ translations, loading, submittedText }) => {
             )}
             <img src={characterMap[gen.name]} alt={gen.name} className="timeline-character" />
             <div className="timeline-label">
-              <h2>{gen.period}</h2>
-              <h3>{gen.name}</h3>
+              <h2>{gen.name}</h2>
+              <h3>{gen.period}</h3>
               <p className="age-range">Ages {gen.ages} in {gen.agesReferenceYear}</p>
             </div>
           </li>
