@@ -88,23 +88,6 @@
       ]
     },
     {
-      "name": "Doge",
-      "main_image_url": "doge_2.jpg",
-      "image_urls": [
-        "doge_1.jpg",
-        "doge_2.jpg",
-        "doge_3.jpg"
-      ]
-    },
-    {
-      "name": "Pepe the Frog",
-      "main_image_url": "pepe_the_frog.jpg",
-      "image_urls": [
-        "pepe_the_frog_1.jpg",
-        "pepe_the_frog_2.jpg"
-      ]
-    },
-    {
       "name": "Grumpy Cat",
       "main_image_url": "grumpy_cat_3.jpg",
       "image_urls": [

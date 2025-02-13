@@ -51,6 +51,32 @@ export default function Home() {
     }
   };
 
+  const deleteMeme = async (memeName: string) => {
+    if (!confirm(`Are you sure you want to delete "${memeName}"?`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/delete-meme', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ memeName }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to delete meme');
+      }
+
+      // Fetch fresh data after deletion
+      await fetchMemes();
+    } catch (error) {
+      console.error('Error deleting meme:', error);
+      alert('Failed to delete meme. Please try again.');
+    }
+  };
+
   if (loading) {
     return (
       <main className="container mx-auto px-4 py-8">
@@ -66,14 +92,22 @@ export default function Home() {
         {memes.map((meme) => (
           <section key={meme.name} className="border rounded-lg p-6 shadow-lg">
             <div className="flex justify-between items-center mb-4">
-              <a 
-                href={getGoogleImageSearchUrl(meme.name)} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-2xl font-semibold text-blue-600 hover:text-blue-800 hover:underline"
-              >
-                {meme.name}
-              </a>
+              <div className="flex items-center gap-4">
+                <a 
+                  href={getGoogleImageSearchUrl(meme.name)} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-2xl font-semibold text-blue-600 hover:text-blue-800 hover:underline"
+                >
+                  {meme.name}
+                </a>
+                <button
+                  onClick={() => deleteMeme(meme.name)}
+                  className="text-red-600 hover:text-red-800 text-sm font-medium px-3 py-1 border border-red-600 hover:border-red-800 rounded-full"
+                >
+                  Delete
+                </button>
+              </div>
               <div className="text-sm text-gray-500">
                 Current main image: {meme.main_image_url.split('/').pop()}
               </div>
