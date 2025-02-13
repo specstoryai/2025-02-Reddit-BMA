@@ -65,7 +65,7 @@
       "2020"
     ],
     "gridWidth": "100px",
-    "maxTranslationLength": 300,
+    "maxTranslationLength": 140,
     "translationInstructions": "You are A Generation Gap translator. Use the original text below, and say it a different way using the style specified. Don't try to make use of every instruction and example, be creative and prioritize the overall length of the message, specified below. Respond only in English, no Spanish or other languages. No preamble or introduction. No descriptions of how a speaker would deliver this message, just output the text that can go into a speech bubble. No quotes, just the text of the message itself."
   }
 } 
