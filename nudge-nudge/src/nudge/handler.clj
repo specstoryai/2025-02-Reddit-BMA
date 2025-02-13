@@ -4,16 +4,19 @@
             [ring.middleware.defaults :refer [wrap-defaults site-defaults]]
             [ring.util.response :as response]
             [cheshire.core :as json]
-            [nudge.views :as views]))
+            [nudge.views :as views]
+            [nudge.claude :as claude]
+            [nudge.perspectives :refer [perspectives]]))
 
-(def mock-response
-  "After careful consideration from my stoic perspective, here's what I see: The fear of leaving your comfort zone is natural, but remember that growth often lies just beyond it. Consider this: your current stability is admirable, but ask yourself - in 5 years, will you regret not taking this opportunity for growth? A true stoic focuses on what's within their control: your ability to adapt, learn, and face challenges with resilience. The uncertainty about company culture is outside your control, but your response to it is entirely within your power. The financial benefit is significant, but more importantly, this challenge offers a chance to practice virtue through courage and wisdom. Whatever you choose, approach it with equanimity and focus on what you can control: your attitude, effort, and commitment to excellence.")
+(defn get-perspective [name]
+  (first (filter #(= name (:name %)) perspectives)))
 
-;; Simulate a delay to show loading states
-(defn get-mock-advice [issue perspective-name]
-  (Thread/sleep 3000)
-  {:status "success"
-   :advice mock-response})
+(defn get-advice [issue perspective-name]
+  (if-let [perspective (get-perspective perspective-name)]
+    {:status "success"
+     :advice (claude/generate-advice issue perspective)}
+    {:status "error"
+     :message "Perspective not found"}))
 
 (defroutes routes
   (GET "/" [] (views/index-page))
@@ -21,7 +24,7 @@
     (let [params (json/parse-string (slurp (:body request)) true)]
       (response/response
        (json/generate-string
-        (get-mock-advice (:issue params) (:perspective params))))))
+        (get-advice (:issue params) (:perspective params))))))
   (route/resources "/")
   (route/not-found (views/not-found-page)))
 
