@@ -2,13 +2,13 @@
 
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
 } from "@/components/ui/hover-card"
-import { ArrowRight, Key, Database, Brain, CheckCircle2, RotateCcw, Plus, Info } from 'lucide-react';
+import { ArrowRight, Key, Database, Brain, CheckCircle2, Plus, Info } from 'lucide-react';
+import { Header } from '@/components/Header';
 
 interface CacheEntry {
   key: string;
@@ -133,30 +133,28 @@ const KVCacheDemo = () => {
     {
       title: "Initial State",
       description: "We start with an input sequence: 'The black cat sat on the mat'",
-      action: "Next: Process first token"
+      action: "Next: Process 'The'"
     },
     ...Array(processingPhaseEndStep - 1).fill(null).map((_, idx) => {
-      const token = tokens[idx + 1];
-      const isThe = token.text.toLowerCase() === 'the' && idx + 1 > 0;
+      const nextToken = tokens[idx + 1];
+      const isThe = nextToken.text.toLowerCase() === 'the';
       return {
         title: `Process ${getOrdinal(idx + 2)} Token${isThe ? " - Cache Hit!" : ""}`,
         description: isThe 
           ? "We've seen 'the' before! We can reuse its existing K,V pair instead of recomputing"
-          : `Generate K,V pair for '${token.text}' and store in cache`,
-        action: idx + 2 < processingPhaseEndStep 
-          ? `Next: Process ${getOrdinal(idx + 3)} token`
-          : "Next: Begin generation"
+          : `Generate K,V pair for '${nextToken.text}' and store in cache`,
+        action: `Next: Process '${nextToken.text}'`
       };
     }),
     {
       title: "Begin Generation Phase",
       description: "Using all cached K,V pairs as context to start generating new tokens",
-      action: "Next: Generate first token"
+      action: `Next: Generate '${genTokens[0].text}'`
     },
     {
       title: "Generate First New Token",
       description: "'and' isn't in our cache, so we need to compute new K,V pairs while using the cached context",
-      action: "Next: Generate second token"
+      action: `Next: Generate '${genTokens[1].text}'`
     },
     {
       title: "Generate Second Token - Cache Hit!",
@@ -483,190 +481,193 @@ const KVCacheDemo = () => {
   );
 
   return (
-    <div className="w-full max-w-6xl mx-auto p-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>KV Cache vs Paged Attention Cache Comparison</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {/* Step indicator */}
-          <div className="mb-8">
-            <h3 className="text-lg font-semibold">{steps[step].title}</h3>
-            <p className="text-gray-600">{steps[step].description}</p>
-          </div>
-
-          {/* Visualization area */}
-          <div className="flex flex-col gap-8 mb-8">
-            {/* Input tokens */}
-            <div className="flex gap-4 items-center">
-              <span className="font-mono">Input:</span>
-              <div className="flex gap-2">
-                {tokens.map((token, idx) => (
-                  <div 
-                    key={idx}
-                    className={`p-2 border rounded ${
-                      token.isHighlighted ? 'bg-blue-50' : ''
-                    } ${token.text.toLowerCase() === 'the' && step === 4 && token.isCacheHit ? 'bg-green-100 border-green-500' : ''} 
-                    ${(step > idx && !generating) || (step === 4 && idx < 4) ? 'bg-blue-100' : ''}`}
-                  >
-                    {token.text}
-                    {token.text.toLowerCase() === 'the' && step === 4 && token.isCacheHit && (
-                      <div className="flex items-center gap-1 text-green-600 text-sm mt-1">
-                        <CheckCircle2 size={14} />
-                        <span>Cache hit!</span>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
+    <>
+      <Header 
+        onNext={handleNext}
+        buttonText={steps[step].action}
+        showRestart={step === totalSteps - 1}
+      />
+      <div className="w-full max-w-6xl mx-auto p-4 pt-20">
+        <Card>
+          <CardHeader>
+            <CardTitle>KV Cache vs Paged Attention Cache Comparison</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {/* Step indicator */}
+            <div className="mb-8">
+              <h3 className="text-lg font-semibold">{steps[step].title}</h3>
+              <p className="text-gray-600">{steps[step].description}</p>
             </div>
 
-            {/* Generation tokens */}
-            {generating && (
+            {/* Visualization area */}
+            <div className="flex flex-col gap-8 mb-8">
+              {/* Input tokens */}
               <div className="flex gap-4 items-center">
-                {renderTooltip(tooltips.pagedGeneration, 
-                  <span className="font-mono">Generated:</span>
-                )}
+                <span className="font-mono">Input:</span>
                 <div className="flex gap-2">
-                  {getCurrentGeneratedTokens().map((token, idx) => (
+                  {tokens.map((token, idx) => (
                     <div 
                       key={idx}
                       className={`p-2 border rounded ${
-                        step < idx + processingPhaseEndStep + 1 ? 'bg-gray-50' : 'bg-blue-100'
-                      }`}
+                        token.isHighlighted ? 'bg-blue-50' : ''
+                      } ${token.text.toLowerCase() === 'the' && step === 4 && token.isCacheHit ? 'bg-green-100 border-green-500' : ''} 
+                      ${(step > idx && !generating) || (step === 4 && idx < 4) ? 'bg-blue-100' : ''}`}
                     >
-                      {token}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Cache visualizations */}
-            <div className="grid grid-cols-2 gap-8">
-              {/* Traditional KV Cache */}
-              <div className="flex gap-4 items-start">
-                {renderTooltip(tooltips.cache,
-                  <span className="font-mono mt-2">Traditional Cache:</span>
-                )}
-                <div className="flex-1 border rounded-lg p-4 bg-gray-50">
-                  {Object.entries(cache).map(([token, kv], idx) => (
-                    <div 
-                      key={idx} 
-                      className={`flex gap-4 items-center mb-2 p-2 rounded ${
-                        kv.isHighlighted ? 'bg-green-50 border border-green-200' : ''
-                      }`}
-                    >
-                      <span className="font-mono w-16">{token}:</span>
-                      <div className="flex gap-2">
-                        {renderTooltip(tooltips.keys,
-                          <div className="flex items-center gap-1 bg-blue-100 p-2 rounded">
-                            <Key size={16} />
-                            <span>{kv.key}</span>
-                          </div>
-                        )}
-                        {renderTooltip(tooltips.values,
-                          <div className="flex items-center gap-1 bg-purple-100 p-2 rounded">
-                            <Database size={16} />
-                            <span>{kv.value}</span>
-                          </div>
-                        )}
-                      </div>
-                      {kv.isHighlighted && (
-                        <CheckCircle2 size={14} className="text-green-600 ml-2" />
+                      {token.text}
+                      {token.text.toLowerCase() === 'the' && step === 4 && token.isCacheHit && (
+                        <div className="flex items-center gap-1 text-green-600 text-sm mt-1">
+                          <CheckCircle2 size={14} />
+                          <span>Cache hit!</span>
+                        </div>
                       )}
                     </div>
                   ))}
-                  {Object.keys(cache).length === 0 && (
-                    <div className="text-gray-500 italic">Empty cache</div>
-                  )}
                 </div>
               </div>
 
-              {/* Paged Attention Cache */}
-              <div className="flex gap-4 items-start">
-                {renderTooltip(tooltips.pagedCache,
-                  <span className="font-mono mt-2">Paged Cache:</span>
-                )}
-                {renderPagedCache()}
-              </div>
-            </div>
+              {/* Generation tokens */}
+              {generating && (
+                <div className="flex gap-4 items-center">
+                  {renderTooltip(tooltips.pagedGeneration, 
+                    <span className="font-mono">Generated:</span>
+                  )}
+                  <div className="flex gap-2">
+                    {getCurrentGeneratedTokens().map((token, idx) => (
+                      <div 
+                        key={idx}
+                        className={`p-2 border rounded ${
+                          step < idx + processingPhaseEndStep + 1 ? 'bg-gray-50' : 'bg-blue-100'
+                        }`}
+                      >
+                        {token}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
-            {/* Process visualization */}
-            {generating && (
-              <div className="flex gap-4 items-center">
-                {renderTooltip(tooltips.pagedGeneration,
-                  <span className="font-mono">Process:</span>
-                )}
-                <div className="flex items-center gap-2">
-                  <div className="flex gap-2 items-center bg-gray-100 p-2 rounded">
-                    {step === generationStartStep ? (
-                      <>
-                        <div className="flex items-center gap-4">
-                          <div className="flex items-center gap-2">
-                            <Brain size={16} />
-                            <span>Using cached context to predict &quot;and&quot;</span>
-                          </div>
-                          <ArrowRight size={16} />
-                          <div className="flex items-center gap-2">
-                            <Plus size={16} />
-                            <span>Computing new K,V pair for &quot;and&quot;</span>
-                          </div>
+              {/* Cache visualizations */}
+              <div className="grid grid-cols-2 gap-8">
+                {/* Traditional KV Cache */}
+                <div className="flex gap-4 items-start">
+                  {renderTooltip(tooltips.cache,
+                    <span className="font-mono mt-2">Traditional Cache:</span>
+                  )}
+                  <div className="flex-1 border rounded-lg p-4 bg-gray-50">
+                    {Object.entries(cache).map(([token, kv], idx) => (
+                      <div 
+                        key={idx} 
+                        className={`flex gap-4 items-center mb-2 p-2 rounded ${
+                          kv.isHighlighted ? 'bg-green-50 border border-green-200' : ''
+                        }`}
+                      >
+                        <span className="font-mono w-16">{token}:</span>
+                        <div className="flex gap-2">
+                          {renderTooltip(tooltips.keys,
+                            <div className="flex items-center gap-1 bg-blue-100 p-2 rounded">
+                              <Key size={16} />
+                              <span>{kv.key}</span>
+                            </div>
+                          )}
+                          {renderTooltip(tooltips.values,
+                            <div className="flex items-center gap-1 bg-purple-100 p-2 rounded">
+                              <Database size={16} />
+                              <span>{kv.value}</span>
+                            </div>
+                          )}
                         </div>
-                      </>
-                    ) : step === firstGenerationStep ? (
-                      <>
-                        <div className="flex items-center gap-4">
-                          <div className="flex items-center gap-2">
-                            <Brain size={16} />
-                            <span>Using cached context to predict &quot;and&quot;</span>
-                          </div>
-                          <ArrowRight size={16} />
-                          <div className="flex items-center gap-2">
-                            <Plus size={16} />
-                            <span>Computing new K,V pair for &quot;and&quot;</span>
-                          </div>
-                        </div>
-                      </>
-                    ) : step === secondGenerationStep ? (
-                      <>
-                        <div className="flex items-center gap-4">
-                          <div className="flex items-center gap-2">
-                            <Brain size={16} />
-                            <span>Using cached context to predict &quot;the&quot;</span>
-                          </div>
-                          <ArrowRight size={16} />
-                          <div className="flex items-center gap-2">
-                            <CheckCircle2 size={16} className="text-green-600" />
-                            <span className="text-green-600">Reusing cached K,V pair for &quot;the&quot;</span>
-                          </div>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <Brain size={16} />
-                        <span>Using cached K,V pairs as context</span>
-                      </>
+                        {kv.isHighlighted && (
+                          <CheckCircle2 size={14} className="text-green-600 ml-2" />
+                        )}
+                      </div>
+                    ))}
+                    {Object.keys(cache).length === 0 && (
+                      <div className="text-gray-500 italic">Empty cache</div>
                     )}
                   </div>
                 </div>
-              </div>
-            )}
-          </div>
 
-          {/* Controls */}
-          <div className="flex justify-between items-center">
-            <div className="text-sm text-gray-500">
-              Step {step + 1} of {totalSteps}
+                {/* Paged Attention Cache */}
+                <div className="flex gap-4 items-start">
+                  {renderTooltip(tooltips.pagedCache,
+                    <span className="font-mono mt-2">Paged Cache:</span>
+                  )}
+                  {renderPagedCache()}
+                </div>
+              </div>
+
+              {/* Process visualization */}
+              {generating && (
+                <div className="flex gap-4 items-center">
+                  {renderTooltip(tooltips.pagedGeneration,
+                    <span className="font-mono">Process:</span>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <div className="flex gap-2 items-center bg-gray-100 p-2 rounded">
+                      {step === generationStartStep ? (
+                        <>
+                          <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2">
+                              <Brain size={16} />
+                              <span>Using cached context to predict &quot;and&quot;</span>
+                            </div>
+                            <ArrowRight size={16} />
+                            <div className="flex items-center gap-2">
+                              <Plus size={16} />
+                              <span>Computing new K,V pair for &quot;and&quot;</span>
+                            </div>
+                          </div>
+                        </>
+                      ) : step === firstGenerationStep ? (
+                        <>
+                          <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2">
+                              <Brain size={16} />
+                              <span>Using cached context to predict &quot;and&quot;</span>
+                            </div>
+                            <ArrowRight size={16} />
+                            <div className="flex items-center gap-2">
+                              <Plus size={16} />
+                              <span>Computing new K,V pair for &quot;and&quot;</span>
+                            </div>
+                          </div>
+                        </>
+                      ) : step === secondGenerationStep ? (
+                        <>
+                          <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-2">
+                              <Brain size={16} />
+                              <span>Using cached context to predict &quot;the&quot;</span>
+                            </div>
+                            <ArrowRight size={16} />
+                            <div className="flex items-center gap-2">
+                              <CheckCircle2 size={16} className="text-green-600" />
+                              <span className="text-green-600">Reusing cached K,V pair for &quot;the&quot;</span>
+                            </div>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <Brain size={16} />
+                          <span>Using cached K,V pairs as context</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
-            <Button onClick={handleNext} className="flex items-center gap-2">
-              {step === totalSteps - 1 && <RotateCcw size={16} />}
-              {steps[step].action}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+
+            {/* Controls */}
+            <div className="flex justify-start items-center mt-8">
+              <div className="text-sm text-gray-500">
+                Step {step + 1} of {totalSteps}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </>
   );
 };
 
