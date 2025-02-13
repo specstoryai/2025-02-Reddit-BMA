@@ -20,6 +20,11 @@ interface CacheData {
   posts: BlueskyPost[];
   cursor: string | null;
   timestamp: number;
+  locations: Array<{
+    name: string;
+    coordinates: [number, number];
+    postIndex: number;
+  }>;
 }
 
 interface BlueskyFeedProps {
@@ -52,10 +57,23 @@ function getCache(): CacheData | null {
 
 function updateCache(posts: BlueskyPost[], cursor: string | null) {
   try {
+    // Extract location data for quick geospatial access
+    const locations = posts.reduce<CacheData['locations']>((acc, post, index) => {
+      if (post.location) {
+        acc.push({
+          name: post.location.name,
+          coordinates: post.location.coordinates,
+          postIndex: index
+        });
+      }
+      return acc;
+    }, []);
+
     const cacheData: CacheData = {
       posts,
       cursor,
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      locations
     };
     localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
   } catch (err) {

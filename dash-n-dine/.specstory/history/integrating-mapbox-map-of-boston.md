@@ -4085,6 +4085,246 @@ I'll add a small indicator when we're showing cached data. Let me update the com
 
 ---
 
+_**Assistant**_
+
+```
+'use client';
+
+import { useEffect, useState } from 'react';
+import { MapHandle } from './Map';
+
+// ... existing interfaces ...
+
+export default function BlueskyFeed({ mapRef }: BlueskyFeedProps) {
+  const [posts, setPosts] = useState<BlueskyPost[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [isShowingCached, setIsShowingCached] = useState(false);
+  const [cacheAge, setCacheAge] = useState<string>('');
+
+  async function fetchPosts(cursor?: string) {
+    try {
+      setIsLoading(true);
+      setIsShowingCached(false);
+
+      // If no cursor (initial load), check cache first
+      if (!cursor) {
+        const cached = getCache();
+        if (cached) {
+          console.log('Using cached data');
+          setPosts(cached.posts);
+          setNextCursor(cached.cursor);
+          setIsLoading(false);
+          setIsShowingCached(true);
+          
+          // Calculate how long ago the cache was created
+          const ageInMinutes = Math.floor((Date.now() - cached.timestamp) / (1000 * 60));
+          if (ageInMinutes < 60) {
+            setCacheAge(`${ageInMinutes}m ago`);
+          } else {
+            const hours = Math.floor(ageInMinutes / 60);
+            const minutes = ageInMinutes % 60;
+            setCacheAge(`${hours}h ${minutes}m ago`);
+          }
+          return;
+        }
+      }
+
+      // ... rest of the fetchPosts function stays the same ...
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load posts');
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  // ... rest of the component functions ...
+
+  return (
+    <div className="bg-white p-6 rounded-lg shadow-lg">
+      <div className="flex flex-col mb-4">
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl font-semibold">Recent Restaurant Reviews</h2>
+          <button
+            onClick={() => {
+              localStorage.removeItem(CACHE_KEY);
+              fetchPosts();
+            }}
+            className="text-xs px-2 py-1 text-blue-500 hover:text-blue-600 transition-colors"
+          >
+            Refresh
+          </button>
+        </div>
+        {isShowingCached && (
+          <div className="flex items-center mt-1 text-xs text-gray-500">
+            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Showing cached data from {cacheAge} • </span>
+            <button 
+              onClick={() => {
+                localStorage.removeItem(CACHE_KEY);
+                fetchPosts();
+              }}
+              className="ml-1 text-blue-500 hover:text-blue-600 transition-colors"
+            >
+              Update now
+            </button>
+          </div>
+        )}
+      </div>
+
+      <div className="space-y-4">
+        {/* ... rest of the JSX stays the same ... */}
+      </div>
+    </div>
+  );
+}
+```
+
+---
+
+_**Assistant**_
+
+
+
+
+
+I've added a cache indicator that shows:
+1. A clock icon
+2. How long ago the data was cached (in minutes or hours + minutes)
+3. An "Update now" link to refresh the data
+
+The indicator appears right below the header when showing cached data and includes:
+- A subtle gray color to not be distracting
+- A small clock icon for visual clarity
+- The exact age of the cached data
+- An easy way to refresh the data
+
+For example, it might show:
+- "Showing cached data from 5m ago"
+- "Showing cached data from 1h 23m ago"
+
+The indicator disappears when fresh data is loaded. Would you like me to:
+1. Adjust the styling or positioning?
+2. Change the time format?
+3. Add any additional information to the indicator?
+4. Make the indicator more or less prominent?
+
+---
+
+_**User**_
+
+make sure we're directly storing restaurant lat long in the cache. Soon I want to make a geodistance search over the cache.
+
+---
+
+_**Assistant**_
+
+I'll modify the code to ensure we store the restaurant coordinates directly in the cache for easier geospatial searching later. I'll update the `BlueskyFeed` component to store the location data in a more accessible format.
+
+Let me explain what I'm going to change:
+1. Update the `CacheData` interface to include a separate array of locations for quick geospatial access
+2. Modify the cache storage functions to maintain this data structure
+
+---
+
+_**Assistant**_
+
+```
+interface CacheData {
+  posts: BlueskyPost[];
+  cursor: string | null;
+  timestamp: number;
+  locations: Array<{
+    name: string;
+    coordinates: [number, number];
+    postIndex: number;
+  }>;
+}
+
+function getCache(): CacheData | null {
+  try {
+    const cached = localStorage.getItem(CACHE_KEY);
+    if (!cached) return null;
+
+    const data: CacheData = JSON.parse(cached);
+    const age = Date.now() - data.timestamp;
+    
+    // Return null if cache is too old
+    if (age > CACHE_DURATION) {
+      localStorage.removeItem(CACHE_KEY);
+      return null;
+    }
+    
+    return data;
+  } catch (err) {
+    console.error('Error reading cache:', err);
+    return null;
+  }
+}
+
+function updateCache(posts: BlueskyPost[], cursor: string | null) {
+  try {
+    // Extract location data for quick geospatial access
+    const locations = posts.reduce<CacheData['locations']>((acc, post, index) => {
+      if (post.location) {
+        acc.push({
+          name: post.location.name,
+          coordinates: post.location.coordinates,
+          postIndex: index
+        });
+      }
+      return acc;
+    }, []);
+
+    const cacheData: CacheData = {
+      posts,
+      cursor,
+      timestamp: Date.now(),
+      locations
+    };
+    localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
+  } catch (err) {
+    console.error('Error updating cache:', err);
+  }
+}
+// ... existing code ...
+```
+
+---
+
+_**Assistant**_
+
+
+
+I've updated the code to store location data in a more accessible format for geospatial searching. Here's what changed:
+
+1. Added a new `locations` array to the `CacheData` interface that contains:
+   - Restaurant name
+   - Coordinates as [longitude, latitude]
+   - The index of the corresponding post in the posts array
+   
+2. Modified the `updateCache` function to:
+   - Extract location data from posts
+   - Store it in a separate array for quick access
+   - Maintain a reference to the original post via the `postIndex`
+
+This structure will make it much easier to implement geospatial searches later because:
+- All coordinates are stored in a flat array
+- You can quickly access just the location data without parsing through all posts
+- The `postIndex` allows you to easily link back to the full post data when needed
+
+When you're ready to implement the geodistance search, you'll be able to:
+1. Access all coordinates directly from `cacheData.locations`
+2. Perform distance calculations efficiently
+3. Use the `postIndex` to retrieve the full post details for any matching locations
+
+Would you like me to make any adjustments to this structure or would you like to proceed with implementing the geodistance search functionality?
+
+---
+
 
 
 ---
