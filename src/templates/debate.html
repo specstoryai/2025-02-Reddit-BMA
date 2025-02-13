@@ -179,7 +179,14 @@
                     <div class="judgment-header">
                         <h3>🏆 Winner: ${winnerName}</h3>
                     </div>
+                    <div class="judgment-summary">
+                        <h4>Key Deciding Factors:</h4>
+                        <ul>
+                            ${judgment.summary_points.map(point => `<li>${point}</li>`).join('')}
+                        </ul>
+                    </div>
                     <div class="judgment-text">
+                        <h4>Full Legal Opinion:</h4>
                         ${judgment.explanation}
                     </div>
                 `;

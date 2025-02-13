@@ -1,6 +1,6 @@
 import anthropic
 import os
-from typing import TypedDict, Tuple, Dict
+from typing import TypedDict, Tuple, Dict, List
 import logging
 
 logger = logging.getLogger(__name__)
@@ -15,7 +15,8 @@ class DebateArguments(TypedDict):
 
 class DebateJudgment(TypedDict):
     winner: int  # 1 or 2
-    explanation: str
+    summary_points: List[str]  # 3 bullet points explaining the key reasons for the win
+    explanation: str  # Full judicial explanation
 
 def get_debate_positions_and_arguments(topic: str) -> Tuple[DebatePositions, DebateArguments]:
     logger.info(f"Starting debate generation for topic: {topic}")
@@ -138,9 +139,14 @@ def get_debate_judgment(topic: str, argument_one: str, argument_two: str) -> Deb
     3. Persuasiveness and clarity
     4. Addressing key aspects of the topic
     
-    Format your response exactly like this:
+    Format your response EXACTLY like this:
     
     WINNER: [1 or 2]
+    
+    SUMMARY:
+    • [First key reason for the win]
+    • [Second key reason for the win]
+    • [Third key reason for the win]
     
     JUDGMENT:
     [Write a formal, judicial-style explanation of your decision in 2-3 paragraphs. Use legal/judicial language and formatting. Be definitive and authoritative in your ruling.]
@@ -157,14 +163,20 @@ def get_debate_judgment(topic: str, argument_one: str, argument_two: str) -> Deb
     judgment_text = judgment_message.content[0].text
     logger.debug(f"Raw judgment response: {judgment_text}")
     
-    # Parse the winner and explanation
+    # Parse the winner
     winner_line = [line for line in judgment_text.split('\n') if line.startswith('WINNER:')][0]
     winner = int(winner_line.split(':')[1].strip())
     
+    # Parse the summary points
+    summary_section = judgment_text.split('SUMMARY:')[1].split('JUDGMENT:')[0].strip()
+    summary_points = [point.strip().lstrip('•').strip() for point in summary_section.split('\n') if point.strip().startswith('•')]
+    
+    # Parse the explanation
     explanation = judgment_text.split('JUDGMENT:')[1].strip()
     
     judgment = DebateJudgment(
         winner=winner,
+        summary_points=summary_points,
         explanation=explanation
     )
     

@@ -318,6 +318,40 @@ textarea:focus {
     animation: winner-glow 2s ease-in-out infinite;
 }
 
+.judgment-summary {
+    margin: 20px 0;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    border-left: 4px solid #4cc9f0;
+}
+
+.judgment-summary h4 {
+    color: #4cc9f0;
+    margin: 0 0 15px 0;
+    font-size: 1.2em;
+}
+
+.judgment-summary ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.judgment-summary li {
+    margin: 10px 0;
+    padding-left: 25px;
+    position: relative;
+}
+
+.judgment-summary li:before {
+    content: "⚖️";
+    position: absolute;
+    left: 0;
+    top: 2px;
+    font-size: 0.9em;
+}
+
 .judgment-text {
     font-family: 'Georgia', serif;
     line-height: 1.6;
@@ -326,6 +360,13 @@ textarea:focus {
     background: rgba(0, 0, 0, 0.2);
     border-radius: 8px;
     border-left: 4px solid #ffd700;
+}
+
+.judgment-text h4 {
+    color: #ffd700;
+    margin: 0 0 15px 0;
+    font-size: 1.2em;
+    font-family: Arial, sans-serif;
 }
 
 /* Winner Animation */
