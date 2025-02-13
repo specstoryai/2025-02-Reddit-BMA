@@ -8,11 +8,14 @@ import character4 from './assets/character-4.png';
 import character5 from './assets/character-5.png';
 import character6 from './assets/character-6.png';
 import { generations, getRandomGenerations } from './utils/generations';
+import { translateText } from './utils/anthropicClient';
 
 function App() {
   const [text, setText] = useState('');
   const [submittedText, setSubmittedText] = useState('');
   const [activeGenerations, setActiveGenerations] = useState([]);
+  const [translations, setTranslations] = useState({});
+  const [loading, setLoading] = useState({});
   const maxLength = 140;
   const numCharacters = 6;
 
@@ -21,9 +24,31 @@ function App() {
     setActiveGenerations(getRandomGenerations(numCharacters));
   }, []);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (text.trim()) {
       setSubmittedText(text);
+      // Reset translations
+      setTranslations({});
+      
+      // Translate for each generation
+      activeGenerations.forEach(async (generation) => {
+        setLoading(prev => ({ ...prev, [generation.name]: true }));
+        try {
+          const translated = await translateText(text, generation);
+          setTranslations(prev => ({
+            ...prev,
+            [generation.name]: translated
+          }));
+        } catch (error) {
+          console.error(`Translation error for ${generation.name}:`, error);
+          setTranslations(prev => ({
+            ...prev,
+            [generation.name]: `Error: ${error.message}`
+          }));
+        } finally {
+          setLoading(prev => ({ ...prev, [generation.name]: false }));
+        }
+      });
     }
   };
 
@@ -45,7 +70,15 @@ function App() {
     <div className="character-wrapper">
       {text && (
         <div className="speech-bubble">
-          <div className="translated-text">{generation.translate(text)}</div>
+          <div className="translated-text">
+            {loading[generation.name] ? (
+              <div className="loading">Translating...</div>
+            ) : translations[generation.name] ? (
+              translations[generation.name]
+            ) : (
+              "Waiting for translation..."
+            )}
+          </div>
         </div>
       )}
       <img src={image} alt={alt} className="character" />
@@ -76,7 +109,7 @@ function App() {
           <button 
             onClick={handleSubmit}
             className="submit-button"
-            disabled={!text.trim()}
+            disabled={!text.trim() || Object.values(loading).some(Boolean)}
           >
             Translate
           </button>
