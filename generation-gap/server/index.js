@@ -1,5 +1,4 @@
 const express = require('express');
-const cors = require('cors');
 const Anthropic = require('@anthropic-ai/sdk');
 require('dotenv').config();
 
@@ -7,12 +6,11 @@ const app = express();
 const port = process.env.PORT || 3001;
 
 // Middleware
-app.use(cors());
 app.use(express.json());
 
 // Initialize Anthropic client
 const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
+  apiKey: process.env.REACT_APP_ANTHROPIC_API_KEY,
 });
 
 const GENERATION_PROMPTS = {
@@ -50,6 +48,4 @@ app.post('/api/translate', async (req, res) => {
   }
 });
 
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-}); 
+module.exports = app; 

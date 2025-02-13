@@ -1,8 +1,6 @@
-const API_URL = 'http://localhost:3001/api';
-
 export const translateText = async (text, generation) => {
   try {
-    const response = await fetch(`${API_URL}/translate`, {
+    const response = await fetch('/api/translate', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
