@@ -78,13 +78,137 @@
         </div>
     </div>
 
+    <script>
+        // Common judging messages for all modes
+        const judgingMessages = [
+            "Consulting the ancient texts of debate law...",
+            "Analyzing logical fallacies with quantum precision...",
+            "Calibrating the scales of justice...",
+            "Reviewing precedents from historical debates...",
+            "Meditating on the philosophical implications...",
+            "Cross-referencing with the debate constitution...",
+            "Polishing the gavel of truth...",
+            "Donning the ceremonial robes of judgment..."
+        ];
+
+        // Get important values from server
+        const DEBATE_MODE = JSON.parse('{{ mode|tojson }}');
+        const TOPIC_TITLE = JSON.parse('{{ topic.title|tojson }}');
+
+        // Function to get arguments based on mode
+        function getDebateArguments() {
+            if (DEBATE_MODE === 'ai-vs-ai' && window.debateArguments) {
+                return window.debateArguments;
+            }
+
+            // For other modes, get arguments from textareas
+            const textareas = document.querySelectorAll('textarea');
+            return {
+                argument_one: textareas[0].value.trim(),
+                argument_two: textareas[1].value.trim()
+            };
+        }
+
+        async function startJudging() {
+            const judgeStatus = document.querySelector('.judge-status');
+            const judgmentDiv = document.querySelector('.judgment');
+            const submitButton = document.querySelector('.submit-round');
+            
+            // Validate arguments for non-AI vs AI modes
+            if (DEBATE_MODE !== 'ai-vs-ai') {
+                const args = getDebateArguments();
+                if (!args.argument_one || !args.argument_two) {
+                    alert('Both participants must provide arguments before judging can begin!');
+                    return;
+                }
+            }
+            
+            // Disable submit button permanently
+            submitButton.disabled = true;
+            
+            // Start the judging animation
+            let messageIndex = 0;
+            const judgingInterval = setInterval(() => {
+                judgeStatus.textContent = judgingMessages[messageIndex % judgingMessages.length];
+                messageIndex++;
+            }, 2000);
+            
+            try {
+                const response = await fetch('/api/judge-debate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        topic: TOPIC_TITLE,
+                        ...getDebateArguments()
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const judgment = await response.json();
+                
+                // Clear the judging animation
+                clearInterval(judgingInterval);
+                
+                // Update the UI with the judgment
+                const winner = judgment.winner;
+                const winnerElement = document.querySelectorAll('.participant')[winner - 1];
+                
+                // Add winner animation class
+                winnerElement.classList.add('winner');
+                
+                // Update judge status and show judgment
+                judgeStatus.textContent = `The verdict is in!`;
+                
+                // Get winner name based on mode
+                let winnerName;
+                if (DEBATE_MODE === 'ai-vs-ai') {
+                    winnerName = winner === 1 ? 'Master Debator Bot' : 'The Rebuttalizer 6000';
+                } else if (DEBATE_MODE === 'player-vs-ai') {
+                    winnerName = winner === 1 ? 'Human' : 'The Rebuttalizer';
+                } else {
+                    winnerName = `Player ${winner}`;
+                }
+                
+                judgmentDiv.innerHTML = `
+                    <div class="judgment-header">
+                        <h3>🏆 Winner: ${winnerName}</h3>
+                    </div>
+                    <div class="judgment-text">
+                        ${judgment.explanation}
+                    </div>
+                `;
+                
+                // Show the judgment with a fade-in effect
+                judgmentDiv.classList.add('show');
+                
+                // Disable all textareas after judgment
+                document.querySelectorAll('textarea').forEach(textarea => {
+                    textarea.readOnly = true;
+                });
+                
+            } catch (error) {
+                console.error('Error in judging:', error);
+                clearInterval(judgingInterval);
+                judgeStatus.textContent = `Error: ${error.message}`;
+                judgeStatus.classList.add('error');
+                // Re-enable button in case of error
+                submitButton.disabled = false;
+            }
+        }
+
+        // Add click handler for submit button for all modes
+        document.querySelector('.submit-round').addEventListener('click', startJudging);
+    </script>
+
     {% if mode == 'ai-vs-ai' %}
     <script>
         console.log('Hello world from debate.html!');
-        
-        // Get the topic title directly
-        const topicTitle = {{ topic.title|tojson|safe }};
-        console.log('Topic title:', topicTitle);
         
         const loadingMessages = [
             ["Consulting ancient scrolls...", "Calibrating rhetorical devices..."],
@@ -107,7 +231,7 @@
             try {
                 console.log('Making API request...');
                 const requestData = {
-                    topic: topicTitle
+                    topic: TOPIC_TITLE
                 };
                 console.log('Request data:', requestData);
                 const requestBody = JSON.stringify(requestData);
@@ -154,6 +278,12 @@
                 
                 // Enable submit button
                 document.querySelector('.submit-round').disabled = false;
+
+                // Store the arguments for judging
+                window.debateArguments = {
+                    argument_one: data.arguments.argument_one,
+                    argument_two: data.arguments.argument_two
+                };
             } catch (error) {
                 console.error('Error in startAIDebate:', error);
                 clearInterval(loadingInterval);
@@ -164,7 +294,7 @@
                 });
             }
         }
-        
+
         // Start the AI debate process
         startAIDebate();
     </script>

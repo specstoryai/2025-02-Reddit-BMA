@@ -4,7 +4,7 @@ import os
 import re
 from dotenv import load_dotenv
 import logging
-from .ai_debate import get_debate_positions_and_arguments
+from .ai_debate import get_debate_positions_and_arguments, get_debate_judgment
 
 load_dotenv()  # Load environment variables from .env file
 
@@ -100,6 +100,26 @@ def get_ai_responses():
     except Exception as e:
         logger.error(f"Error getting AI responses: {str(e)}", exc_info=True)
         return jsonify({'error': str(e)}), 500, {'Content-Type': 'application/json'}
+
+@app.route('/api/judge-debate', methods=['POST'])
+def judge_debate():
+    logger.info(f"Received judging request data: {request.get_data(as_text=True)}")
+    
+    data = request.json
+    topic = data.get('topic')
+    argument_one = data.get('argument_one')
+    argument_two = data.get('argument_two')
+    
+    if not all([topic, argument_one, argument_two]):
+        logger.error("Missing required judging parameters")
+        return jsonify({'error': 'Missing required parameters'}), 400
+    
+    try:
+        judgment = get_debate_judgment(topic, argument_one, argument_two)
+        return jsonify(judgment), 200
+    except Exception as e:
+        logger.error(f"Error getting debate judgment: {str(e)}", exc_info=True)
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True) 

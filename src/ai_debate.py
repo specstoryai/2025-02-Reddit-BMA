@@ -1,6 +1,6 @@
 import anthropic
 import os
-from typing import TypedDict, Tuple
+from typing import TypedDict, Tuple, Dict
 import logging
 
 logger = logging.getLogger(__name__)
@@ -12,6 +12,10 @@ class DebatePositions(TypedDict):
 class DebateArguments(TypedDict):
     argument_one: str
     argument_two: str
+
+class DebateJudgment(TypedDict):
+    winner: int  # 1 or 2
+    explanation: str
 
 def get_debate_positions_and_arguments(topic: str) -> Tuple[DebatePositions, DebateArguments]:
     logger.info(f"Starting debate generation for topic: {topic}")
@@ -105,3 +109,66 @@ def get_debate_positions_and_arguments(topic: str) -> Tuple[DebatePositions, Deb
     logger.debug(f"Parsed arguments: {arguments}")
     
     return positions, arguments 
+
+def get_debate_judgment(topic: str, argument_one: str, argument_two: str) -> DebateJudgment:
+    """Judge a debate between two arguments and return a winner with explanation."""
+    logger.info(f"Starting debate judgment for topic: {topic}")
+    
+    api_key = os.getenv('ANTHROPIC_API_KEY')
+    if not api_key:
+        logger.error("ANTHROPIC_API_KEY not found in environment variables")
+        raise ValueError("ANTHROPIC_API_KEY not found in environment variables")
+    
+    client = anthropic.Anthropic(api_key=api_key)
+    
+    judgment_prompt = f"""
+    You are a highly esteemed debate judge, known for your fairness, analytical mind, and ability to provide clear, well-reasoned judgments.
+    
+    Topic of Debate: "{topic}"
+    
+    Argument 1:
+    {argument_one}
+    
+    Argument 2:
+    {argument_two}
+    
+    Please evaluate these arguments and determine a winner based on:
+    1. Logical coherence and reasoning
+    2. Use of evidence and examples
+    3. Persuasiveness and clarity
+    4. Addressing key aspects of the topic
+    
+    Format your response exactly like this:
+    
+    WINNER: [1 or 2]
+    
+    JUDGMENT:
+    [Write a formal, judicial-style explanation of your decision in 2-3 paragraphs. Use legal/judicial language and formatting. Be definitive and authoritative in your ruling.]
+    """
+    
+    judgment_message = client.messages.create(
+        model="claude-3-sonnet-20240229",
+        max_tokens=1000,
+        temperature=0.7,
+        system="You are a highly respected debate judge, known for delivering clear, well-reasoned, and authoritative judgments.",
+        messages=[{"role": "user", "content": judgment_prompt}]
+    )
+    
+    judgment_text = judgment_message.content[0].text
+    logger.debug(f"Raw judgment response: {judgment_text}")
+    
+    # Parse the winner and explanation
+    winner_line = [line for line in judgment_text.split('\n') if line.startswith('WINNER:')][0]
+    winner = int(winner_line.split(':')[1].strip())
+    
+    explanation = judgment_text.split('JUDGMENT:')[1].strip()
+    
+    judgment = DebateJudgment(
+        winner=winner,
+        explanation=explanation
+    )
+    
+    logger.info(f"Judgment complete. Winner: {winner}")
+    logger.debug(f"Full judgment: {judgment}")
+    
+    return judgment 
