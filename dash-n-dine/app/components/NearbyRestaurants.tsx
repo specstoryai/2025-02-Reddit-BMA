@@ -129,7 +129,18 @@ export default function NearbyRestaurants({ selectedSegment, mapRef }: NearbyRes
   }, [selectedSegment]);
 
   function handleShowOnMap(coordinates: [number, number]) {
-    mapRef.current?.centerOnLocation(coordinates);
+    if (!mapRef.current || !selectedSegment) return;
+    
+    // Center on the restaurant location
+    mapRef.current.centerOnLocation(coordinates);
+    
+    // Draw a line from segment start to restaurant
+    // Note: Convert from [lat, lng] to [lng, lat] for the segment start
+    const segmentStartPoint: [number, number] = [
+      selectedSegment.start_latlng[1],
+      selectedSegment.start_latlng[0]
+    ];
+    mapRef.current.showConnectionLine(segmentStartPoint, coordinates);
   }
 
   if (!selectedSegment) {

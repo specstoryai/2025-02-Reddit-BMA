@@ -5383,6 +5383,209 @@ This should now correctly show the total number of restaurants from all loaded p
 
 ---
 
+_**User**_
+
+One more thing. On the nearby restaurants widget, when the user clicks Show on Map, also draw a single line on the map connecting the start of the strava segment to the location of the nearby restaurant.
+
+---
+
+_**Assistant**_
+
+I'll modify both the Map and NearbyRestaurants components to support drawing a line between the segment start and the selected restaurant. First, let's update the Map component to add this functionality:
+
+---
+
+_**Assistant**_
+
+```
+export interface MapHandle {
+  centerOnLocation: (coordinates: [number, number], zoom?: number) => void;
+  showConnectionLine: (from: [number, number], to: [number, number]) => void;
+}
+
+const Map = forwardRef<MapHandle, MapProps>(({ selectedSegment }, ref) => {
+  const mapContainer = useRef<HTMLDivElement>(null);
+  const map = useRef<mapboxgl.Map | null>(null);
+  const markerStart = useRef<mapboxgl.Marker | null>(null);
+  const markerEnd = useRef<mapboxgl.Marker | null>(null);
+  const segmentLine = useRef<mapboxgl.GeoJSONSource | null>(null);
+  const locationMarker = useRef<mapboxgl.Marker | null>(null);
+  const connectionLine = useRef<mapboxgl.GeoJSONSource | null>(null);
+
+  // Expose the centerOnLocation method
+  useImperativeHandle(ref, () => ({
+    centerOnLocation: (coordinates: [number, number], zoom: number = 15) => {
+      if (!map.current) return;
+
+      // Remove previous location marker if it exists
+      locationMarker.current?.remove();
+
+      // Add a new marker
+      locationMarker.current = new mapboxgl.Marker({ color: '#4B5563' })
+        .setLngLat(coordinates)
+        .addTo(map.current);
+
+      // Center the map on the coordinates
+      map.current.flyTo({
+        center: coordinates,
+        zoom,
+        duration: 1500
+      });
+    },
+    showConnectionLine: (from: [number, number], to: [number, number]) => {
+      if (!map.current || !connectionLine.current) return;
+
+      // Update the connection line
+      connectionLine.current.setData({
+        type: 'Feature',
+        properties: {},
+        geometry: {
+          type: 'LineString',
+          coordinates: [from, to]
+        }
+      });
+
+      // Fit the map to show both points
+      const bounds = new mapboxgl.LngLatBounds()
+        .extend(from)
+        .extend(to);
+
+      map.current.fitBounds(bounds, {
+        padding: 50,
+        duration: 1500
+      });
+    }
+  }));
+
+  useEffect(() => {
+    if (map.current) return;
+    if (!mapContainer.current) return;
+
+    mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_API_TOKEN as string;
+    
+    map.current = new mapboxgl.Map({
+      container: mapContainer.current,
+      style: 'mapbox://styles/mapbox/streets-v12',
+      center: [-71.0589, 42.3601], // Boston coordinates
+      zoom: 12
+    });
+
+    // Add sources and layers for the segment path and connection line
+    map.current.on('load', () => {
+      map.current?.addSource('segment', {
+        type: 'geojson',
+        data: {
+          type: 'Feature',
+          properties: {},
+          geometry: {
+            type: 'LineString',
+            coordinates: []
+          }
+        }
+      });
+
+      map.current?.addSource('connection', {
+        type: 'geojson',
+        data: {
+          type: 'Feature',
+          properties: {},
+          geometry: {
+            type: 'LineString',
+            coordinates: []
+          }
+        }
+      });
+
+      map.current?.addLayer({
+        id: 'segment',
+        type: 'line',
+        source: 'segment',
+        layout: {
+          'line-join': 'round',
+          'line-cap': 'round'
+        },
+        paint: {
+          'line-color': '#ff4444',
+          'line-width': 4,
+          'line-opacity': 0.8
+        }
+      });
+
+      map.current?.addLayer({
+        id: 'connection',
+        type: 'line',
+        source: 'connection',
+        layout: {
+          'line-join': 'round',
+          'line-cap': 'round'
+        },
+        paint: {
+          'line-color': '#4B5563',
+          'line-width': 2,
+          'line-dasharray': [2, 2],
+          'line-opacity': 0.6
+        }
+      });
+
+      segmentLine.current = map.current?.getSource('segment') as mapboxgl.GeoJSONSource;
+      connectionLine.current = map.current?.getSource('connection') as mapboxgl.GeoJSONSource;
+    });
+  }, []);
+
+  // ... rest of the component code ...
+```
+
+---
+
+_**Assistant**_
+
+
+
+Now let's update the NearbyRestaurants component to use this new functionality:
+
+---
+
+_**Assistant**_
+
+```
+  function handleShowOnMap(coordinates: [number, number]) {
+    if (!mapRef.current || !selectedSegment) return;
+    
+    // Center on the restaurant location
+    mapRef.current.centerOnLocation(coordinates);
+    
+    // Draw a line from segment start to restaurant
+    // Note: Convert from [lat, lng] to [lng, lat] for the segment start
+    const segmentStartPoint: [number, number] = [
+      selectedSegment.start_latlng[1],
+      selectedSegment.start_latlng[0]
+    ];
+    mapRef.current.showConnectionLine(segmentStartPoint, coordinates);
+  }
+```
+
+---
+
+_**Assistant**_
+
+
+
+
+
+I've updated both components to support drawing a connection line:
+
+1. In the Map component:
+   - Added a new `showConnectionLine` method to the `MapHandle` interface
+   - Added a new source and layer for the connection line with a dashed gray style
+   - Implemented the line drawing functionality with map bounds adjustment
+
+2. In the NearbyRestaurants component:
+   - Updated `handleShowOnMap` to draw a line from the segment start to the restaurant
+   - Added coordinate conversion to handle the lat/lng format differences
+   - Added null checks for safety
+
+---
+
 
 
 ---

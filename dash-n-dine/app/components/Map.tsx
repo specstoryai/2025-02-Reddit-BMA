@@ -14,6 +14,7 @@ interface MapProps {
 
 export interface MapHandle {
   centerOnLocation: (coordinates: [number, number], zoom?: number) => void;
+  showConnectionLine: (from: [number, number], to: [number, number]) => void;
 }
 
 const Map = forwardRef<MapHandle, MapProps>(({ selectedSegment }, ref) => {
@@ -23,6 +24,7 @@ const Map = forwardRef<MapHandle, MapProps>(({ selectedSegment }, ref) => {
   const markerEnd = useRef<mapboxgl.Marker | null>(null);
   const segmentLine = useRef<mapboxgl.GeoJSONSource | null>(null);
   const locationMarker = useRef<mapboxgl.Marker | null>(null);
+  const connectionLine = useRef<mapboxgl.GeoJSONSource | null>(null);
 
   // Expose the centerOnLocation method
   useImperativeHandle(ref, () => ({
@@ -43,6 +45,29 @@ const Map = forwardRef<MapHandle, MapProps>(({ selectedSegment }, ref) => {
         zoom,
         duration: 1500
       });
+    },
+    showConnectionLine: (from: [number, number], to: [number, number]) => {
+      if (!map.current || !connectionLine.current) return;
+
+      // Update the connection line
+      connectionLine.current.setData({
+        type: 'Feature',
+        properties: {},
+        geometry: {
+          type: 'LineString',
+          coordinates: [from, to]
+        }
+      });
+
+      // Fit the map to show both points
+      const bounds = new mapboxgl.LngLatBounds()
+        .extend(from)
+        .extend(to);
+
+      map.current.fitBounds(bounds, {
+        padding: 50,
+        duration: 1500
+      });
     }
   }));
 
@@ -59,9 +84,21 @@ const Map = forwardRef<MapHandle, MapProps>(({ selectedSegment }, ref) => {
       zoom: 12
     });
 
-    // Add a source and layer for the segment path
+    // Add sources and layers for the segment path and connection line
     map.current.on('load', () => {
       map.current?.addSource('segment', {
+        type: 'geojson',
+        data: {
+          type: 'Feature',
+          properties: {},
+          geometry: {
+            type: 'LineString',
+            coordinates: []
+          }
+        }
+      });
+
+      map.current?.addSource('connection', {
         type: 'geojson',
         data: {
           type: 'Feature',
@@ -88,7 +125,24 @@ const Map = forwardRef<MapHandle, MapProps>(({ selectedSegment }, ref) => {
         }
       });
 
+      map.current?.addLayer({
+        id: 'connection',
+        type: 'line',
+        source: 'connection',
+        layout: {
+          'line-join': 'round',
+          'line-cap': 'round'
+        },
+        paint: {
+          'line-color': '#4B5563',
+          'line-width': 2,
+          'line-dasharray': [2, 2],
+          'line-opacity': 0.6
+        }
+      });
+
       segmentLine.current = map.current?.getSource('segment') as mapboxgl.GeoJSONSource;
+      connectionLine.current = map.current?.getSource('connection') as mapboxgl.GeoJSONSource;
     });
   }, []);
 
