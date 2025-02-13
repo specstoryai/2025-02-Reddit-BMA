@@ -30,6 +30,37 @@
           "volume_liters": 0.1
         },
         "priority": "high"
+      },
+      "map_compass": {
+        "name": "Map & Compass",
+        "dimensions": {
+          "height": 8,
+          "width": 4,
+          "depth": 0.5,
+          "volume_liters": 0.1
+        },
+        "priority": "high"
+      },
+      "emergency_shelter": {
+        "name": "Emergency Shelter",
+        "dimensions": {
+          "height": 6,
+          "width": 4,
+          "depth": 2,
+          "volume_liters": 0.3
+        },
+        "priority": "high",
+        "compressible": true
+      },
+      "fire_starter": {
+        "name": "Fire Starter Kit",
+        "dimensions": {
+          "height": 4,
+          "width": 3,
+          "depth": 1,
+          "volume_liters": 0.1
+        },
+        "priority": "high"
       }
     },
     "clothing": {
@@ -51,6 +82,50 @@
           "width": 10,
           "depth": 6,
           "volume_liters": 2.5
+        },
+        "compressible": true,
+        "priority": "medium"
+      },
+      "down_jacket": {
+        "name": "Down Jacket",
+        "dimensions": {
+          "height": 14,
+          "width": 10,
+          "depth": 6,
+          "volume_liters": 3
+        },
+        "compressible": true,
+        "priority": "medium"
+      },
+      "hiking_pants": {
+        "name": "Hiking Pants",
+        "dimensions": {
+          "height": 12,
+          "width": 8,
+          "depth": 3,
+          "volume_liters": 1
+        },
+        "compressible": true,
+        "priority": "medium"
+      },
+      "base_layer": {
+        "name": "Base Layer Set",
+        "dimensions": {
+          "height": 10,
+          "width": 8,
+          "depth": 4,
+          "volume_liters": 1.2
+        },
+        "compressible": true,
+        "priority": "medium"
+      },
+      "hiking_socks": {
+        "name": "Hiking Socks (2 pairs)",
+        "dimensions": {
+          "height": 6,
+          "width": 4,
+          "depth": 2,
+          "volume_liters": 0.2
         },
         "compressible": true,
         "priority": "medium"
@@ -78,6 +153,28 @@
         },
         "compressible": true,
         "priority": "high"
+      },
+      "pillow": {
+        "name": "Camping Pillow",
+        "dimensions": {
+          "height": 6,
+          "width": 4,
+          "depth": 4,
+          "volume_liters": 0.5
+        },
+        "compressible": true,
+        "priority": "low"
+      },
+      "tent": {
+        "name": "2-Person Tent",
+        "dimensions": {
+          "height": 18,
+          "width": 8,
+          "depth": 8,
+          "volume_liters": 12
+        },
+        "compressible": true,
+        "priority": "high"
       }
     },
     "food": {
@@ -101,6 +198,48 @@
           "volume_liters": 0.5
         },
         "priority": "medium"
+      },
+      "fuel": {
+        "name": "Stove Fuel",
+        "dimensions": {
+          "height": 8,
+          "width": 4,
+          "depth": 4,
+          "volume_liters": 0.5
+        },
+        "priority": "medium"
+      },
+      "cookset": {
+        "name": "Cookset & Utensils",
+        "dimensions": {
+          "height": 6,
+          "width": 6,
+          "depth": 6,
+          "volume_liters": 1.5
+        },
+        "stackable": true,
+        "priority": "medium"
+      },
+      "water_filter": {
+        "name": "Water Filter",
+        "dimensions": {
+          "height": 8,
+          "width": 3,
+          "depth": 3,
+          "volume_liters": 0.3
+        },
+        "priority": "high"
+      },
+      "bear_canister": {
+        "name": "Bear Canister",
+        "dimensions": {
+          "height": 10,
+          "width": 8,
+          "depth": 8,
+          "volume_liters": 7
+        },
+        "priority": "high",
+        "stackable": true
       }
     },
     "electronics": {
@@ -123,6 +262,69 @@
           "volume_liters": 0.1
         },
         "priority": "medium"
+      },
+      "satellite_comm": {
+        "name": "Satellite Communicator",
+        "dimensions": {
+          "height": 4,
+          "width": 2.5,
+          "depth": 1,
+          "volume_liters": 0.1
+        },
+        "priority": "medium"
+      },
+      "camera": {
+        "name": "Compact Camera",
+        "dimensions": {
+          "height": 4,
+          "width": 5,
+          "depth": 3,
+          "volume_liters": 0.3
+        },
+        "priority": "low"
+      }
+    },
+    "tools": {
+      "multi_tool": {
+        "name": "Multi-tool",
+        "dimensions": {
+          "height": 4,
+          "width": 1.5,
+          "depth": 1,
+          "volume_liters": 0.1
+        },
+        "priority": "medium"
+      },
+      "repair_kit": {
+        "name": "Gear Repair Kit",
+        "dimensions": {
+          "height": 4,
+          "width": 3,
+          "depth": 1,
+          "volume_liters": 0.1
+        },
+        "priority": "low"
+      },
+      "trekking_poles": {
+        "name": "Trekking Poles",
+        "dimensions": {
+          "height": 24,
+          "width": 3,
+          "depth": 3,
+          "volume_liters": 1
+        },
+        "priority": "medium"
+      },
+      "rope": {
+        "name": "50ft Utility Rope",
+        "dimensions": {
+          "height": 6,
+          "width": 6,
+          "depth": 3,
+          "volume_liters": 0.5
+        },
+        "compressible": true,
+        "priority": "low"
       }
     }
   }
