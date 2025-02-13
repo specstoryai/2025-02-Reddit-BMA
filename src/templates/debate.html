@@ -44,29 +44,25 @@
                     <div class="participant ai-participant">
                         <div class="ai-avatar">🦾</div>
                         <h2>Master Debator Bot</h2>
-                        {% if initial_state and not initial_state.error %}
-                            <div class="ai-status">Position: {{ initial_state.positions.position_one }}</div>
-                            <textarea class="ai-textarea" readonly>{{ initial_state.arguments.argument_one }}</textarea>
-                        {% else %}
-                            <div class="ai-status">{% if initial_state.error %}Error: {{ initial_state.error }}{% else %}Analyzing debate strategies...{% endif %}</div>
-                            <textarea class="ai-textarea" readonly></textarea>
-                        {% endif %}
+                        <div class="ai-status loading">
+                            <span class="loading-message">Training on the entire history of philosophical discourse...</span>
+                            <div class="loading-brain">🧠</div>
+                        </div>
+                        <textarea class="ai-textarea" readonly></textarea>
                     </div>
                     <div class="participant ai-participant">
                         <div class="ai-avatar">🤖</div>
                         <h2>The Rebuttalizer 6000</h2>
-                        {% if initial_state and not initial_state.error %}
-                            <div class="ai-status">Position: {{ initial_state.positions.position_two }}</div>
-                            <textarea class="ai-textarea" readonly>{{ initial_state.arguments.argument_two }}</textarea>
-                        {% else %}
-                            <div class="ai-status">{% if initial_state.error %}Error: {{ initial_state.error }}{% else %}Processing logical fallacies...{% endif %}</div>
-                            <textarea class="ai-textarea" readonly></textarea>
-                        {% endif %}
+                        <div class="ai-status loading">
+                            <span class="loading-message">Analyzing 2.7 million logical fallacies...</span>
+                            <div class="loading-brain">🤔</div>
+                        </div>
+                        <textarea class="ai-textarea" readonly></textarea>
                     </div>
                 {% endif %}
             </div>
 
-            <button class="submit-round">Submit Round 1</button>
+            <button class="submit-round" {% if mode == 'ai-vs-ai' %}disabled{% endif %}>Submit Round 1</button>
 
             <div class="judge-area">
                 <div class="judge-avatar">⚖️</div>
@@ -76,5 +72,102 @@
             </div>
         </div>
     </div>
+
+    {% if mode == 'ai-vs-ai' %}
+    <script>
+        const loadingMessages = [
+            ["Consulting ancient debate scrolls...", "Calibrating rhetorical devices..."],
+            ["Downloading entire Wikipedia...", "Practicing raised eyebrow technique..."],
+            ["Studying Sun Tzu's Art of Argument...", "Loading sass module v3.0..."],
+            ["Channeling Socrates...", "Optimizing snappy comebacks..."],
+            ["Scanning Oxford Dictionary for big words...", "Charging debate batteries..."],
+            ["Warming up logical processors...", "Polishing rebuttal algorithms..."]
+        ];
+
+        let currentMessageIndex = 0;
+        const loadingInterval = setInterval(() => {
+            const messages = loadingMessages[currentMessageIndex % loadingMessages.length];
+            document.querySelectorAll('.loading-message')[0].textContent = messages[0];
+            document.querySelectorAll('.loading-message')[1].textContent = messages[1];
+            currentMessageIndex++;
+        }, 3000);
+
+        async function pollForResponse(requestId) {
+            try {
+                const response = await fetch(`/api/check-ai-responses/${requestId}`);
+                const data = await response.json();
+                
+                if (data.status === 'complete') {
+                    // Clear loading interval and update UI
+                    clearInterval(loadingInterval);
+                    
+                    // Update first AI
+                    const ai1Status = document.querySelectorAll('.ai-status')[0];
+                    const ai1Textarea = document.querySelectorAll('.ai-textarea')[0];
+                    ai1Status.innerHTML = `Position: ${data.positions.position_one}`;
+                    ai1Status.classList.remove('loading');
+                    ai1Textarea.value = data.arguments.argument_one;
+                    
+                    // Update second AI
+                    const ai2Status = document.querySelectorAll('.ai-status')[1];
+                    const ai2Textarea = document.querySelectorAll('.ai-textarea')[1];
+                    ai2Status.innerHTML = `Position: ${data.positions.position_two}`;
+                    ai2Status.classList.remove('loading');
+                    ai2Textarea.value = data.arguments.argument_two;
+                    
+                    // Enable submit button
+                    document.querySelector('.submit-round').disabled = false;
+                } else if (data.error) {
+                    throw new Error(data.error);
+                } else {
+                    // Still processing, poll again in 1 second
+                    setTimeout(() => pollForResponse(requestId), 1000);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                clearInterval(loadingInterval);
+                document.querySelectorAll('.ai-status').forEach(status => {
+                    status.innerHTML = `Error: ${error.message}`;
+                    status.classList.remove('loading');
+                    status.classList.add('error');
+                });
+            }
+        }
+
+        async function startAIDebate() {
+            try {
+                const response = await fetch('/api/get-ai-responses', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        topic: '{{ topic.title }}'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Start polling for the response
+                    pollForResponse(data.request_id);
+                } else {
+                    throw new Error(data.error || 'Failed to start AI debate');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                clearInterval(loadingInterval);
+                document.querySelectorAll('.ai-status').forEach(status => {
+                    status.innerHTML = `Error: ${error.message}`;
+                    status.classList.remove('loading');
+                    status.classList.add('error');
+                });
+            }
+        }
+
+        // Start the AI debate process
+        startAIDebate();
+    </script>
+    {% endif %}
 </body>
 </html> 
