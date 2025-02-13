@@ -491,6 +491,9 @@ const KVCacheDemo = () => {
         <Card>
           <CardHeader>
             <CardTitle>KV Cache vs Paged Attention Cache Comparison</CardTitle>
+            <p className="text-gray-600 mt-2">
+              Traditional KV caching keeps all processed tokens in GPU memory, which becomes a bottleneck for long sequences. <a href="https://dl.acm.org/doi/pdf/10.1145/3600006.3613165" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">Paged attention</a> solves this by organizing tokens into fixed-size pages that can be efficiently swapped between GPU and CPU memory, allowing the model to process much longer sequences while maintaining fast access to recent context.
+            </p>
           </CardHeader>
           <CardContent>
             {/* Step indicator */}
