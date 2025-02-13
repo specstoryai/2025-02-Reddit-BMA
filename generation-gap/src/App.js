@@ -61,27 +61,29 @@ function App() {
   return (
     <div className="App">
       <div className="input-container">
-        <textarea
-          value={text}
-          onChange={handleTextChange}
-          onKeyPress={handleKeyPress}
-          maxLength={maxTranslationLength}
-          placeholder="Give us something to say?"
-          className="text-input"
-          autoFocus
-        />
-        <div className="input-footer">
+        <div className="input-text-container">
           <div className="character-count">
             {text.length}/{maxTranslationLength} characters
           </div>
+          <textarea
+            value={text}
+            onChange={handleTextChange}
+            onKeyPress={handleKeyPress}
+            maxLength={maxTranslationLength}
+            placeholder="Give us something to say?"
+            className="text-input"
+            autoFocus
+          />
+        </div>
+        <div className="submit-button-container">
           <button 
             onClick={handleSubmit}
             className="submit-button"
             disabled={!text.trim() || Object.values(loading).some(Boolean)}
           >
-            Translate
-          </button>
-        </div>
+          Speak
+        </button>
+      </div>
       </div>
       <div className="timeline-content-wrapper">
         <div className="timeline-scroll-container">
