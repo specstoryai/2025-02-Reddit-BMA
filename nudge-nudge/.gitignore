@@ -1,0 +1,39 @@
+# Clojure
+.cpcache/
+.lein-*
+.nrepl-port
+.clj-kondo/.cache
+.lsp/.cache
+
+# Cursor and VS Code
+.vscode/
+.cursor/
+.cursor-log/
+.idea/
+
+# Mac
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Logs and databases
+*.log
+*.sqlite
+
+# Local environment files
+.env
+.env.local
+
+# Build directories
+target/
+classes/
+out/
+
+# Dependency directories
+node_modules/
+
+# Temporary files
+*.swp
+*~
+.*.swp
+*.tmp 
