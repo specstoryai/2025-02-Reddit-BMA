@@ -1,56 +1,66 @@
-# 2025-02-Reddit-BMA
+# Nudge Nudge Web App
 
-## The post that started it all
+A Clojure web application that provides different perspectives on your dilemmas using AI.
 
-Original [Reddit Post](https://www.reddit.com/r/cursor/comments/1io14r6/build_me_anything_challenge_3_devs_8_hours_your/)
+## Prerequisites
 
-**Title:** 🚀 Build Me Anything Challenge: 3 Devs, 8 Hours, Your Ideas → Working Prototypes LIVE (Thursday 2/13, 9 AM ET)
+- [Clojure](https://clojure.org/guides/install_clojure)
+- [Java JDK](https://adoptium.net/) (version 11 or later recommended)
+- An Anthropic API key (for Claude AI integration)
 
+## Getting Started
 
-<details>
-  
-Tomorrow team [SpecsStory](https://specstory.com/) wants to have some fun and we're teaming up to build as many working prototypes as possible in 8 hrs **for the first-ever "Build Me Anything" challenge!** 
+1. Clone this repository
+2. Navigate to the project directory
+3. Copy the environment template and add your API key:
+   ```bash
+   cp .env.template .env
+   ```
+   Then edit `.env` and replace `your-api-key-here` with your actual Anthropic API key
+4. Start the REPL:
+   ```bash
+   clj -M:dev
+   ```
+5. Once in the REPL, start the web server:
+   ```clojure
+   (require '[nudge.core :as core])
+   (core/-main)
+   ```
+6. Visit http://localhost:3000 in your browser
 
-*Think "Draw Me Anything" meets speed-composing* ✨ *meets chaos.*
+## Environment Variables
 
-**When:**
+The following environment variables are required:
 
-* **Kicks off**: Thursday, February 13th at 9 AM ET
-* **Wraps up:** 5 PM ET
+- `ANTHROPIC_API_KEY`: Your Anthropic API key for Claude AI integration
 
-**We need your help!:**
+These should be set in your `.env` file, which is not committed to version control for security.
 
-* Drop your app idea in 1 - 2 sentences
-* We'll spend exactly 1 hour on each (*constraints* breed both creativity and fairness)
+## Development
 
-**What you can expect:**
+The project uses the following main dependencies:
+- Ring (web server)
+- Compojure (routing)
+- Hiccup (HTML templating)
+- clj-http (HTTP client for Anthropic API)
+- environ (environment variable management)
 
-* A complete [SpecStory share](https://docs.specstory.com/quickstart#share-your-history) including a quick 1-2 minute video demo of where we got, a GitHub repo with all the code and every prompt we used (to see how we think).
-   * *We'll be updating comments on this post with links to all completed builds throughout the day*
+## Project Structure
 
-**The Math:**
+```
+.
+├── src/
+│   └── nudge/         # Main source code
+│       ├── core.clj   # Application entry point
+│       ├── handler.clj # Web request handlers
+│       └── views.clj   # View templates
+├── resources/          # Static resources
+├── test/              # Test files
+├── deps.edn           # Project dependencies
+├── .env.template      # Template for environment variables
+└── README.md
+```
 
-* 3 folks × 60-minute builds × 8 hours = 🤯 *Very Optimistically* we'll tackle up to 24 projects! 
+## License
 
-**The Rules:**
-
-* Keep requests fun (remember, 60 mins!)
-* Safe for work pretty please (keep it clean!)
-* Limit 1 request per Redditor
-* We'll reply and comment to confirm if your request makes the cut
-
-**Drop your requests below! We'll start assigning them to the team and get building at 9 AM ET sharp! ⏰**
-</details>
-
-
-## Completed Apps
-
-| User | Request Source | Request Description | Implementation Link |
-|------|----------------|-------------------|-------------------|
-| yenrabbit_art | [Reddit Comment](https://www.reddit.com/r/cursor/comments/1io14r6/comment/mcfrcog/) | I'd love to see a 'paged attention' implementation with visualizations for teaching | [Overview Video & Code](https://share.specstory.com/stories/b4949812-fb12-44b2-ae15-4b0ac8e71040) |
-| Tincr | [Reddit Comment](https://www.reddit.com/r/cursor/comments/1io14r6/comment/mchiofi/) | Chrome extension that analyzes my browsing history, pulls the content of interesting pages / articles / blogs / etc and turns it into a feed | [Overview Video & Code](https://share.specstory.com/stories/e9cc3402-af44-4a6e-9d93-6a453c88ded3) |
-| superj688 | [Reddit Comment](https://www.reddit.com/r/cursor/comments/1io14r6/comment/mcfsrye/) | Who is right? Both sides submit their argument, and the bot decides who has a more logically sound argument | [Overview Video & Code](https://share.specstory.com/stories/0312fee8-d018-41be-b2b9-f941c72daaf6) |
-| Lukeskyfarter | [Reddit Comment](https://www.reddit.com/r/cursor/comments/1io14r6/comment/mcfjeh3/) | Build the app I built! Backpacking gear management with gear list that can be added to different "packs". E.g. lighterpack.com | [Overview Video & Code](https://share.specstory.com/stories/8f3d2b96-ad6e-4995-8e72-249989ce7909) |
-| theboudoir | [Reddit Comment](https://www.reddit.com/r/cursor/comments/1io14r6/build_me_anything_challenge_3_devs_8_hours_your/mcfofgm/) | An app you can connect to your Strava account, select one of your runs and it generates a map (mapbox) with the route. You can customize color styles and download the result as a pdf. | [Overview Video & Code](https://share.specstory.com/stories/79a92c9d-70f8-4165-8977-8349312718e6) |
-| M_Younes | [Reddit Comment](https://www.reddit.com/r/cursor/comments/1io14r6/build_me_anything_challenge_3_devs_8_hours_your/mcfo1tk/) | Create a map-based app that aggregates Instagram and TikTok saved restaurant/bar posts, letting users visualize saved spots geographically, organize them into lists, and discover nearby options easily, and never lose track of forgotten bookmarks again. | [Overview Video & Code](https://share.specstory.com/stories/79a92c9d-70f8-4165-8977-8349312718e6) |
-| No_Gold_5445 | [Reddit Comment](https://www.reddit.com/r/cursor/comments/1io14r6/comment/mcfzj1y/) | hotdog not hotdog | [Overview Video & Code](https://share.specstory.com/stories/c44b310d-49b2-4f06-93a4-299eb422fe23) | 
+This project is licensed under the MIT License. 
