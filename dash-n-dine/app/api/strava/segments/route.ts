@@ -15,7 +15,8 @@ export async function GET() {
       max_lng: BOSTON_COORDS.lng + 0.1
     };
 
-    const response = await fetch(
+    // First get the segments
+    const segmentsResponse = await fetch(
       `https://www.strava.com/api/v3/segments/explore?bounds=${bounds.min_lat},${bounds.min_lng},${bounds.max_lat},${bounds.max_lng}&activity_type=running`,
       {
         headers: {
@@ -24,13 +25,42 @@ export async function GET() {
       }
     );
 
-    if (!response.ok) {
+    if (!segmentsResponse.ok) {
       throw new Error('Failed to fetch from Strava API');
     }
 
-    const data = await response.json();
-    console.log('Strava API response:', JSON.stringify(data, null, 2));
-    return NextResponse.json(data);
+    const segmentsData = await segmentsResponse.json();
+
+    // For each segment, get its detailed path data
+    const segmentsWithPaths = await Promise.all(
+      segmentsData.segments.map(async (segment: any) => {
+        try {
+          const streamResponse = await fetch(
+            `https://www.strava.com/api/v3/segments/${segment.id}/streams?keys=latlng&key_by_type=true`,
+            {
+              headers: {
+                'Authorization': `Bearer ${process.env.NEXT_STRAVA_ACCESS_TOKEN}`
+              }
+            }
+          );
+
+          if (!streamResponse.ok) {
+            return segment;
+          }
+
+          const streamData = await streamResponse.json();
+          return {
+            ...segment,
+            path: streamData.latlng?.data || []
+          };
+        } catch (error) {
+          console.error(`Failed to fetch path for segment ${segment.id}:`, error);
+          return segment;
+        }
+      })
+    );
+
+    return NextResponse.json({ segments: segmentsWithPaths });
   } catch (error) {
     console.error('Strava API error:', error);
     return NextResponse.json(

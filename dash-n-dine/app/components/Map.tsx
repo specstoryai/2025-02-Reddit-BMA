@@ -8,6 +8,7 @@ interface MapProps {
     name: string;
     start_latlng: [number, number];
     end_latlng: [number, number];
+    path?: [number, number][];
   } | null;
 }
 
@@ -16,6 +17,7 @@ export default function Map({ selectedSegment }: MapProps) {
   const map = useRef<mapboxgl.Map | null>(null);
   const markerStart = useRef<mapboxgl.Marker | null>(null);
   const markerEnd = useRef<mapboxgl.Marker | null>(null);
+  const segmentLine = useRef<mapboxgl.GeoJSONSource | null>(null);
 
   useEffect(() => {
     if (map.current) return;
@@ -29,20 +31,73 @@ export default function Map({ selectedSegment }: MapProps) {
       center: [-71.0589, 42.3601], // Boston coordinates
       zoom: 12
     });
+
+    // Add a source and layer for the segment path
+    map.current.on('load', () => {
+      map.current?.addSource('segment', {
+        type: 'geojson',
+        data: {
+          type: 'Feature',
+          properties: {},
+          geometry: {
+            type: 'LineString',
+            coordinates: []
+          }
+        }
+      });
+
+      map.current?.addLayer({
+        id: 'segment',
+        type: 'line',
+        source: 'segment',
+        layout: {
+          'line-join': 'round',
+          'line-cap': 'round'
+        },
+        paint: {
+          'line-color': '#ff4444',
+          'line-width': 4,
+          'line-opacity': 0.8
+        }
+      });
+
+      segmentLine.current = map.current?.getSource('segment') as mapboxgl.GeoJSONSource;
+    });
   }, []);
 
   // Handle selected segment changes
   useEffect(() => {
-    if (!map.current || !selectedSegment) {
-      // Clear markers if no segment is selected
-      markerStart.current?.remove();
-      markerEnd.current?.remove();
+    if (!map.current || !segmentLine.current) return;
+
+    // Clear markers if no segment is selected
+    markerStart.current?.remove();
+    markerEnd.current?.remove();
+
+    if (!selectedSegment) {
+      // Clear the segment line
+      segmentLine.current.setData({
+        type: 'Feature',
+        properties: {},
+        geometry: {
+          type: 'LineString',
+          coordinates: []
+        }
+      });
       return;
     }
 
-    // Remove existing markers
-    markerStart.current?.remove();
-    markerEnd.current?.remove();
+    // Update the segment line if path data is available
+    if (selectedSegment.path) {
+      const coordinates = selectedSegment.path.map(([lat, lng]) => [lng, lat]);
+      segmentLine.current.setData({
+        type: 'Feature',
+        properties: {},
+        geometry: {
+          type: 'LineString',
+          coordinates
+        }
+      });
+    }
 
     // Add start marker
     markerStart.current = new mapboxgl.Marker({ color: '#00ff00' })
@@ -56,13 +111,22 @@ export default function Map({ selectedSegment }: MapProps) {
       .setPopup(new mapboxgl.Popup().setHTML('End: ' + selectedSegment.name))
       .addTo(map.current);
 
-    // Fit map to show both markers
-    const bounds = new mapboxgl.LngLatBounds()
-      .extend([selectedSegment.start_latlng[1], selectedSegment.start_latlng[0]])
-      .extend([selectedSegment.end_latlng[1], selectedSegment.end_latlng[0]]);
+    // Fit map to show the entire segment
+    const bounds = new mapboxgl.LngLatBounds();
+    
+    // Add path points to bounds if available
+    if (selectedSegment.path) {
+      selectedSegment.path.forEach(([lat, lng]) => {
+        bounds.extend([lng, lat]);
+      });
+    } else {
+      // Fallback to just start/end points if no path
+      bounds.extend([selectedSegment.start_latlng[1], selectedSegment.start_latlng[0]])
+            .extend([selectedSegment.end_latlng[1], selectedSegment.end_latlng[0]]);
+    }
 
     map.current.fitBounds(bounds, {
-      padding: 100,
+      padding: 50,
       duration: 1000
     });
   }, [selectedSegment]);

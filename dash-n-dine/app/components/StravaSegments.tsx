@@ -10,6 +10,7 @@ interface StravaSegment {
   climb_category: number;
   start_latlng: [number, number];
   end_latlng: [number, number];
+  path?: [number, number][];
 }
 
 interface StravaSegmentsProps {
