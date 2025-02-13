@@ -150,7 +150,7 @@ h1 {
 
 .timeline-label {
   position: absolute;
-  bottom: -85px;
+  bottom: -105px;  /* Adjusted to make room for age range */
   left: 0;
   right: 20px;
   text-align: center;
@@ -165,6 +165,13 @@ h1 {
 .timeline-label h3 {
   font-size: 14px;
   margin-top: 5px;
+}
+
+.timeline-label .age-range {
+  font-size: 12px;
+  color: #666;
+  margin-top: 2px;
+  font-style: italic;
 }
 
 .timeline-events h4 {
@@ -182,39 +189,47 @@ h1 {
 
 /* Timeline - Events - Grid */
 .timeline-event-years-1 { width: calc(var(--grid-width) * 2); }
-.timeline-event-years-2 { width: calc(var(--grid-width) * 3); }
-.timeline-event-years-3 { width: calc(var(--grid-width) * 3); }
-.timeline-event-years-4 { width: calc(var(--grid-width) * 4); }
-.timeline-event-years-6 { width: calc(var(--grid-width) * 5); }
-.timeline-event-years-7 { width: calc(var(--grid-width) * 4); }
+.timeline-event-years-2 { width: calc(var(--grid-width) * 2.4); }
+.timeline-event-years-3 { width: calc(var(--grid-width) * 3.4); }  /* Silent Generation */
+.timeline-event-years-4 { width: calc(var(--grid-width) * 3.6); }  /* Baby Boomers */
+.timeline-event-years-5 { width: calc(var(--grid-width) * 3.0); }  /* Generation X */
+.timeline-event-years-6 { width: calc(var(--grid-width) * 3.0); }  /* Millennials */
+.timeline-event-years-7 { width: calc(var(--grid-width) * 3.0); }  /* Generation Z */
+.timeline-event-years-8 { width: calc(var(--grid-width) * 2.8); }  /* Generation Alpha */
 
 /* Timeline - Events - Colors */
 .timeline-events li:nth-child(1):before {
-  background: #4A8B8F;
+  background: var(--color-blue);
   width: calc(100% - 20px);
 }
-.timeline-events li:nth-child(1) .timeline-label h3 { color: #4A8B8F; }
+.timeline-events li:nth-child(1) .timeline-label h3 { color: var(--color-blue); }
 
 .timeline-events li:nth-child(2):before {
-  background: #DD3D01;
+  background: var(--color-teal);
   width: calc(100% - 20px);
 }
-.timeline-events li:nth-child(2) .timeline-label h3 { color: #DD3D01; }
+.timeline-events li:nth-child(2) .timeline-label h3 { color: var(--color-teal); }
 
 .timeline-events li:nth-child(3):before {
-  background: #56C2F3;
+  background: var(--color-light-blue);
   width: calc(100% - 20px);
 }
-.timeline-events li:nth-child(3) .timeline-label h3 { color: #56C2F3; }
+.timeline-events li:nth-child(3) .timeline-label h3 { color: var(--color-light-blue); }
 
 .timeline-events li:nth-child(4):before {
-  background: #FF9704;
+  background: var(--color-purple);
   width: calc(100% - 20px);
 }
-.timeline-events li:nth-child(4) .timeline-label h3 { color: #FF9704; }
+.timeline-events li:nth-child(4) .timeline-label h3 { color: var(--color-purple); }
 
 .timeline-events li:nth-child(5):before {
-  background: #C2E34E;
+  background: var(--color-pink);
   width: calc(100% - 20px);
 }
-.timeline-events li:nth-child(5) .timeline-label h3 { color: #C2E34E; } 
+.timeline-events li:nth-child(5) .timeline-label h3 { color: var(--color-pink); }
+
+.timeline-events li:nth-child(6):before {
+  background: var(--color-orange);
+  width: calc(100% - 20px);
+}
+.timeline-events li:nth-child(6) .timeline-label h3 { color: var(--color-orange); } 

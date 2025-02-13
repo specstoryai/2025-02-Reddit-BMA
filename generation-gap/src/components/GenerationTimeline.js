@@ -5,21 +5,23 @@ import character2 from '../assets/character-2.png';
 import character3 from '../assets/character-3.png';
 import character4 from '../assets/character-4.png';
 import character5 from '../assets/character-5.png';
+import character6 from '../assets/character-6.png';
 
 const GenerationTimeline = ({ translations, loading, submittedText }) => {
   const generations = [
-    { name: "Silent Generation", period: "1928-1945", character: character3 },
-    { name: "Baby Boomers", period: "1946-1964", character: character4 },
-    { name: "Generation X", period: "1965-1980", character: character5 },
-    { name: "Generation Z", period: "1997-2009", character: character2 },
-    { name: "Generation Alpha", period: "2010s-mid-2020s", character: character1 }
+    { name: "Silent Generation", period: "1928-1945", ages: "80-97", character: character6 },
+    { name: "Baby Boomers", period: "1946-1964", ages: "61-79", character: character5 },
+    { name: "Generation X", period: "1965-1980", ages: "45-60", character: character4 },
+    { name: "Millennials", period: "1981-1996", ages: "29-44", character: character3 },
+    { name: "Generation Z", period: "1997-2012", ages: "13-28", character: character2 },
+    { name: "Generation Alpha", period: "2010-2024", ages: "1-15", character: character1 }
   ];
 
   return (
     <div className="timeline-container">
       <ul className="timeline-events">
         {generations.map((gen, index) => (
-          <li key={gen.name} className={`timeline-event-years-${index === 0 ? 7 : index === 1 ? 6 : index === 2 ? 4 : 3}`}>
+          <li key={gen.name} className={`timeline-event-years-${index + 3}`}>
             {submittedText && (
               <div className="speech-bubble">
                 <div className="translated-text">
@@ -37,6 +39,7 @@ const GenerationTimeline = ({ translations, loading, submittedText }) => {
             <div className="timeline-label">
               <h2>{gen.period}</h2>
               <h3>{gen.name}</h3>
+              <p className="age-range">Ages {gen.ages} in 2025</p>
             </div>
           </li>
         ))}
@@ -53,6 +56,7 @@ const GenerationTimeline = ({ translations, loading, submittedText }) => {
         <li>2000</li>
         <li>2010</li>
         <li>2020</li>
+        <li>2025</li>
       </ul>
     </div>
   );
