@@ -6,11 +6,9 @@ import { HikingItem, HikingItemsByCategory, PackedItem } from '@/lib/types';
 interface ItemSelectorProps {
   items: HikingItemsByCategory;
   onItemAdd: (item: PackedItem) => void;
-  currentVolume: number;
-  maxVolume: number;
 }
 
-export function ItemSelector({ items, onItemAdd, currentVolume, maxVolume }: ItemSelectorProps) {
+export function ItemSelector({ items, onItemAdd }: ItemSelectorProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>(Object.keys(items.categories)[0]);
 
   const addItem = (itemId: string, item: HikingItem, category: string) => {
@@ -22,27 +20,8 @@ export function ItemSelector({ items, onItemAdd, currentVolume, maxVolume }: Ite
     onItemAdd(packedItem);
   };
 
-  const volumePercentage = (currentVolume / maxVolume) * 100;
-  const volumeColor = volumePercentage > 90 ? 'bg-red-500' : 
-                     volumePercentage > 75 ? 'bg-yellow-500' : 
-                     'bg-green-500';
-
   return (
     <div className="w-full bg-white rounded-xl shadow-lg p-6">
-      {/* Volume Indicator */}
-      <div className="mb-6">
-        <div className="flex justify-between text-sm text-gray-600 mb-2">
-          <span>Pack Volume</span>
-          <span>{currentVolume.toFixed(1)}L / {maxVolume.toFixed(1)}L</span>
-        </div>
-        <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
-          <div 
-            className={`h-full ${volumeColor} transition-all duration-300 rounded-full`}
-            style={{ width: `${Math.min(volumePercentage, 100)}%` }}
-          />
-        </div>
-      </div>
-
       {/* Category Tabs */}
       <div className="flex flex-wrap gap-2 mb-6">
         {Object.keys(items.categories).map((category) => (

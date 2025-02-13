@@ -256,8 +256,6 @@ export function BackpackVisualizer({ data }: BackpackVisualizerProps) {
                 <ItemSelector
                   items={hikingItems as HikingItemsByCategory}
                   onItemAdd={handleAddItem}
-                  currentVolume={packingResult.volumeUsed}
-                  maxVolume={packingResult.volumeAvailable}
                 />
               </div>
             </div>
