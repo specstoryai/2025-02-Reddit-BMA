@@ -19,6 +19,13 @@ function App() {
     }
   };
 
+  const CharacterWithSpeechBubble = ({ image, alt, text }) => (
+    <div className="character-wrapper">
+      {text && <div className="speech-bubble">{text}</div>}
+      <img src={image} alt={alt} className="character" />
+    </div>
+  );
+
   return (
     <div className="App">
       <div className="input-container">
@@ -34,12 +41,12 @@ function App() {
         </div>
       </div>
       <div className="characters-container">
-        <img src={character1} alt="Character 1" className="character" />
-        <img src={character2} alt="Character 2" className="character" />
-        <img src={character3} alt="Character 3" className="character" />
-        <img src={character4} alt="Character 4" className="character" />
-        <img src={character5} alt="Character 5" className="character" />
-        <img src={character6} alt="Character 6" className="character" />
+        <CharacterWithSpeechBubble image={character1} alt="Character 1" text={text} />
+        <CharacterWithSpeechBubble image={character2} alt="Character 2" text={text} />
+        <CharacterWithSpeechBubble image={character3} alt="Character 3" text={text} />
+        <CharacterWithSpeechBubble image={character4} alt="Character 4" text={text} />
+        <CharacterWithSpeechBubble image={character5} alt="Character 5" text={text} />
+        <CharacterWithSpeechBubble image={character6} alt="Character 6" text={text} />
       </div>
     </div>
   );
