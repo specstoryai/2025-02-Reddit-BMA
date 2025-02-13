@@ -2627,6 +2627,117 @@ Let me fix that type error by properly typing the post object:
 _**Assistant**_
 
 ```
+import { NextResponse } from 'next/server';
+import axios from 'axios';
+
+interface BlueskyImage {
+  fullsize: string;
+  alt: string;
+}
+
+interface BlueskyEmbed {
+  images?: BlueskyImage[];
+}
+
+interface BlueskyPost {
+  post: {
+    record: {
+      text: string;
+      createdAt: string;
+    };
+    embed?: BlueskyEmbed;
+  };
+}
+
+interface BlueskyResponse {
+  feed: BlueskyPost[];
+}
+
+interface TransformedPost {
+  text: string;
+  createdAt: string;
+  images: { url: string; alt: string; }[];
+}
+
+export async function GET() {
+  try {
+    const apiUrl = 'https://public.api.bsky.app/xrpc/app.bsky.feed.getAuthorFeed';
+    const response = await axios.get<BlueskyResponse>(apiUrl, {
+      params: {
+        actor: 'restaurant-bot.bsky.social',
+        limit: 10
+      }
+    });
+
+    // Transform the feed data to match our interface
+    const posts = response.data.feed.map((item: BlueskyPost): TransformedPost => {
+      const post: TransformedPost = {
+        text: item.post.record.text,
+        createdAt: item.post.record.createdAt,
+        images: []
+      };
+
+      // Check for images in the embed
+      if (item.post.embed?.images) {
+        post.images = item.post.embed.images.map((img: BlueskyImage) => ({
+          url: img.fullsize,
+          alt: img.alt || ''
+        }));
+      }
+
+      return post;
+    });
+
+    return NextResponse.json({ posts });
+  } catch (error) {
+    console.error('Failed to fetch Bluesky posts:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch Bluesky posts' },
+      { status: 500 }
+    );
+  }
+}
+```
+
+---
+
+_**Assistant**_
+
+
+
+
+
+The API endpoint is now properly typed and should work with the public Bluesky API. The changes include:
+
+1. Using axios instead of fetch
+2. Using the correct public API endpoint (`public.api.bsky.app/xrpc/app.bsky.feed.getAuthorFeed`)
+3. Proper TypeScript interfaces for the Bluesky API response structure
+4. Proper typing for our transformed post data
+
+The endpoint should now successfully fetch the restaurant bot's posts without requiring authentication. The BlueskyFeed component we created earlier should work with this updated API endpoint without any changes, as we've maintained the same response structure.
+
+Would you like me to:
+1. Add error handling for specific Bluesky API error responses?
+2. Add caching to avoid hitting the API too frequently?
+3. Make any adjustments to how we're transforming the data?
+
+---
+
+_**User**_
+
+Great. I think I see longitude and lattitude in the google maps url for each post. I don't want to use google maps. Instead extract the long and lat from each URL and create a button on each displayed post that takes me to the matching long/lat on the mapbox map in this app.
+
+---
+
+_**Assistant**_
+
+I'll help you extract the coordinates from the Google Maps URLs and add a "Show on Map" button that centers the map on that location. First, let's update our interfaces and transformation logic to extract coordinates:
+
+---
+
+_**Assistant**_
+
+```
 undefined
 ```
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
 import mapboxgl from 'mapbox-gl';
 
 interface MapProps {
@@ -12,12 +12,39 @@ interface MapProps {
   } | null;
 }
 
-export default function Map({ selectedSegment }: MapProps) {
+export interface MapHandle {
+  centerOnLocation: (coordinates: [number, number], zoom?: number) => void;
+}
+
+const Map = forwardRef<MapHandle, MapProps>(({ selectedSegment }, ref) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markerStart = useRef<mapboxgl.Marker | null>(null);
   const markerEnd = useRef<mapboxgl.Marker | null>(null);
   const segmentLine = useRef<mapboxgl.GeoJSONSource | null>(null);
+  const locationMarker = useRef<mapboxgl.Marker | null>(null);
+
+  // Expose the centerOnLocation method
+  useImperativeHandle(ref, () => ({
+    centerOnLocation: (coordinates: [number, number], zoom: number = 15) => {
+      if (!map.current) return;
+
+      // Remove previous location marker if it exists
+      locationMarker.current?.remove();
+
+      // Add a new marker
+      locationMarker.current = new mapboxgl.Marker({ color: '#4B5563' })
+        .setLngLat(coordinates)
+        .addTo(map.current);
+
+      // Center the map on the coordinates
+      map.current.flyTo({
+        center: coordinates,
+        zoom,
+        duration: 1500
+      });
+    }
+  }));
 
   useEffect(() => {
     if (map.current) return;
@@ -69,7 +96,7 @@ export default function Map({ selectedSegment }: MapProps) {
   useEffect(() => {
     if (!map.current || !segmentLine.current) return;
 
-    // Clear markers if no segment is selected
+    // Clear markers
     markerStart.current?.remove();
     markerEnd.current?.remove();
 
@@ -137,4 +164,8 @@ export default function Map({ selectedSegment }: MapProps) {
       className="w-full h-[400px] rounded-lg shadow-lg"
     />
   );
-} 
+});
+
+Map.displayName = 'Map';
+
+export default Map; 

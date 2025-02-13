@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { MapHandle } from './Map';
 
 interface BlueskyPost {
   text: string;
@@ -9,9 +10,17 @@ interface BlueskyPost {
     url: string;
     alt: string;
   }[];
+  location?: {
+    name: string;
+    coordinates: [number, number];
+  };
 }
 
-export default function BlueskyFeed() {
+interface BlueskyFeedProps {
+  mapRef: React.RefObject<MapHandle | null>;
+}
+
+export default function BlueskyFeed({ mapRef }: BlueskyFeedProps) {
   const [posts, setPosts] = useState<BlueskyPost[]>([]);
   const [error, setError] = useState<string | null>(null);
 
@@ -40,6 +49,10 @@ export default function BlueskyFeed() {
       hour: '2-digit',
       minute: '2-digit'
     });
+  }
+
+  function handleShowOnMap(coordinates: [number, number]) {
+    mapRef.current?.centerOnLocation(coordinates);
   }
 
   if (error) {
@@ -72,8 +85,18 @@ export default function BlueskyFeed() {
                 ))}
               </div>
             )}
-            <div className="text-xs text-gray-500 mt-2">
-              {formatDate(post.createdAt)}
+            <div className="flex items-center justify-between mt-2">
+              <div className="text-xs text-gray-500">
+                {formatDate(post.createdAt)}
+              </div>
+              {post.location && (
+                <button
+                  onClick={() => handleShowOnMap(post.location!.coordinates)}
+                  className="text-sm px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+                >
+                  Show on Map
+                </button>
+              )}
             </div>
           </div>
         ))}

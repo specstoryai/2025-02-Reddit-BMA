@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import Map from './components/Map';
+import { useState, useRef } from 'react';
+import Map, { MapHandle } from './components/Map';
 import StravaSegments from './components/StravaSegments';
 import BlueskyFeed from './components/BlueskyFeed';
 
@@ -18,6 +18,7 @@ interface StravaSegment {
 
 export default function Home() {
   const [selectedSegment, setSelectedSegment] = useState<StravaSegment | null>(null);
+  const mapRef = useRef<MapHandle>(null);
 
   return (
     <div className="min-h-screen p-8">
@@ -26,7 +27,7 @@ export default function Home() {
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
-            <Map selectedSegment={selectedSegment} />
+            <Map ref={mapRef} selectedSegment={selectedSegment} />
             <div className="mt-8">
               <StravaSegments 
                 selectedSegment={selectedSegment}
@@ -35,7 +36,7 @@ export default function Home() {
             </div>
           </div>
           <div>
-            <BlueskyFeed />
+            <BlueskyFeed mapRef={mapRef} />
           </div>
         </div>
       </main>

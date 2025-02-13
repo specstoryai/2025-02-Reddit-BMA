@@ -28,6 +28,37 @@ interface TransformedPost {
   text: string;
   createdAt: string;
   images: { url: string; alt: string; }[];
+  location?: {
+    name: string;
+    coordinates: [number, number]; // [longitude, latitude]
+  };
+}
+
+function extractLocationFromText(text: string): { name: string; coordinates: [number, number] } | undefined {
+  // Look for Google Maps URL in the text
+  const mapsUrlMatch = text.match(/https:\/\/www\.google\.com\/maps\/search\/\?[^\\s]+/);
+  if (!mapsUrlMatch) return undefined;
+
+  // Extract restaurant name (text before the URL)
+  const nameMatch = text.match(/^([^https]+)/);
+  const name = nameMatch ? nameMatch[1].trim() : '';
+
+  // Extract coordinates from the URL
+  const url = new URL(mapsUrlMatch[0]);
+  const queryParams = url.searchParams;
+  const query = queryParams.get('query');
+  
+  if (query) {
+    const [lat, lng] = query.split(',').map(Number);
+    if (!isNaN(lat) && !isNaN(lng)) {
+      return {
+        name,
+        coordinates: [lng, lat] // Mapbox uses [longitude, latitude] format
+      };
+    }
+  }
+
+  return undefined;
 }
 
 export async function GET() {
@@ -47,6 +78,12 @@ export async function GET() {
         createdAt: item.post.record.createdAt,
         images: []
       };
+
+      // Extract location information from the post text
+      const location = extractLocationFromText(item.post.record.text);
+      if (location) {
+        post.location = location;
+      }
 
       // Check for images in the embed
       if (item.post.embed?.images) {
