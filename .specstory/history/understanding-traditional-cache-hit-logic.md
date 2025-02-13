@@ -1680,7 +1680,20 @@ I apologize - you're right. Looking at the screenshot, I can see that "Computing
 _**Assistant**_
 
 ```
-undefined
+// ... existing code ...
+                <div className="flex gap-2">
+                  {getCurrentGeneratedTokens().map((token, idx) => (
+                    <div 
+                      key={idx}
+                      className={`p-2 border rounded ${
+                        step < idx + processingPhaseEndStep + 1 ? 'bg-gray-50' : 'bg-blue-100'
+                      }`}
+                    >
+                      {token}
+                    </div>
+                  ))}
+                </div>
+// ... existing code ...
 ```
 
 ---
@@ -1688,6 +1701,148 @@ undefined
 _**Assistant**_
 
 
+
+I've simplified the Generated tokens section to:
+1. Remove the "Computing new K,V" indicator for "and"
+2. Remove all status indicators and icons
+3. Keep only the basic token display with simple background colors:
+   - Gray for upcoming tokens
+   - Blue for processed tokens
+
+Now the Generated section just shows the tokens themselves, while the cache hit and processing status information is only shown in the Paged Cache visualization where it belongs.
+
+---
+
+_**User**_
+
+For the Traditional Cache, hit highlighting uses a subtle blue shading. For the Paged Cache it uses a clearer green shading plus a checkmark. Make the style of the Traditional Cache hit look more like the Paged Cache hit. Don't change any logic, just styling.
+
+---
+
+_**Assistant**_
+
+I'll update the styling of the Traditional Cache hits to match the Paged Cache style, using the same green shading and checkmark icon.
+
+---
+
+_**Assistant**_
+
+```
+// ... existing code ...
+                    <div 
+                      key={idx} 
+                      className={`flex gap-4 items-center mb-2 p-2 rounded ${
+                        kv.isHighlighted ? 'bg-green-50 border border-green-200' : ''
+                      }`}
+                    >
+                      <span className="font-mono w-16">{token}:</span>
+                      <div className="flex gap-2">
+                        {renderTooltip(tooltips.keys,
+                          <div className="flex items-center gap-1 bg-blue-100 p-2 rounded">
+                            <Key size={16} />
+                            <span>{kv.key}</span>
+                          </div>
+                        )}
+                        {renderTooltip(tooltips.values,
+                          <div className="flex items-center gap-1 bg-purple-100 p-2 rounded">
+                            <Database size={16} />
+                            <span>{kv.value}</span>
+                          </div>
+                        )}
+                      </div>
+                      {kv.isHighlighted && (
+                        <CheckCircle2 size={14} className="text-green-600 ml-2" />
+                      )}
+                    </div>
+// ... existing code ...
+```
+
+---
+
+_**Assistant**_
+
+
+
+I've made the following styling changes to the Traditional Cache hits:
+1. Changed the background color from `bg-blue-50` to `bg-green-50`
+2. Added a green border with `border border-green-200`
+3. Added the same checkmark icon (`CheckCircle2`) that's used in the Paged Cache
+4. Styled the checkmark in green with `text-green-600` and added some margin
+
+Now both caches will use the same visual style to indicate cache hits - a green background with border and a checkmark icon. The logic for when hits occur remains unchanged, only the visual appearance has been updated.
+
+---
+
+_**User**_
+
+During input processing when you highlight a cache hit in the traditional cache, when the user moves on to the next step, remove the highlighting from the previous step.
+
+---
+
+_**Assistant**_
+
+
+
+I'll modify the code to clear the highlighting in the Traditional Cache when moving to the next step during input processing. We need to adjust the logic in the `handleNext` function where we update the Traditional Cache.
+
+---
+
+_**Assistant**_
+
+```
+// ... existing code ...
+        // Update traditional cache
+        if (lowerToken === 'the' && cache['the']) {
+          setCache(prev => {
+            const newCache = { ...prev };
+            // Clear all highlights first
+            Object.keys(newCache).forEach(key => {
+              newCache[key].isHighlighted = false;
+            });
+            // Set highlight only for current hit
+            newCache['the'].isHighlighted = true;
+            return newCache;
+          });
+        } else {
+          const nextIndex = Object.keys(cache).length;
+          setCache(prev => {
+            const newCache = { ...prev };
+            // Clear all highlights first
+            Object.keys(newCache).forEach(key => {
+              newCache[key].isHighlighted = false;
+            });
+            // Add new token without highlight
+            newCache[lowerToken] = {
+              key: `k${nextIndex}`,
+              value: `v${nextIndex}`,
+              isHighlighted: false
+            };
+            return newCache;
+          });
+        }
+// ... existing code ...
+```
+
+---
+
+_**Assistant**_
+
+
+
+I've modified the Traditional Cache update logic to:
+
+1. Always clear all highlights first by iterating through all cache entries and setting `isHighlighted` to false
+2. Then, only for a cache hit:
+   - Set `isHighlighted` to true for the current token
+3. For new tokens:
+   - Add them to the cache with `isHighlighted` set to false
+
+This ensures that:
+- Only the current cache hit is highlighted
+- Previous highlights are cleared when moving to the next step
+- The highlighting behavior matches the step-by-step nature of the visualization
+
+The logic for the Paged Cache and other parts of the visualization remain unchanged.
 
 ---
 

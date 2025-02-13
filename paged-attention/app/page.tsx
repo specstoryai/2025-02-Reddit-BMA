@@ -207,20 +207,32 @@ const KVCacheDemo = () => {
 
         // Update traditional cache
         if (lowerToken === 'the' && cache['the']) {
-          setCache(prev => ({
-            ...prev,
-            'the': { ...prev['the'], isHighlighted: true }
-          }));
+          setCache(prev => {
+            const newCache = { ...prev };
+            // Clear all highlights first
+            Object.keys(newCache).forEach(key => {
+              newCache[key].isHighlighted = false;
+            });
+            // Set highlight only for current hit
+            newCache['the'].isHighlighted = true;
+            return newCache;
+          });
         } else {
           const nextIndex = Object.keys(cache).length;
-          setCache(prev => ({
-            ...prev,
-            [lowerToken]: {
+          setCache(prev => {
+            const newCache = { ...prev };
+            // Clear all highlights first
+            Object.keys(newCache).forEach(key => {
+              newCache[key].isHighlighted = false;
+            });
+            // Add new token without highlight
+            newCache[lowerToken] = {
               key: `k${nextIndex}`,
               value: `v${nextIndex}`,
               isHighlighted: false
-            }
-          }));
+            };
+            return newCache;
+          });
         }
 
         // Update paged cache
@@ -542,7 +554,7 @@ const KVCacheDemo = () => {
                     <div 
                       key={idx} 
                       className={`flex gap-4 items-center mb-2 p-2 rounded ${
-                        kv.isHighlighted ? 'bg-blue-50' : ''
+                        kv.isHighlighted ? 'bg-green-50 border border-green-200' : ''
                       }`}
                     >
                       <span className="font-mono w-16">{token}:</span>
@@ -560,6 +572,9 @@ const KVCacheDemo = () => {
                           </div>
                         )}
                       </div>
+                      {kv.isHighlighted && (
+                        <CheckCircle2 size={14} className="text-green-600 ml-2" />
+                      )}
                     </div>
                   ))}
                   {Object.keys(cache).length === 0 && (
