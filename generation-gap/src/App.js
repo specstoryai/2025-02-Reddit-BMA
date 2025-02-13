@@ -107,7 +107,7 @@ function App() {
           onChange={handleTextChange}
           onKeyPress={handleKeyPress}
           maxLength={maxLength}
-          placeholder="Type something to see how different generations would say it! (140 characters max)"
+          placeholder="What do you want to hear?"
           className="text-input"
         />
         <div className="input-footer">
