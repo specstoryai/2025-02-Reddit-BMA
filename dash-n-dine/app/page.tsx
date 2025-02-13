@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Map from './components/Map';
 import StravaSegments from './components/StravaSegments';
+import BlueskyFeed from './components/BlueskyFeed';
 
 interface StravaSegment {
   name: string;
@@ -12,6 +13,7 @@ interface StravaSegment {
   climb_category: number;
   start_latlng: [number, number];
   end_latlng: [number, number];
+  path?: [number, number][];
 }
 
 export default function Home() {
@@ -19,15 +21,22 @@ export default function Home() {
 
   return (
     <div className="min-h-screen p-8">
-      <main className="max-w-4xl mx-auto space-y-8">
+      <main className="max-w-6xl mx-auto space-y-8">
         <h1 className="text-3xl font-bold">Welcome to Dash-N-Dine</h1>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <Map selectedSegment={selectedSegment} />
-          <StravaSegments 
-            selectedSegment={selectedSegment}
-            onSegmentSelect={setSelectedSegment}
-          />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2">
+            <Map selectedSegment={selectedSegment} />
+            <div className="mt-8">
+              <StravaSegments 
+                selectedSegment={selectedSegment}
+                onSegmentSelect={setSelectedSegment}
+              />
+            </div>
+          </div>
+          <div>
+            <BlueskyFeed />
+          </div>
         </div>
       </main>
     </div>
