@@ -2738,7 +2738,1028 @@ I'll help you extract the coordinates from the Google Maps URLs and add a "Show 
 _**Assistant**_
 
 ```
-undefined
+import { NextResponse } from 'next/server';
+import axios from 'axios';
+
+interface BlueskyImage {
+  fullsize: string;
+  alt: string;
+}
+
+interface BlueskyEmbed {
+  images?: BlueskyImage[];
+}
+
+interface BlueskyPost {
+  post: {
+    record: {
+      text: string;
+      createdAt: string;
+    };
+    embed?: BlueskyEmbed;
+  };
+}
+
+interface BlueskyResponse {
+  feed: BlueskyPost[];
+}
+
+interface TransformedPost {
+  text: string;
+  createdAt: string;
+  images: { url: string; alt: string; }[];
+  location?: {
+    name: string;
+    coordinates: [number, number]; // [longitude, latitude]
+  };
+}
+
+function extractLocationFromText(text: string): { name: string; coordinates: [number, number] } | undefined {
+  // Look for Google Maps URL in the text
+  const mapsUrlMatch = text.match(/https:\/\/www\.google\.com\/maps\/search\/\?[^\\s]+/);
+  if (!mapsUrlMatch) return undefined;
+
+  // Extract restaurant name (text before the URL)
+  const nameMatch = text.match(/^([^https]+)/);
+  const name = nameMatch ? nameMatch[1].trim() : '';
+
+  // Extract coordinates from the URL
+  const url = new URL(mapsUrlMatch[0]);
+  const queryParams = url.searchParams;
+  const query = queryParams.get('query');
+  
+  if (query) {
+    const [lat, lng] = query.split(',').map(Number);
+    if (!isNaN(lat) && !isNaN(lng)) {
+      return {
+        name,
+        coordinates: [lng, lat] // Mapbox uses [longitude, latitude] format
+      };
+    }
+  }
+
+  return undefined;
+}
+
+export async function GET() {
+  try {
+    const apiUrl = 'https://public.api.bsky.app/xrpc/app.bsky.feed.getAuthorFeed';
+    const response = await axios.get<BlueskyResponse>(apiUrl, {
+      params: {
+        actor: 'restaurant-bot.bsky.social',
+        limit: 10
+      }
+    });
+
+    // Transform the feed data to match our interface
+    const posts = response.data.feed.map((item: BlueskyPost): TransformedPost => {
+      const post: TransformedPost = {
+        text: item.post.record.text,
+        createdAt: item.post.record.createdAt,
+        images: []
+      };
+
+      // Extract location information from the post text
+      const location = extractLocationFromText(item.post.record.text);
+      if (location) {
+        post.location = location;
+      }
+
+      // Check for images in the embed
+      if (item.post.embed?.images) {
+        post.images = item.post.embed.images.map((img: BlueskyImage) => ({
+          url: img.fullsize,
+          alt: img.alt || ''
+        }));
+      }
+
+      return post;
+    });
+
+    return NextResponse.json({ posts });
+  } catch (error) {
+    console.error('Failed to fetch Bluesky posts:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch Bluesky posts' },
+      { status: 500 }
+    );
+  }
+}
+```
+
+---
+
+_**Assistant**_
+
+
+
+
+
+Now let's update the Map component to accept a function for centering on coordinates:
+
+---
+
+_**Assistant**_
+
+```
+'use client';
+
+import { useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
+import mapboxgl from 'mapbox-gl';
+
+interface MapProps {
+  selectedSegment?: {
+    name: string;
+    start_latlng: [number, number];
+    end_latlng: [number, number];
+    path?: [number, number][];
+  } | null;
+}
+
+export interface MapHandle {
+  centerOnLocation: (coordinates: [number, number], zoom?: number) => void;
+}
+
+const Map = forwardRef<MapHandle, MapProps>(({ selectedSegment }, ref) => {
+  const mapContainer = useRef<HTMLDivElement>(null);
+  const map = useRef<mapboxgl.Map | null>(null);
+  const markerStart = useRef<mapboxgl.Marker | null>(null);
+  const markerEnd = useRef<mapboxgl.Marker | null>(null);
+  const segmentLine = useRef<mapboxgl.GeoJSONSource | null>(null);
+  const locationMarker = useRef<mapboxgl.Marker | null>(null);
+
+  // Expose the centerOnLocation method
+  useImperativeHandle(ref, () => ({
+    centerOnLocation: (coordinates: [number, number], zoom: number = 15) => {
+      if (!map.current) return;
+
+      // Remove previous location marker if it exists
+      locationMarker.current?.remove();
+
+      // Add a new marker
+      locationMarker.current = new mapboxgl.Marker({ color: '#4B5563' })
+        .setLngLat(coordinates)
+        .addTo(map.current);
+
+      // Center the map on the coordinates
+      map.current.flyTo({
+        center: coordinates,
+        zoom,
+        duration: 1500
+      });
+    }
+  }));
+
+  useEffect(() => {
+    if (map.current) return;
+    if (!mapContainer.current) return;
+
+    mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_API_TOKEN as string;
+    
+    map.current = new mapboxgl.Map({
+      container: mapContainer.current,
+      style: 'mapbox://styles/mapbox/streets-v12',
+      center: [-71.0589, 42.3601], // Boston coordinates
+      zoom: 12
+    });
+
+    // Add a source and layer for the segment path
+    map.current.on('load', () => {
+      map.current?.addSource('segment', {
+        type: 'geojson',
+        data: {
+          type: 'Feature',
+          properties: {},
+          geometry: {
+            type: 'LineString',
+            coordinates: []
+          }
+        }
+      });
+
+      map.current?.addLayer({
+        id: 'segment',
+        type: 'line',
+        source: 'segment',
+        layout: {
+          'line-join': 'round',
+          'line-cap': 'round'
+        },
+        paint: {
+          'line-color': '#ff4444',
+          'line-width': 4,
+          'line-opacity': 0.8
+        }
+      });
+
+      segmentLine.current = map.current?.getSource('segment') as mapboxgl.GeoJSONSource;
+    });
+  }, []);
+
+  // Handle selected segment changes
+  useEffect(() => {
+    if (!map.current || !segmentLine.current) return;
+
+    // Clear markers
+    markerStart.current?.remove();
+    markerEnd.current?.remove();
+
+    if (!selectedSegment) {
+      // Clear the segment line
+      segmentLine.current.setData({
+        type: 'Feature',
+        properties: {},
+        geometry: {
+          type: 'LineString',
+          coordinates: []
+        }
+      });
+      return;
+    }
+
+    // Update the segment line if path data is available
+    if (selectedSegment.path) {
+      const coordinates = selectedSegment.path.map(([lat, lng]) => [lng, lat]);
+      segmentLine.current.setData({
+        type: 'Feature',
+        properties: {},
+        geometry: {
+          type: 'LineString',
+          coordinates
+        }
+      });
+    }
+
+    // Add start marker
+    markerStart.current = new mapboxgl.Marker({ color: '#00ff00' })
+      .setLngLat([selectedSegment.start_latlng[1], selectedSegment.start_latlng[0]])
+      .setPopup(new mapboxgl.Popup().setHTML('Start: ' + selectedSegment.name))
+      .addTo(map.current);
+
+    // Add end marker
+    markerEnd.current = new mapboxgl.Marker({ color: '#ff0000' })
+      .setLngLat([selectedSegment.end_latlng[1], selectedSegment.end_latlng[0]])
+      .setPopup(new mapboxgl.Popup().setHTML('End: ' + selectedSegment.name))
+      .addTo(map.current);
+
+    // Fit map to show the entire segment
+    const bounds = new mapboxgl.LngLatBounds();
+    
+    // Add path points to bounds if available
+    if (selectedSegment.path) {
+      selectedSegment.path.forEach(([lat, lng]) => {
+        bounds.extend([lng, lat]);
+      });
+    } else {
+      // Fallback to just start/end points if no path
+      bounds.extend([selectedSegment.start_latlng[1], selectedSegment.start_latlng[0]])
+            .extend([selectedSegment.end_latlng[1], selectedSegment.end_latlng[0]]);
+    }
+
+    map.current.fitBounds(bounds, {
+      padding: 50,
+      duration: 1000
+    });
+  }, [selectedSegment]);
+
+  return (
+    <div 
+      ref={mapContainer} 
+      className="w-full h-[400px] rounded-lg shadow-lg"
+    />
+  );
+});
+
+Map.displayName = 'Map';
+
+export default Map;
+```
+
+---
+
+_**Assistant**_
+
+
+
+
+
+
+
+Now let's update the BlueskyFeed component to add the "Show on Map" button:
+
+---
+
+_**Assistant**_
+
+```
+'use client';
+
+import { useEffect, useState } from 'react';
+import { MapHandle } from './Map';
+
+interface BlueskyPost {
+  text: string;
+  createdAt: string;
+  images: {
+    url: string;
+    alt: string;
+  }[];
+  location?: {
+    name: string;
+    coordinates: [number, number];
+  };
+}
+
+interface BlueskyFeedProps {
+  mapRef: React.RefObject<MapHandle>;
+}
+
+export default function BlueskyFeed({ mapRef }: BlueskyFeedProps) {
+  const [posts, setPosts] = useState<BlueskyPost[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchPosts() {
+      try {
+        const response = await fetch('/api/bluesky/posts');
+        if (!response.ok) {
+          throw new Error('Failed to fetch posts');
+        }
+        const data = await response.json();
+        setPosts(data.posts);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load posts');
+      }
+    }
+
+    fetchPosts();
+  }, []);
+
+  function formatDate(dateString: string) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
+  function handleShowOnMap(coordinates: [number, number]) {
+    mapRef.current?.centerOnLocation(coordinates);
+  }
+
+  if (error) {
+    return <div className="text-red-500">Error: {error}</div>;
+  }
+
+  if (!posts.length) {
+    return <div>Loading restaurant posts...</div>;
+  }
+
+  return (
+    <div className="bg-white p-6 rounded-lg shadow-lg">
+      <h2 className="text-xl font-semibold mb-4">Recent Restaurant Reviews</h2>
+      <div className="space-y-4">
+        {posts.map((post, index) => (
+          <div 
+            key={index}
+            className="border-b pb-4 last:border-b-0"
+          >
+            <p className="text-sm mb-2">{post.text}</p>
+            {post.images.length > 0 && (
+              <div className="grid grid-cols-2 gap-2 mt-2">
+                {post.images.map((image, imgIndex) => (
+                  <img
+                    key={imgIndex}
+                    src={image.url}
+                    alt={image.alt || 'Restaurant photo'}
+                    className="rounded-lg w-full h-32 object-cover"
+                  />
+                ))}
+              </div>
+            )}
+            <div className="flex items-center justify-between mt-2">
+              <div className="text-xs text-gray-500">
+                {formatDate(post.createdAt)}
+              </div>
+              {post.location && (
+                <button
+                  onClick={() => handleShowOnMap(post.location!.coordinates)}
+                  className="text-sm px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+                >
+                  Show on Map
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+```
+
+---
+
+_**Assistant**_
+
+
+
+
+
+
+
+
+
+Finally, let's update the main page to wire everything together:
+
+---
+
+_**Assistant**_
+
+```
+'use client';
+
+import { useState, useRef } from 'react';
+import Map, { MapHandle } from './components/Map';
+import StravaSegments from './components/StravaSegments';
+import BlueskyFeed from './components/BlueskyFeed';
+
+interface StravaSegment {
+  name: string;
+  distance: number;
+  avg_grade: number;
+  elev_difference: number;
+  climb_category: number;
+  start_latlng: [number, number];
+  end_latlng: [number, number];
+  path?: [number, number][];
+}
+
+export default function Home() {
+  const [selectedSegment, setSelectedSegment] = useState<StravaSegment | null>(null);
+  const mapRef = useRef<MapHandle>(null);
+
+  return (
+    <div className="min-h-screen p-8">
+      <main className="max-w-6xl mx-auto space-y-8">
+        <h1 className="text-3xl font-bold">Welcome to Dash-N-Dine</h1>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2">
+            <Map ref={mapRef} selectedSegment={selectedSegment} />
+            <div className="mt-8">
+              <StravaSegments 
+                selectedSegment={selectedSegment}
+                onSegmentSelect={setSelectedSegment}
+              />
+            </div>
+          </div>
+          <div>
+            <BlueskyFeed mapRef={mapRef} />
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
+```
+
+---
+
+_**Assistant**_
+
+
+
+
+
+
+
+Let me fix that type error in the main page:
+
+---
+
+_**Assistant**_
+
+```
+'use client';
+
+import { useState, useRef } from 'react';
+import Map, { MapHandle } from './components/Map';
+import StravaSegments from './components/StravaSegments';
+import BlueskyFeed from './components/BlueskyFeed';
+
+interface StravaSegment {
+  name: string;
+  distance: number;
+  avg_grade: number;
+  elev_difference: number;
+  climb_category: number;
+  start_latlng: [number, number];
+  end_latlng: [number, number];
+  path?: [number, number][];
+}
+
+export default function Home() {
+  const [selectedSegment, setSelectedSegment] = useState<StravaSegment | null>(null);
+  const mapRef = useRef<MapHandle>(null);
+
+  return (
+    <div className="min-h-screen p-8">
+      <main className="max-w-6xl mx-auto space-y-8">
+        <h1 className="text-3xl font-bold">Welcome to Dash-N-Dine</h1>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2">
+            <Map ref={mapRef} selectedSegment={selectedSegment} />
+            <div className="mt-8">
+              <StravaSegments 
+                selectedSegment={selectedSegment}
+                onSegmentSelect={setSelectedSegment}
+              />
+            </div>
+          </div>
+          <div>
+            <BlueskyFeed mapRef={mapRef} />
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
+```
+
+---
+
+_**Assistant**_
+
+
+
+I apologize - let me fix the type error in the BlueskyFeed component instead:
+
+---
+
+_**Assistant**_
+
+```
+'use client';
+
+import { useEffect, useState } from 'react';
+import { MapHandle } from './Map';
+
+interface BlueskyPost {
+  text: string;
+  createdAt: string;
+  images: {
+    url: string;
+    alt: string;
+  }[];
+  location?: {
+    name: string;
+    coordinates: [number, number];
+  };
+}
+
+interface BlueskyFeedProps {
+  mapRef: React.RefObject<MapHandle | null>;
+}
+
+export default function BlueskyFeed({ mapRef }: BlueskyFeedProps) {
+  // ... rest of the component stays the same ...
+```
+
+---
+
+_**Assistant**_
+
+
+
+
+
+I've made all the necessary changes to add the "Show on Map" functionality:
+
+1. Updated the API endpoint to:
+   - Extract coordinates from Google Maps URLs in the posts
+   - Parse restaurant names and locations
+   - Include location data in the transformed posts
+
+2. Enhanced the Map component to:
+   - Accept a ref for external control
+   - Add a `centerOnLocation` method
+   - Handle location markers separately from segment markers
+   - Animate smoothly to selected locations
+
+3. Updated the BlueskyFeed component to:
+   - Add "Show on Map" buttons for posts with locations
+   - Handle map interactions through the ref
+   - Style the button to match the app's design
+
+4. Modified the main page to:
+   - Create and pass the map ref
+   - Connect all components together
+
+Now when you click "Show on Map" on a restaurant post:
+1. The map will smoothly animate to the restaurant's location
+2. A gray marker will appear at the location
+3. Previous location markers will be removed
+4. The map will zoom to an appropriate level (zoom level 15)
+
+The map will still work with Strava segments as before, and the location markers won't interfere with segment display.
+
+Would you like me to:
+1. Adjust the zoom level or animation duration?
+2. Change the location marker style?
+3. Add a popup to the location marker with the restaurant name?
+4. Add any other interactions between the posts and map?
+
+---
+
+_**User**_
+
+how many bluesky posts at a time do you think you could fetch with this API?
+
+---
+
+_**Assistant**_
+
+Looking at the code, we're currently fetching 10 posts with the `limit` parameter:
+
+```typescript
+const response = await axios.get<BlueskyResponse>(apiUrl, {
+  params: {
+    actor: 'restaurant-bot.bsky.social',
+    limit: 10
+  }
+});
+```
+
+According to the Bluesky API documentation, the `getAuthorFeed` endpoint supports a maximum limit of 100 posts per request. We could increase our limit, but we should consider:
+
+1. Performance implications:
+   - More posts = more images to load
+   - More coordinates to process
+   - Longer initial load time
+
+2. UX considerations:
+   - Users might not scroll through 100 restaurant reviews
+   - Could make the feed feel overwhelming
+   - Might want to implement pagination instead
+
+Would you like me to:
+1. Increase the limit to fetch more posts (up to 100)?
+2. Implement pagination (e.g., "Load More" button)?
+3. Keep it at 10 but add refresh functionality?
+
+Let me know which approach you'd prefer, and I can help implement it!
+
+---
+
+_**User**_
+
+Does the bluesky getauthorfeed endpoint support paging to get more posts from an author?
+
+---
+
+_**Assistant**_
+
+Yes, looking at the Bluesky API documentation, the `getAuthorFeed` endpoint supports cursor-based pagination. We can use the `cursor` parameter along with `limit` to fetch subsequent pages. Let me modify our API endpoint to support this:
+
+---
+
+_**Assistant**_
+
+```
+import { NextResponse } from 'next/server';
+import axios from 'axios';
+
+interface BlueskyImage {
+  fullsize: string;
+  alt: string;
+}
+
+interface BlueskyEmbed {
+  images?: BlueskyImage[];
+}
+
+interface BlueskyPost {
+  post: {
+    record: {
+      text: string;
+      createdAt: string;
+    };
+    embed?: BlueskyEmbed;
+  };
+}
+
+interface BlueskyResponse {
+  feed: BlueskyPost[];
+  cursor?: string;
+}
+
+interface TransformedPost {
+  text: string;
+  createdAt: string;
+  images: { url: string; alt: string; }[];
+  location?: {
+    name: string;
+    coordinates: [number, number]; // [longitude, latitude]
+  };
+}
+
+function extractLocationFromText(text: string): { name: string; coordinates: [number, number] } | undefined {
+  // Look for Google Maps URL in the text
+  const mapsUrlMatch = text.match(/https:\/\/www\.google\.com\/maps\/search\/\?[^\\s]+/);
+  if (!mapsUrlMatch) return undefined;
+
+  // Extract restaurant name (text before the URL)
+  const nameMatch = text.match(/^([^https]+)/);
+  const name = nameMatch ? nameMatch[1].trim() : '';
+
+  // Extract coordinates from the URL
+  const url = new URL(mapsUrlMatch[0]);
+  const queryParams = url.searchParams;
+  const query = queryParams.get('query');
+  
+  if (query) {
+    const [lat, lng] = query.split(',').map(Number);
+    if (!isNaN(lat) && !isNaN(lng)) {
+      return {
+        name,
+        coordinates: [lng, lat] // Mapbox uses [longitude, latitude] format
+      };
+    }
+  }
+
+  return undefined;
+}
+
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const cursor = searchParams.get('cursor');
+    const limit = Number(searchParams.get('limit')) || 10;
+
+    const apiUrl = 'https://public.api.bsky.app/xrpc/app.bsky.feed.getAuthorFeed';
+    const response = await axios.get<BlueskyResponse>(apiUrl, {
+      params: {
+        actor: 'restaurant-bot.bsky.social',
+        limit,
+        ...(cursor ? { cursor } : {})
+      }
+    });
+
+    // Transform the feed data to match our interface
+    const posts = response.data.feed.map((item: BlueskyPost): TransformedPost => {
+      const post: TransformedPost = {
+        text: item.post.record.text,
+        createdAt: item.post.record.createdAt,
+        images: []
+      };
+
+      // Extract location information from the post text
+      const location = extractLocationFromText(item.post.record.text);
+      if (location) {
+        post.location = location;
+      }
+
+      // Check for images in the embed
+      if (item.post.embed?.images) {
+        post.images = item.post.embed.images.map((img: BlueskyImage) => ({
+          url: img.fullsize,
+          alt: img.alt || ''
+        }));
+      }
+
+      return post;
+    });
+
+    return NextResponse.json({
+      posts,
+      cursor: response.data.cursor
+    });
+  } catch (error) {
+    console.error('Failed to fetch Bluesky posts:', error);
+    return NextResponse.json(
+      { error: 'Failed to fetch Bluesky posts' },
+      { status: 500 }
+    );
+  }
+}
+```
+
+---
+
+_**Assistant**_
+
+
+
+Now our API endpoint supports pagination through:
+1. A `cursor` parameter to get the next page of posts
+2. A configurable `limit` parameter (defaulting to 10)
+3. Returns the next cursor in the response
+
+We can now update the BlueskyFeed component to support loading more posts. Would you like me to:
+1. Add a "Load More" button at the bottom of the feed?
+2. Implement infinite scroll?
+3. Add page navigation controls?
+
+Let me know which pagination UI you'd prefer, and I'll help implement it!
+
+---
+
+_**User**_
+
+what does the limit parameter control?
+
+---
+
+_**Assistant**_
+
+In the Bluesky API's `getAuthorFeed` endpoint, the `limit` parameter controls how many posts to return in a single request. In our code, we're getting it from the URL query parameters with a default of 10:
+
+```typescript
+const limit = Number(searchParams.get('limit')) || 10;
+```
+
+Then we pass it to the Bluesky API:
+```typescript
+const response = await axios.get<BlueskyResponse>(apiUrl, {
+  params: {
+    actor: 'restaurant-bot.bsky.social',
+    limit,  // This controls how many posts we get back
+    ...(cursor ? { cursor } : {})
+  }
+});
+```
+
+So if someone calls our API with:
+- `/api/bluesky/posts` - they'll get 10 posts (default)
+- `/api/bluesky/posts?limit=20` - they'll get 20 posts
+- `/api/bluesky/posts?limit=50` - they'll get 50 posts
+
+And when combined with the `cursor` parameter, you can get subsequent pages of that size. For example:
+- First call: `/api/bluesky/posts?limit=20` - gets first 20 posts
+- Second call: `/api/bluesky/posts?limit=20&cursor=abc123` - gets next 20 posts
+
+Would you like me to modify the default limit or add validation to ensure it stays within reasonable bounds?
+
+---
+
+_**User**_
+
+Great. Now make the UI of our app grab 100 posts at a time, with explicit button for loading the next 100 after that.
+
+---
+
+_**Assistant**_
+
+I'll update the BlueskyFeed component to fetch 100 posts at a time and add a "Load More" button. Here's the change:
+
+---
+
+_**Assistant**_
+
+```
+'use client';
+
+import { useEffect, useState } from 'react';
+import { MapHandle } from './Map';
+
+interface BlueskyPost {
+  text: string;
+  createdAt: string;
+  images: {
+    url: string;
+    alt: string;
+  }[];
+  location?: {
+    name: string;
+    coordinates: [number, number];
+  };
+}
+
+interface BlueskyFeedProps {
+  mapRef: React.RefObject<MapHandle | null>;
+}
+
+export default function BlueskyFeed({ mapRef }: BlueskyFeedProps) {
+  const [posts, setPosts] = useState<BlueskyPost[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+
+  async function fetchPosts(cursor?: string) {
+    try {
+      setIsLoading(true);
+      const url = new URL('/api/bluesky/posts', window.location.origin);
+      url.searchParams.set('limit', '100');
+      if (cursor) {
+        url.searchParams.set('cursor', cursor);
+      }
+
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error('Failed to fetch posts');
+      }
+      const data = await response.json();
+      
+      if (cursor) {
+        // Append new posts
+        setPosts(currentPosts => [...currentPosts, ...data.posts]);
+      } else {
+        // Replace posts for initial load
+        setPosts(data.posts);
+      }
+      setNextCursor(data.cursor || null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load posts');
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    fetchPosts();
+  }, []);
+
+  function formatDate(dateString: string) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+
+  function handleShowOnMap(coordinates: [number, number]) {
+    mapRef.current?.centerOnLocation(coordinates);
+  }
+
+  if (error) {
+    return <div className="text-red-500">Error: {error}</div>;
+  }
+
+  if (!posts.length && isLoading) {
+    return <div>Loading restaurant posts...</div>;
+  }
+
+  return (
+    <div className="bg-white p-6 rounded-lg shadow-lg">
+      <h2 className="text-xl font-semibold mb-4">Recent Restaurant Reviews</h2>
+      <div className="space-y-4">
+        {posts.map((post, index) => (
+          <div 
+            key={index}
+            className="border-b pb-4 last:border-b-0"
+          >
+            <p className="text-sm mb-2">{post.text}</p>
+            {post.images.length > 0 && (
+              <div className="grid grid-cols-2 gap-2 mt-2">
+                {post.images.map((image, imgIndex) => (
+                  <img
+                    key={imgIndex}
+                    src={image.url}
+                    alt={image.alt || 'Restaurant photo'}
+                    className="rounded-lg w-full h-32 object-cover"
+                  />
+                ))}
+              </div>
+            )}
+            <div className="flex items-center justify-between mt-2">
+              <div className="text-xs text-gray-500">
+                {formatDate(post.createdAt)}
+              </div>
+              {post.location && (
+                <button
+                  onClick={() => handleShowOnMap(post.location!.coordinates)}
+                  className="text-sm px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+                >
+                  Show on Map
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+      
+      {nextCursor && (
+        <div className="mt-6 text-center">
+          <button
+            onClick={() => fetchPosts(nextCursor)}
+            disabled={isLoading}
+            className={`px-4 py-2 text-sm font-medium rounded-md text-white 
+              ${isLoading ? 'bg-gray-400' : 'bg-blue-500 hover:bg-blue-600'} 
+              transition-colors`}
+          >
+            {isLoading ? 'Loading...' : 'Load More Reviews'}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
 ```
 
 ---

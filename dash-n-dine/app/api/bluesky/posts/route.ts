@@ -22,6 +22,7 @@ interface BlueskyPost {
 
 interface BlueskyResponse {
   feed: BlueskyPost[];
+  cursor?: string;
 }
 
 interface TransformedPost {
@@ -61,13 +62,18 @@ function extractLocationFromText(text: string): { name: string; coordinates: [nu
   return undefined;
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const cursor = searchParams.get('cursor');
+    const limit = Number(searchParams.get('limit')) || 10;
+
     const apiUrl = 'https://public.api.bsky.app/xrpc/app.bsky.feed.getAuthorFeed';
     const response = await axios.get<BlueskyResponse>(apiUrl, {
       params: {
         actor: 'restaurant-bot.bsky.social',
-        limit: 10
+        limit,
+        ...(cursor ? { cursor } : {})
       }
     });
 
@@ -96,7 +102,10 @@ export async function GET() {
       return post;
     });
 
-    return NextResponse.json({ posts });
+    return NextResponse.json({
+      posts,
+      cursor: response.data.cursor
+    });
   } catch (error) {
     console.error('Failed to fetch Bluesky posts:', error);
     return NextResponse.json(

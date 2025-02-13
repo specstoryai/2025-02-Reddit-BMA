@@ -23,21 +23,40 @@ interface BlueskyFeedProps {
 export default function BlueskyFeed({ mapRef }: BlueskyFeedProps) {
   const [posts, setPosts] = useState<BlueskyPost[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+
+  async function fetchPosts(cursor?: string) {
+    try {
+      setIsLoading(true);
+      const url = new URL('/api/bluesky/posts', window.location.origin);
+      url.searchParams.set('limit', '100');
+      if (cursor) {
+        url.searchParams.set('cursor', cursor);
+      }
+
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error('Failed to fetch posts');
+      }
+      const data = await response.json();
+      
+      if (cursor) {
+        // Append new posts
+        setPosts(currentPosts => [...currentPosts, ...data.posts]);
+      } else {
+        // Replace posts for initial load
+        setPosts(data.posts);
+      }
+      setNextCursor(data.cursor || null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load posts');
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   useEffect(() => {
-    async function fetchPosts() {
-      try {
-        const response = await fetch('/api/bluesky/posts');
-        if (!response.ok) {
-          throw new Error('Failed to fetch posts');
-        }
-        const data = await response.json();
-        setPosts(data.posts);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load posts');
-      }
-    }
-
     fetchPosts();
   }, []);
 
@@ -59,7 +78,7 @@ export default function BlueskyFeed({ mapRef }: BlueskyFeedProps) {
     return <div className="text-red-500">Error: {error}</div>;
   }
 
-  if (!posts.length) {
+  if (!posts.length && isLoading) {
     return <div>Loading restaurant posts...</div>;
   }
 
@@ -101,6 +120,20 @@ export default function BlueskyFeed({ mapRef }: BlueskyFeedProps) {
           </div>
         ))}
       </div>
+      
+      {nextCursor && (
+        <div className="mt-6 text-center">
+          <button
+            onClick={() => fetchPosts(nextCursor)}
+            disabled={isLoading}
+            className={`px-4 py-2 text-sm font-medium rounded-md text-white 
+              ${isLoading ? 'bg-gray-400' : 'bg-blue-500 hover:bg-blue-600'} 
+              transition-colors`}
+          >
+            {isLoading ? 'Loading...' : 'Load More Reviews'}
+          </button>
+        </div>
+      )}
     </div>
   );
 } 
