@@ -19,7 +19,7 @@
   border-radius: 8px;
   font-size: 1.75rem; /* 28px */
   resize: none;
-  font-family: 'Varela Round', sans-serif;
+  font-family: var(--font-sans);
   background-color: white;
   color: var(--color-text);
 }
@@ -35,6 +35,8 @@
   color: var(--color-text);
   margin-top: 5px;
   font-size: 0.875rem; /* 14px */
+  font-family: var(--font-mono);
+  letter-spacing: -0.5px;
 }
 
 .characters-container {
@@ -160,6 +162,7 @@
   border-radius: 6px;
   padding: 8px 16px;
   font-size: 1rem; /* 16px */
+  font-family: var(--font-sans);
   cursor: pointer;
   transition: all 0.2s ease;
 }

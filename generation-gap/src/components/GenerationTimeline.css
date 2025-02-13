@@ -3,7 +3,7 @@
 }
 
 .timeline-container {
-  font-family: sans-serif;
+  font-family: var(--font-mono);
   position: relative;
   z-index: 1;
   min-width: fit-content;
@@ -32,8 +32,9 @@ h1 {
   display: inline-block;
   width: calc(var(--grid-width) * 2);
   color: #666;
-  font-size: 12px;
+  font-size: 0.75rem; /* 12px */
   text-indent: -12px;
+  font-family: var(--font-mono);
 }
 
 /* Timeline - Events */
@@ -67,13 +68,13 @@ h1 {
 
 .speech-bubble {
   position: absolute;
-  background: #fff;
-  border: 2px solid #333;
+  background: #f5f5f5;
+  border: none;
   border-radius: 10px;
   padding: 15px;
   width: 180px;
   min-height: 60px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: none;
   bottom: 160px; /* Position above the character */
   left: 50%;
   transform: translateX(-50%);
@@ -89,28 +90,19 @@ h1 {
   width: 0;
   height: 0;
   border: 10px solid transparent;
-  border-top-color: #fff;
+  border-top-color: #f5f5f5;
   border-bottom: 0;
   margin-left: -10px;
   z-index: 2;
 }
 
 .speech-bubble:before {
-  content: '';
-  position: absolute;
-  bottom: -12px;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border: 11px solid transparent;
-  border-top-color: #333;
-  border-bottom: 0;
-  margin-left: -11px;
-  z-index: 1;
+  display: none; /* Remove the outline triangle */
 }
 
 .translated-text {
-  font-size: 14px;
+  font-family: var(--font-serif);
+  font-size: 0.875rem; /* 14px */
   line-height: 1.4;
   color: #444;
   word-wrap: break-word;
@@ -126,6 +118,7 @@ h1 {
   align-items: center;
   justify-content: center;
   font-style: italic;
+  font-family: var(--font-serif);
   color: #666;
   min-height: 40px;
   white-space: normal;
@@ -154,21 +147,22 @@ h1 {
   left: 0;
   right: 20px;
   text-align: center;
+  font-family: var(--font-mono);
 }
 
 .timeline-label h2 {
   color: #666;
   text-transform: uppercase;
-  font-size: 11px;
+  font-size: 0.6875rem; /* 11px */
 }
 
 .timeline-label h3 {
-  font-size: 14px;
+  font-size: 0.875rem; /* 14px */
   margin-top: 5px;
 }
 
 .timeline-label .age-range {
-  font-size: 12px;
+  font-size: 0.75rem; /* 12px */
   color: #666;
   margin-top: 2px;
   font-style: italic;

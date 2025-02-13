@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700;1,400&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Varela+Round&display=swap');
 
 :root {
@@ -13,6 +15,11 @@
   --color-secondary: var(--color-light-blue);
   --color-accent: var(--color-blue);
   --color-text: #444444;
+
+  /* Font family variables */
+  --font-mono: 'Space Mono', monospace;
+  --font-sans: 'Varela Round', sans-serif;
+  --font-serif: 'Lora', serif;
 }
 
 body {
