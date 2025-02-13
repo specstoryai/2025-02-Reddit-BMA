@@ -2,6 +2,7 @@
   --px-per-year: 25px;
   --year-span: 100; /* Total years from 1920 to 2020 */
   --grid-columns: 11; /* Number of decade markers */
+  --timeline-left-margin: 20px; /* Left margin for the entire timeline */
 
   /* Generation colors */
   --gen-color-1: var(--color-blue);
@@ -31,6 +32,8 @@ h1 {
   list-style: none;
   font-size: 0;
   width: calc(110 * var(--px-per-year));
+  margin: 0;
+  padding: 0 0 0 var(--timeline-left-margin);
 }
 
 .timelines-years li {
@@ -52,7 +55,7 @@ h1 {
 /* Timeline - Events */
 .timeline-events {
   position: relative;
-  padding: 0 0 0 200px; /* Match the years container padding */
+  padding: 0 0 0 var(--timeline-left-margin); /* Match the years container padding */
   list-style: none;
   white-space: nowrap;
   font-size: 0;
