@@ -3,10 +3,32 @@
 @import url('https://fonts.googleapis.com/css2?family=Varela+Round&display=swap');
 
 :root {
-  --color-cream: #F2EFE7;
-  --color-light-blue: #9ACBD0;
+  /* Warm Colors - Reds, Oranges, Yellows */
+  --color-rose-deep: #D91656;
+  --color-orange-burnt: #EB5B00;
+  --color-yellow-gold: #FFB200;
+  --color-cream-light: #FBFBFB;
+  
+  /* Earth Tones - Greens */
+  --color-lime-light: #DDEB9D;
+  --color-sage-bright: #A0C878;
+  --color-sage: #497D74;
+  
+  /* Cool Colors - Teals, Blues */
+  --color-teal-light: #71BBB2;
   --color-teal: #48A6A7;
+  --color-light-blue: #9ACBD0;
+  --color-blue-steel: #27667B;
   --color-blue: #2973B2;
+  --color-navy: #27445D;
+  --color-navy-dark: #143D60;
+  
+  /* Purple */
+  --color-purple-deep: #640D5F;
+  
+  /* Neutrals */
+  --color-cream-warm: #EFE9D5;
+  --color-cream: #F2EFE7;
   
   /* Semantic color variables */
   --color-background: white;

@@ -2,6 +2,7 @@
   "generations": [
     {
       "name": "Silent Generation",
+      "slug": "silent-gen",
       "period": "1928-1945",
       "ages": "80-97",
       "agesReferenceYear": 2025,
@@ -10,6 +11,7 @@
     },
     {
       "name": "Baby Boomers",
+      "slug": "boomers",
       "period": "1946-1964",
       "ages": "61-79",
       "agesReferenceYear": 2025,
@@ -19,6 +21,7 @@
     },
     {
       "name": "Generation X",
+      "slug": "gen-x",
       "period": "1965-1980",
       "ages": "45-60",
       "agesReferenceYear": 2025,
@@ -27,6 +30,7 @@
     },
     {
       "name": "Millennials",
+      "slug": "millennials",
       "period": "1981-1996",
       "ages": "29-44",
       "agesReferenceYear": 2025,
@@ -35,6 +39,7 @@
     },
     {
       "name": "Generation Z",
+      "slug": "gen-z",
       "period": "1997-2009",
       "ages": "16-28",
       "agesReferenceYear": 2025,
@@ -43,6 +48,7 @@
     },
     {
       "name": "Generation Alpha",
+      "slug": "gen-alpha",
       "period": "2010-2024",
       "ages": "1-15",
       "agesReferenceYear": 2025,

@@ -23,8 +23,8 @@ const GenerationTimeline = ({ translations, loading, submittedText }) => {
   return (
     <div className="timeline-container">
       <ul className="timeline-events">
-        {generations.map((gen, index) => (
-          <li key={gen.name} className={`timeline-event-years-${index + 3}`}>
+        {generations.map((gen) => (
+          <li key={gen.name} className={`timeline-${gen.slug}`}>
             {submittedText && (
               <div className="speech-bubble">
                 <div className="translated-text">

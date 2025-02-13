@@ -5,12 +5,12 @@
   --timeline-left-margin: 20px; /* Left margin for the entire timeline */
 
   /* Generation colors */
-  --gen-color-1: var(--color-blue);
-  --gen-color-2: var(--color-teal);
-  --gen-color-3: var(--color-light-blue);
-  --gen-color-4: var(--color-purple);
-  --gen-color-5: var(--color-green);
-  --gen-color-6: var(--color-orange);
+  --color-silent-gen: var(--color-navy-dark);
+  --color-boomers: var(--color-teal);
+  --color-gen-x: var(--color-sage-bright);
+  --color-millennials: var(--color-lime-light);
+  --color-gen-z: var(--color-yellow-gold);
+  --color-gen-alpha: var(--color-orange-burnt);
 }
 
 .timeline-container {
@@ -89,7 +89,7 @@ h1 {
 
 .speech-bubble {
   position: absolute;
-  background: #f5f5f5;
+  background: var(--color-cream-light);
   border: none;
   border-radius: 40px;
   padding: 35px;
@@ -109,8 +109,8 @@ h1 {
   left: 50%;
   width: 0;
   height: 0;
-  border: 10px solid transparent;
-  border-top-color: #f5f5f5;
+  border: 15px solid transparent;
+  border-top-color: var(--color-cream-light);
   border-bottom: 0;
   margin-left: -10px;
   z-index: 2;
@@ -178,7 +178,7 @@ h1 {
 }
 
 .timeline-label h2 {
-  color: #666;
+  color: var(--color-navy-dark);
   font-size: 1.2rem;
   margin: 0;
 }
@@ -205,30 +205,29 @@ h1 {
 
 /* Timeline - Events */
 /* Base width calculations using --px-per-year */
-.timeline-event-years-3 { 
+.timeline-silent-gen { 
   margin-left: calc(8 * var(--px-per-year)); /* 1928-1920 = 8 years */
   width: calc(17 * var(--px-per-year)) !important; /* 1945-1928 = 17 years */
-} /* Silent Generation: 1928-1945 */
+}
 
-.timeline-event-years-4 { width: calc(18 * var(--px-per-year)) !important; } /* Baby Boomers: 1946-1964 */
-.timeline-event-years-5 { width: calc(15 * var(--px-per-year)) !important; } /* Generation X: 1965-1980 */
-.timeline-event-years-6 { width: calc(15 * var(--px-per-year)) !important; } /* Millennials: 1981-1996 */
-.timeline-event-years-7 { width: calc(12 * var(--px-per-year)) !important; } /* Generation Z: 1997-2009 */
-.timeline-event-years-8 { width: calc(14 * var(--px-per-year)) !important; } /* Generation Alpha: 2010-2024 */
+.timeline-boomers { width: calc(18 * var(--px-per-year)) !important; }
+.timeline-gen-x { width: calc(15 * var(--px-per-year)) !important; }
+.timeline-millennials { width: calc(15 * var(--px-per-year)) !important; }
+.timeline-gen-z { width: calc(12 * var(--px-per-year)) !important; }
+.timeline-gen-alpha { width: calc(14 * var(--px-per-year)) !important; }
 
 /* Timeline - Events - Colors */
-/* Apply colors using nth-child */
-.timeline-events li:nth-child(1):before { background: var(--gen-color-1); }
-.timeline-events li:nth-child(2):before { background: var(--gen-color-2); }
-.timeline-events li:nth-child(3):before { background: var(--gen-color-3); }
-.timeline-events li:nth-child(4):before { background: var(--gen-color-4); }
-.timeline-events li:nth-child(5):before { background: var(--gen-color-5); }
-.timeline-events li:nth-child(6):before { background: var(--gen-color-6); }
+.timeline-gen-alpha:before { background: var(--color-gen-alpha); }
+.timeline-gen-z:before { background: var(--color-gen-z); }
+.timeline-millennials:before { background: var(--color-millennials); }
+.timeline-gen-x:before { background: var(--color-gen-x); }
+.timeline-boomers:before { background: var(--color-boomers); }
+.timeline-silent-gen:before { background: var(--color-silent-gen); }
 
 /* Apply text colors using the same variables */
-.timeline-events li:nth-child(1) .timeline-label h3 { color: var(--gen-color-1); }
-.timeline-events li:nth-child(2) .timeline-label h3 { color: var(--gen-color-2); }
-.timeline-events li:nth-child(3) .timeline-label h3 { color: var(--gen-color-3); }
-.timeline-events li:nth-child(4) .timeline-label h3 { color: var(--gen-color-4); }
-.timeline-events li:nth-child(5) .timeline-label h3 { color: var(--gen-color-5); }
-.timeline-events li:nth-child(6) .timeline-label h3 { color: var(--gen-color-6); } 
+.timeline-gen-alpha .timeline-label h2 { color: var(--color-gen-alpha); }
+.timeline-gen-z .timeline-label h2 { color: var(--color-gen-z); }
+.timeline-millennials .timeline-label h2 { color: var(--color-millennials); }
+.timeline-gen-x .timeline-label h2 { color: var(--color-gen-x); }
+.timeline-boomers .timeline-label h2 { color: var(--color-boomers); }
+.timeline-silent-gen .timeline-label h2 { color: var(--color-silent-gen); }
