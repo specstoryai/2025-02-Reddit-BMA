@@ -438,7 +438,7 @@
         "Oops! Mind sharing your situation first? "
         [:span "No judgment here – we're all ears! "]])]
     [:div.perspectives-grid
-     (for [p perspectives]
+     (for [p (shuffle perspectives)]
        [:div.perspective-card
         {:onclick (str "return handlePerspectiveClick(event, '" (:name p) "')")}
         [:div.perspective-icon (:icon p)]

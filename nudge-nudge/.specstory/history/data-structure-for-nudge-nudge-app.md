@@ -2282,6 +2282,30 @@ This matches the current Claude API format. Try it now and it should work correc
 
 ---
 
+_**User**_
+
+OK, last step... we don't want to bias the user by the placement of the 9 perspectives, so rather than them being in a fixed order let's randomize them for each load of the page so they appear in random order.
+
+---
+
+_**Assistant**_
+
+I'll update the index-page function to shuffle the perspectives before displaying them:
+
+---
+
+_****_
+
+
+
+---
+
+_****_
+
+
+
+---
+
 
 
 ---
