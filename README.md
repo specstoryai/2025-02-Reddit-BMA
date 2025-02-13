@@ -46,8 +46,10 @@ Tomorrow team [SpecsStory](https://specstory.com/) wants to have some fun and 
 ## Completed Apps
 
 - [yenrabbit_art's request](https://www.reddit.com/r/cursor/comments/1io14r6/comment/mcfrcog/): _I'd love to see a 'paged attention' implementation with visualizations for teaching_
-    - Overview Video, Cursor Exchange and Link to Source Code: https://share.specstory.com/stories/b4949812-fb12-44b2-ae15-4b0ac8e71040
+    - Overview Video, Cursor Exchanges and Link to Source Code: [https://share.specstory.com/stories/b4949812-fb12-44b2-ae15-4b0ac8e71040](https://share.specstory.com/stories/b4949812-fb12-44b2-ae15-4b0ac8e71040)
 
 - [Tincr's Request](https://www.reddit.com/r/cursor/comments/1io14r6/comment/mchiofi/): _Chrome extension that analyzes my browsing history, pulls the content of interesting pages / articles / blogs / etc and turns it into a feed._
-   - Overview Video, Cursor Exchange and Link to Source Code: https://share.specstory.com/stories/e9cc3402-af44-4a6e-9d93-6a453c88ded3
+   - Overview Video, Cursor Exchanges and Link to Source Code: [https://share.specstory.com/stories/e9cc3402-af44-4a6e-9d93-6a453c88ded3](https://share.specstory.com/stories/e9cc3402-af44-4a6e-9d93-6a453c88ded3)
 
+- [superj688's Request](https://www.reddit.com/r/cursor/comments/1io14r6/comment/mcfsrye/): _Who is right? Both sides submit their argument, and the bot decides who has a more logically sound argument._
+   - Overwiew Video, Cursor Exchanges and Link to Source Code: [https://share.specstory.com/stories/0312fee8-d018-41be-b2b9-f941c72daaf6](https://share.specstory.com/stories/0312fee8-d018-41be-b2b9-f941c72daaf6)
