@@ -4325,6 +4325,124 @@ Would you like me to make any adjustments to this structure or would you like to
 
 ---
 
+_**User**_
+
+make the restaurant reviews UI scroll independently from the rest of the page.
+
+---
+
+_**Assistant**_
+
+I'll modify the BlueskyFeed component to make the reviews section independently scrollable while keeping the header fixed. I'll add a fixed height and make the reviews container scrollable.
+
+---
+
+_**Assistant**_
+
+```
+  return (
+    <div className="bg-white p-6 rounded-lg shadow-lg flex flex-col h-[calc(100vh-4rem)]">
+      <div className="flex-none">
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl font-semibold">Recent Restaurant Reviews</h2>
+          <button
+            onClick={() => {
+              localStorage.removeItem(CACHE_KEY);
+              fetchPosts();
+            }}
+            className="text-xs px-2 py-1 text-blue-500 hover:text-blue-600 transition-colors"
+          >
+            Refresh
+          </button>
+        </div>
+        {isShowingCached && (
+          <div className="flex items-center mt-1 text-xs text-gray-500">
+            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Showing cached data from {cacheAge} • </span>
+            <button 
+              onClick={() => {
+                localStorage.removeItem(CACHE_KEY);
+                fetchPosts();
+              }}
+              className="ml-1 text-blue-500 hover:text-blue-600 transition-colors"
+            >
+              Update now
+            </button>
+          </div>
+        )}
+      </div>
+
+      <div className="flex-1 overflow-y-auto mt-4 pr-2 space-y-4">
+        {posts.map((post, index) => (
+          <div 
+            key={index}
+            className="border-b pb-4 last:border-b-0"
+          >
+            <p className="text-sm mb-2">{post.text}</p>
+            {post.images.length > 0 && (
+              <div className="grid grid-cols-2 gap-2 mt-2">
+                {post.images.map((image, imgIndex) => (
+                  <img
+                    key={imgIndex}
+                    src={image.url}
+                    alt={image.alt || 'Restaurant photo'}
+                    className="rounded-lg w-full h-32 object-cover"
+                  />
+                ))}
+              </div>
+            )}
+            <div className="flex items-center justify-between mt-2">
+              <div className="text-xs text-gray-500">
+                {formatDate(post.createdAt)}
+              </div>
+              {post.location && (
+                <button
+                  onClick={() => handleShowOnMap(post.location!.coordinates)}
+                  className="text-sm px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+                >
+                  Show on Map
+                </button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+      
+      {nextCursor && (
+        <div className="flex-none mt-4 text-center">
+          <button
+            onClick={() => fetchPosts(nextCursor)}
+            disabled={isLoading}
+            className={`px-4 py-2 text-sm font-medium rounded-md text-white 
+              ${isLoading ? 'bg-gray-400' : 'bg-blue-500 hover:bg-blue-600'} 
+              transition-colors`}
+          >
+            {isLoading ? 'Loading...' : 'Load More Reviews'}
+          </button>
+        </div>
+      )}
+    </div>
+  );
+```
+
+---
+
+_**Assistant**_
+
+
+
+I've updated the BlueskyFeed component to make it independently scrollable. Here are the key changes:
+
+1. Made the main container a flex column with a fixed height (`h-[calc(100vh-4rem)]`) that takes up most of the viewport height while leaving some space for margins
+2. Divided the component into three sections:
+   - Header section with `flex-none` to prevent it from shrinking
+   - Reviews section with `flex-1` and `overflow-y-auto` to make it scrollable
+   - "Load More" button section
+
+---
+
 
 
 ---

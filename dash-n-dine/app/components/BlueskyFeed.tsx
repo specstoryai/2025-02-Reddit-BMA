@@ -180,8 +180,8 @@ export default function BlueskyFeed({ mapRef }: BlueskyFeedProps) {
   }
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-lg">
-      <div className="flex flex-col mb-4">
+    <div className="bg-white p-6 rounded-lg shadow-lg flex flex-col h-[calc(100vh-4rem)]">
+      <div className="flex-none">
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-semibold">Recent Restaurant Reviews</h2>
           <button
@@ -213,7 +213,7 @@ export default function BlueskyFeed({ mapRef }: BlueskyFeedProps) {
         )}
       </div>
 
-      <div className="space-y-4">
+      <div className="flex-1 overflow-y-auto mt-4 pr-2 space-y-4">
         {posts.map((post, index) => (
           <div 
             key={index}
@@ -250,7 +250,7 @@ export default function BlueskyFeed({ mapRef }: BlueskyFeedProps) {
       </div>
       
       {nextCursor && (
-        <div className="mt-6 text-center">
+        <div className="flex-none mt-4 text-center">
           <button
             onClick={() => fetchPosts(nextCursor)}
             disabled={isLoading}
