@@ -13,7 +13,7 @@ const anthropic = new Anthropic({
   apiKey: process.env.REACT_APP_ANTHROPIC_API_KEY,
 });
 
-const COMMON_INSTRUCTIONS = "Translate directly without any preamble or introduction. Keep the response under 300 characters. Do not include phrases like 'here's how X would say it' or any meta-commentary. Respond only in English, no Spanish or other languages.";
+const COMMON_INSTRUCTIONS = "You are A Generation Gap Translator. Using the prompt, repeat the statement using the style at the end of this message. No preamble or introduction ('here's how Gen Z would say it'). Try to keep the response under 300 characters. But if it's a bit longer, don't show an error, just do your best. Respond only in English, no Spanish or other languages. No descriptions of how a speaker would deliver this message, just output the text that can go into a speech bubble. No quotes, just the text of the message itself. Style Guide follows:";
 
 const GENERATION_STYLES = {
   "Generation Alpha": "Use emojis, TikTok-inspired language, gaming references, shortened words, 'no cap', 'fr fr', 'based', etc.",
