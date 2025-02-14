@@ -2,11 +2,12 @@
   "memes": [
     {
       "name": "Distracted Boyfriend",
-      "main_image_url": "distracted_boyfriend_3.jpg",
+      "main_image_url": "distracted_boyfriend_4.jpg",
       "image_urls": [
         "distracted_boyfriend_1.jpg",
         "distracted_boyfriend_2.jpg",
-        "distracted_boyfriend_3.jpg"
+        "distracted_boyfriend_3.jpg",
+        "distracted_boyfriend_4.jpg"
       ]
     },
     {
@@ -41,20 +42,22 @@
     },
     {
       "name": "Drake Hotline Bling",
-      "main_image_url": "drake_hotline_bling.jpeg",
+      "main_image_url": "drake_hotline_bling_4.jpg",
       "image_urls": [
         "drake_hotline_bling_1.jpeg",
         "drake_hotline_bling_2.jpg",
-        "drake_hotline_bling_3.jpg"
+        "drake_hotline_bling_3.jpg",
+        "drake_hotline_bling_4.jpg"
       ]
     },
     {
       "name": "Woman Yelling at a Cat",
-      "main_image_url": "woman_yelling_at_a_cat.png",
+      "main_image_url": "woman_yelling_at_a_cat_4.jpg",
       "image_urls": [
         "woman_yelling_at_a_cat_1.png",
         "woman_yelling_at_a_cat_2.jpg",
-        "woman_yelling_at_a_cat_3.png"
+        "woman_yelling_at_a_cat_3.png",
+        "woman_yelling_at_a_cat_4.jpg"
       ]
     },
     {
@@ -141,7 +144,7 @@
     },
     {
       "name": "Left Exit 12 Off Ramp",
-      "main_image_url": "placeholder/left_exit_12_off_ramp.jpg",
+      "main_image_url": "left_exit_12_off_ramp_3.jpg",
       "image_urls": [
         "left_exit_12_off_ramp_2.jpg",
         "left_exit_12_off_ramp_3.jpg"
@@ -180,11 +183,12 @@
     },
     {
       "name": "Bernie Sanders’ Mittens",
-      "main_image_url": "bernie_sanders_mittens.png",
+      "main_image_url": "bernie_sanders_mittens_4.jpg",
       "image_urls": [
         "bernie_sanders_mittens_1.png",
         "bernie_sanders_mittens_2.jpg",
-        "bernie_sanders_mittens_3.jpg"
+        "bernie_sanders_mittens_3.jpg",
+        "bernie_sanders_mittens_4.jpg"
       ]
     },
     {
@@ -608,16 +612,6 @@
       "image_urls": []
     },
     {
-      "name": "Netflix and chill",
-      "main_image_url": "placeholder/default.jpg",
-      "image_urls": []
-    },
-    {
-      "name": "Omission of New Zealand from maps",
-      "main_image_url": "placeholder/default.jpg",
-      "image_urls": []
-    },
-    {
       "name": "One red paperclip",
       "main_image_url": "placeholder/default.jpg",
       "image_urls": []
@@ -631,6 +625,13 @@
       "name": "Reality shifting",
       "main_image_url": "placeholder/default.jpg",
       "image_urls": []
+    },
+    {
+      "name": "gru whiteboard",
+      "main_image_url": "gru_whiteboard_1.jpg",
+      "image_urls": [
+        "gru_whiteboard_1.jpg"
+      ]
     }
   ]
 }

@@ -28,8 +28,24 @@ export async function POST(request: Request) {
       .replace(/[^a-z0-9]+/g, '_')
       .replace(/^_+|_+$/g, '');
     
-    const existingCount = meme.image_urls.length;
-    const newFileName = `${baseName}_${existingCount + 1}.${extension}`;
+    // Find the highest number used in existing filenames for this meme
+    const existingNumbers = meme.image_urls
+      .map(url => {
+        const match = url.match(new RegExp(`${baseName}_(\\d+)`));
+        return match ? parseInt(match[1]) : 0;
+      })
+      .filter(num => !isNaN(num));
+    
+    const nextNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) + 1 : 1;
+    const newFileName = `${baseName}_${nextNumber}.${extension}`;
+
+    // Check if this exact filename already exists
+    if (meme.image_urls.includes(newFileName)) {
+      return NextResponse.json({ 
+        error: 'This image has already been added to this meme' 
+      }, { status: 400 });
+    }
+
     const imagePath = path.join(process.cwd(), 'public', 'data', newFileName);
 
     // Fetch and save the image
@@ -40,9 +56,11 @@ export async function POST(request: Request) {
     const imageBuffer = await imageResponse.arrayBuffer();
     await fs.writeFile(imagePath, Buffer.from(imageBuffer));
 
-    // Update meme data
-    meme.image_urls.push(newFileName);
-    meme.main_image_url = newFileName;
+    // Update meme data - ensure no duplicates
+    if (!meme.image_urls.includes(newFileName)) {
+      meme.image_urls.push(newFileName);
+      meme.main_image_url = newFileName;
+    }
 
     // Save updated meme data
     await fs.writeFile(filePath, JSON.stringify(data, null, 2));

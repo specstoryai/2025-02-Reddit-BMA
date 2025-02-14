@@ -2210,7 +2210,19 @@ When you paste an image URL:
 2. Save it to `/public/data/` with a filename like `meme_name_X.jpg` (where X is the next number in sequence)
 3. The image will be immediately available because Next.js serves the `/public` directory statically
 
-This is
+This is the correct location since it's where all your other meme images are stored and it's properly configured in your application.
+
+---
+
+_**User**_
+
+be more careful about not creating duplicate image urls when using the Add Image feature
+
+---
+
+_**Assistant**_
+
+You're right - I'll modify the `add-image` endpoint to check for duplicate image URLs before adding them. Here's the updated version:
 
 ---
 
