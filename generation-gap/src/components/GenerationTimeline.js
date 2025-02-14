@@ -29,7 +29,11 @@ const GenerationTimeline = ({ translations, loading, submittedText }) => {
               <div className="speech-bubble">
                 <div className="translated-text">
                   {loading?.[gen.name] ? (
-                    <div className="loading"></div>
+                    <div className="loading">
+                      <div className="dot"></div>
+                      <div className="dot"></div>
+                      <div className="dot"></div>
+                    </div>
                   ) : translations?.[gen.name] ? (
                     translations[gen.name]
                   ) : (
