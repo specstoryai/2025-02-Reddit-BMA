@@ -1,70 +1,76 @@
-# Getting Started with Create React App
+# 🌟 Generation Gap Translator
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Ever wondered how different generations would express the same thing? The Generation Gap Translator is a fun web application that helps bridge the communication divide between generations. From Silent Generation to Gen Alpha, see how your message would be expressed across different eras!
 
-## Available Scripts
+## ✨ Features
 
-In the project directory, you can run:
+- Translate text across 6 different generations:
+  - Silent Generation (1928-1945)
+  - Baby Boomers (1946-1964)
+  - Generation X (1965-1980)
+  - Millennials (1981-1996)
+  - Generation Z (1997-2009)
+  - Generation Alpha (2010-2024)
+- Interactive timeline visualization
+- Real-time translation powered by AI
+- Modern, responsive design
 
-### `npm start`
+## 🚀 Getting Started
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### Prerequisites
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- Node.js (v14 or higher)
+- Yarn package manager
+- Anthropic API key (for Claude AI translations)
 
-### `npm test`
+### Local Development
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+1. Clone the repository:
+```bash
+git clone [your-repo-url]
+cd generation-gap
+```
 
-### `npm run build`
+2. Install dependencies:
+```bash
+yarn install
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+3. Create a `.env` file in the root directory and add your Anthropic API key:
+```
+ANTHROPIC_API_KEY=your_api_key_here
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+4. Start the development server:
+```bash
+yarn start
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+This will run both the frontend and backend concurrently:
+- Frontend: [http://localhost:3000](http://localhost:3000)
+- Backend: [http://localhost:3001](http://localhost:3001)
 
-### `npm run eject`
+### Available Scripts
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+- `yarn start` - Starts both frontend and backend in development mode
+- `yarn client` - Runs only the frontend
+- `yarn server` - Runs only the backend
+- `yarn build` - Builds the app for production
+- `yarn start:prod` - Runs the production build
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## 🛠️ Built With
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+- React.js
+- Express.js
+- Anthropic Claude AI
+- CSS3 for styling
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## 📝 Notes
 
-## Learn More
+- The app uses the Anthropic Claude AI model for generating translations, so responses may vary
+- Each generation's speaking style is carefully crafted based on historical and cultural context
+- The timeline visualization helps users understand the chronological spread of different generations
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## 📄 License
 
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+This project is licensed under the MIT License - see the LICENSE file for details.
