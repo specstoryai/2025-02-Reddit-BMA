@@ -2,6 +2,22 @@
 
 A modern web application for pilots to visualize and analyze weather conditions along their flight route. Built with React, TypeScript, and Material-UI, this app provides real-time weather information from the AVWX API.
 
+> ⚠️ **IMPORTANT SAFETY DISCLAIMER**
+>
+> This application is for **EDUCATIONAL AND DEMONSTRATION PURPOSES ONLY**. It should NOT be used for:
+> - Actual flight planning
+> - Navigation
+> - Making aviation-related decisions
+> - Official weather briefings
+>
+> Always obtain official weather briefings and flight planning information from authorized sources such as:
+> - Flight Service Station (FSS)
+> - National Weather Service (NWS)
+> - Your local aviation authority
+> - Certified weather briefing services
+>
+> The developers assume no responsibility for any decisions made based on the information provided by this application.
+
 ## Features
 
 ### Route Planning
@@ -103,3 +119,16 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - AVWX for providing comprehensive aviation weather data
 - OpenStreetMap contributors for map data
 - The aviation community for feedback and suggestions
+
+## Limitations
+
+This application has several important limitations:
+- Weather data may not be current or complete
+- Not all airports or weather stations may be available
+- No guarantee of data accuracy or reliability
+- Limited error checking and validation
+- No support for emergency situations or critical decision-making
+
+## Legal Notice
+
+This is a demonstration project and comes with ABSOLUTELY NO WARRANTY. The developers and contributors are not responsible for any damages or losses resulting from the use of this application. Always rely on official sources for actual flight planning and weather information.
